@@ -1,0 +1,8 @@
+{
+  "name": "ultra-pro-space-invaders",
+  "version": "1.0.0",
+  "description": "Ultra Pro Space Invaders - Premium Educational Edition",
+  "scripts": {
+    "build": "node build.js"
+  }
+}
