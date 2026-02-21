@@ -1,0 +1,3153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Ultra Pro Space Invaders - Educational Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Press Start 2P', cursive;
+            color: #fff;
+            user-select: none; 
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: auto;
+            height: auto;
+            margin: auto;
+            background: #000;
+            overflow: hidden;
+aspect-ratio: auto;
+        }
+
+        #gameCanvas {
+            display: block;
+            background: #000;
+            touch-action: none;
+        }
+
+        /* Intro Screen */
+        #introScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #001140, #000050);
+            padding: 40px;
+            border: 2px solid #0ff;
+            box-shadow: 0 0 20px #0ff;
+            border-radius: 10px;
+            text-align: center;
+            width: 80%;
+            font-size: 14px;
+            color: #0ff;
+            text-shadow: 0 0 5px #0ff;
+            z-index: 5;
+        }
+
+        #introScreen h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #0ff;
+            text-shadow: 0 0 10px #0ff;
+        }
+
+        #introScreen p {
+            font-size: 12px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        #introStartBtn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #222;
+            border: 2px solid #0ff;
+            color: #0ff;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 60%;
+            transition: background 0.3s, box-shadow 0.3s;
+            font-size: 16px;
+            text-shadow: 0 0 5px #0ff;
+        }
+
+        #introStartBtn:hover {
+            background: #333;
+            box-shadow: 0 0 15px #0ff;
+        }
+
+        /* Settings Screen */
+        #settingsScreen {
+            display: none; 
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 64, 0.95);
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            color: #0ff;
+            text-align: center;
+            z-index: 5;
+            width: 80%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #settingsScreen h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .difficulty-selector {
+            margin: 15px 0;
+        }
+
+        .difficulty-selector button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            background: #333;
+            border: 1px solid #0ff;
+            color: #0ff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .difficulty-selector button.active {
+            background: #0ff;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .quiz-option {
+            margin: 10px;
+            padding: 10px 20px;
+            background: #222;
+            border: 2px solid #0ff;
+            color: #0ff;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 80%;
+            transition: background 0.3s, box-shadow 0.3s;
+            font-size: 14px;
+            text-shadow: 0 0 5px #0ff;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .quiz-option:hover {
+            background: #333;
+            box-shadow: 0 0 10px #0ff;
+        }
+
+        .upload-section {
+            margin-bottom: 20px;
+        }
+
+        .import-tip {
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        #questionList {
+            height: 150px;
+            margin: 10px 0;
+            color: #0ff;
+            background: rgba(0, 0, 64, 1);
+            overflow-y: auto;
+            padding: 5px;
+            font-size: 12px;
+            border: 1px solid #0aa;
+        }
+
+        #questionForm {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 64, 0.9);
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            color: #0ff;
+            text-align: center;
+            z-index: 6; 
+            width: 80%;
+        }
+
+        #questionForm h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        #questionForm select, #questionForm input, #questionForm textarea {
+            background: rgba(0, 5, 40, 0.8);
+            border: 1px solid #0ff;
+            padding: 8px;
+            color: #fff;
+            margin: 5px;
+        }
+        
+        #score, #powerups, #wave, #pauseBtn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 14px;
+            z-index: 1;
+        }
+
+        #powerups {
+            top: 30px;
+        }
+
+        #wave {
+            top: 50px;
+        }
+
+        #pauseBtn {
+            top: 10px;
+            right: 220px;
+            left: auto;
+            background: rgba(0, 0, 30, 0.7);
+            border: 1px solid #0ff;
+            color: #0ff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #soundBtn {
+            position: absolute;
+            top: 10px;
+            right: 320px;
+            background: rgba(0, 0, 30, 0.7);
+            border: 1px solid #0ff;
+            color: #0ff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        #healthBarContainer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 200px;
+            height: 20px;
+            border: 2px solid #0ff;
+            background: #000;
+            z-index: 1;
+        }
+
+        #healthBar {
+            width: 100%;
+            height: 100%;
+            background: #0f0;
+            transition: width 0.3s, background 0.3s;
+        }
+
+        #powerupMessage {
+            display: none;
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 64, 0.9);
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            color: #0ff;
+            font-size: 14px;
+            text-align: center;
+            z-index: 6;
+            box-shadow: 0 0 10px #0ff;
+        }
+
+        /* Quiz Container */
+        .quiz-container {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle at center, rgba(0, 0, 128, 0.9), rgba(0, 0, 64, 0.9));
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            color: #0ff;
+            width: 80%;
+            text-align: center;
+            font-size: 14px;
+            text-shadow: 0 0 5px #0ff;
+            z-index: 6;
+        }
+
+        .quiz-container h2 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .quiz-timer {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #ff0;
+        }
+
+        /* Game Over Screen */
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #f00;
+            border-radius: 10px;
+            color: #f00;
+            text-align: center;
+            width: 80%;
+            padding: 20px;
+            z-index: 6;
+        }
+
+        #gameOverScreen h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* Game Stats */
+        #gameStats {
+            font-size: 14px;
+            margin-bottom: 20px;
+            text-align: left;
+            display: inline-block;
+        }
+
+        #gameStats div {
+            margin: 5px 0;
+        }
+
+        /* Pause Screen */
+        #pauseScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 64, 0.9);
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            color: #0ff;
+            text-align: center;
+            z-index: 7;
+            width: 60%;
+        }
+
+        #pauseScreen h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #controlsGuide {
+            text-align: left;
+            font-size: 12px;
+            margin: 20px 0;
+            padding: 10px;
+            background: rgba(0, 0, 40, 0.5);
+            border-radius: 5px;
+        }
+
+        .particle {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Category selector */
+        .category-selector {
+            margin: 15px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            padding: 0 20px;
+        }
+        
+        .category-checkbox {
+            margin: 5px;
+        }
+
+        #helpBtn {
+            position: absolute;
+            top: 50px;
+            right: 320px;
+            background: rgba(0, 0, 30, 0.7);
+            border: 1px solid #0ff;
+            color: #0ff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        /* Help screen */
+        #helpScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 64, 0.95);
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            color: #0ff;
+            text-align: left;
+            z-index: 7;
+            width: 70%;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        #helpScreen h2 {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="score">Score: 0</div>
+        <div id="powerups">Power-ups: None</div>
+        <div id="wave">Wave: 1</div>
+        <button id="pauseBtn">⏸️ Pause</button>
+        <button id="soundBtn">🔊 Sound</button>
+        <button id="helpBtn">❓ Help</button>
+        <div id="healthBarContainer">
+            <div id="healthBar"></div>
+        </div>
+
+        <!-- Intro Screen -->
+        <div id="introScreen">
+            <h1>ULTRA PRO SPACE INVADERS</h1>
+            <p>
+                Welcome, defender!<br>
+                The galaxy is under threat from endless waves of cosmic invaders.<br>
+                Pilot your ship, blast enemies, and prove your knowledge in quizzes between levels.<br>
+                All questions are unique and used once. When you run out, game ends.<br>
+                Defeat enemies, pass quizzes, and become a legend!<br>
+                Game always pauses during quizzes for better focus!
+            </p>
+            <button id="introStartBtn">ENTER THE BATTLE</button>
+        </div>
+
+        <!-- Settings Screen -->
+        <div id="settingsScreen">
+            <h2>Customize Your Game</h2>
+            
+            <div class="difficulty-selector">
+                <span>Difficulty: </span>
+                <button data-difficulty="easy" class="active">Easy</button>
+                <button data-difficulty="medium">Medium</button>
+                <button data-difficulty="hard">Hard</button>
+            </div>
+
+            <div class="upload-section">
+                <button id="downloadExcelTemplateBtn" class="quiz-option">Download Excel Template</button>
+                <button id="importExcelBtn" class="quiz-option">Import Questions from Excel</button>
+                <button id="addQuestionSetBtn" class="quiz-option">Add Questions Manually</button>
+                <button id="resetToDefaultBtn" class="quiz-option">Reset to Default Questions</button>
+                <p class="import-tip">
+                    Excel Format: question, option1, option2, option3, option4, correctOption(1-4), category(optional)
+                </p>
+            </div>
+            
+            <div id="questionList"></div>
+            <div class="category-selector" id="categorySelector">
+                <!-- Categories will be added here dynamically -->
+            </div>
+            
+            <button id="startGameBtn" class="quiz-option">Start Game</button>
+        </div>
+
+        <!-- Add Question Form -->
+        <div id="questionForm">
+            <h3>Add Question</h3>
+            <textarea id="newQuestionText" placeholder="Enter question" rows="3" style="width: 90%; margin: 10px;"></textarea>
+            <div id="newOptions">
+                <input type="text" placeholder="Option 1" class="option-input" style="width: 90%; margin: 5px;"><br>
+                <input type="text" placeholder="Option 2" class="option-input" style="width: 90%; margin: 5px;"><br>
+                <input type="text" placeholder="Option 3" class="option-input" style="width: 90%; margin: 5px;"><br>
+                <input type="text" placeholder="Option 4" class="option-input" style="width: 90%; margin: 5px;"><br>
+            </div>
+            <select id="correctAnswer" style="margin: 10px; width: 95%;">
+                <option value="0">Option 1 is correct</option>
+                <option value="1">Option 2 is correct</option>
+                <option value="2">Option 3 is correct</option>
+                <option value="3">Option 4 is correct</option>
+            </select>
+            <input type="text" id="questionCategory" placeholder="Category (optional)" style="width: 90%; margin: 5px;">
+            <button id="saveNewQuestionBtn" class="quiz-option">Save Question</button>
+            <button id="cancelNewQuestionBtn" class="quiz-option">Cancel</button>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="quiz-container" id="quizContainer">
+            <h2 id="questionText"></h2>
+            <div id="quizTimer" class="quiz-timer"></div>
+            <div id="quizCategory" style="margin-bottom: 10px; font-size: 12px;"></div>
+            <div id="options"></div>
+        </div>
+
+        <!-- Power-up Message -->
+        <div id="powerupMessage"></div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen">
+            <h2>Game Over!</h2>
+            <div id="gameStats">
+                <div>Final Score: <span id="finalScore">0</span></div>
+                <div>Waves Completed: <span id="wavesCompleted">0</span></div>
+                <div>Enemies Destroyed: <span id="enemiesDestroyed">0</span></div>
+                <div>Correct Answers: <span id="correctAnswers">0</span> / <span id="totalQuestions">0</span></div>
+            </div>
+            <button id="restartButton" class="quiz-option">Restart Game</button>
+            <button id="backToMenuButton" class="quiz-option">Back to Menu</button>
+        </div>
+
+        <!-- Pause Screen -->
+        <div id="pauseScreen">
+            <h2>Game Paused</h2>
+            <div id="controlsGuide">
+                <p>Controls:</p>
+                <p>→ Move Right | ← Move Left</p>
+                <p>Space or Mouse Click to Shoot</p>
+                <p>P key or Pause button to Pause/Resume</p>
+                <p>M key or Sound button to Mute/Unmute</p>
+            </div>
+            <button id="resumeButton" class="quiz-option">Resume Game</button>
+            <button id="quitButton" class="quiz-option">Quit to Menu</button>
+        </div>
+
+        <!-- Help Screen -->
+        <div id="helpScreen">
+            <h2>Game Help</h2>
+            <h3>Basic Controls</h3>
+            <p>- Arrow keys or mouse to move your ship</p>
+            <p>- Space bar, mouse click, or touch to shoot</p>
+            <p>- P key or Pause button to pause the game</p>
+            <p>- M key or Sound button to toggle sound</p>
+            
+            <h3>Game Mechanics</h3>
+            <p>- Destroy enemies to score points</p>
+            <p>- Special enemies (flashing) give better rewards</p>
+            <p>- Answer quiz questions correctly to earn power-ups</p>
+            <p>- Wrong answers reduce your health</p>
+            <p>- Complete all waves to win</p>
+            
+            <h3>Power-ups</h3>
+            <p>- Rapid Fire: Shoot faster for 10 seconds</p>
+            <p>- Shield: Protect from enemy shots for 10 seconds</p>
+            <p>- Double Damage: Deal double damage for 10 seconds</p>
+            
+            <h3>Quiz System</h3>
+            <p>- Quizzes appear after special events</p>
+            <p>- Game always pauses during quizzes</p>
+            <p>- Categories help organize different subject matter</p>
+            <p>- Timer shows remaining time to answer</p>
+            
+            <button id="closeHelpBtn" class="quiz-option">Close Help</button>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="shootSound" src="shoot.mp3" preload="auto"></audio>
+    <audio id="explosionSound" src="explosion.mp3" preload="auto"></audio>
+    <audio id="powerupSound" src="powerup.mp3" preload="auto"></audio>
+    <audio id="quizSound" src="quiz.mp3" preload="auto"></audio>
+    <audio id="gameOverSound" src="gameover.mp3" preload="auto"></audio>
+    <audio id="backgroundMusic" src="background.mp3" preload="auto" loop></audio>
+    <audio id="correctSound" src="correct.mp3" preload="auto"></audio>
+    <audio id="wrongSound" src="wrong.mp3" preload="auto"></audio>
+    <audio id="levelUpSound" src="powerup.mp3" preload="auto"></audio>
+
+    <script>
+     // Game Canvas and Context
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// UI Elements
+const introScreen = document.getElementById('introScreen');
+const introStartBtn = document.getElementById('introStartBtn');
+const settingsScreen = document.getElementById('settingsScreen');
+const startGameBtn = document.getElementById('startGameBtn');
+const downloadExcelTemplateBtn = document.getElementById('downloadExcelTemplateBtn');
+const importExcelBtn = document.getElementById('importExcelBtn');
+const addQuestionSetBtn = document.getElementById('addQuestionSetBtn');
+const resetToDefaultBtn = document.getElementById('resetToDefaultBtn');
+const questionList = document.getElementById('questionList');
+const questionForm = document.getElementById('questionForm');
+const newQuestionText = document.getElementById('newQuestionText');
+const newOptions = document.querySelectorAll('.option-input');
+const correctAnswer = document.getElementById('correctAnswer');
+const questionCategory = document.getElementById('questionCategory');
+const saveNewQuestionBtn = document.getElementById('saveNewQuestionBtn');
+const cancelNewQuestionBtn = document.getElementById('cancelNewQuestionBtn');
+const quizContainer = document.getElementById('quizContainer');
+const questionText = document.getElementById('questionText');
+const optionsContainer = document.getElementById('options');
+const quizTimer = document.getElementById('quizTimer');
+const quizCategory = document.getElementById('quizCategory');
+const scoreDisplay = document.getElementById('score');
+const powerupsDisplay = document.getElementById('powerups');
+const waveDisplay = document.getElementById('wave');
+const healthBar = document.getElementById('healthBar');
+const powerupMessage = document.getElementById('powerupMessage');
+const gameOverScreen = document.getElementById('gameOverScreen');
+const finalScoreDisplay = document.getElementById('finalScore');
+const wavesCompletedDisplay = document.getElementById('wavesCompleted');
+const enemiesDestroyedDisplay = document.getElementById('enemiesDestroyed');
+const correctAnswersDisplay = document.getElementById('correctAnswers');
+const totalQuestionsDisplay = document.getElementById('totalQuestions');
+const restartButton = document.getElementById('restartButton');
+const backToMenuButton = document.getElementById('backToMenuButton');
+const pauseBtn = document.getElementById('pauseBtn');
+const soundBtn = document.getElementById('soundBtn');
+const helpBtn = document.getElementById('helpBtn');
+const pauseScreen = document.getElementById('pauseScreen');
+const resumeButton = document.getElementById('resumeButton');
+const quitButton = document.getElementById('quitButton');
+const helpScreen = document.getElementById('helpScreen');
+const closeHelpBtn = document.getElementById('closeHelpBtn');
+const difficultyButtons = document.querySelectorAll('.difficulty-selector button');
+const categorySelector = document.getElementById('categorySelector');
+
+// Audio Elements
+const shootSound = document.getElementById('shootSound');
+const explosionSound = document.getElementById('explosionSound');
+const powerupSound = document.getElementById('powerupSound');
+const quizSound = document.getElementById('quizSound');
+const gameOverSound = document.getElementById('gameOverSound');
+const backgroundMusic = document.getElementById('backgroundMusic');
+const correctSound = document.getElementById('correctSound');
+const wrongSound = document.getElementById('wrongSound');
+const levelUpSound = document.getElementById('powerupSound'); // Reuse powerup sound for level up
+
+// Game state variables
+let score = 0;
+let gameRunning = false; 
+let gameActive = false;
+let gamePaused = false;
+let soundEnabled = true;
+let activePowerups = [];
+let currentWave = 1;
+let lastFrameTime = performance.now();
+let quizSession = [];
+let quizQuestionIndex = 0;
+let destroyedNormalEnemies = 0;
+let totalEnemiesDestroyed = 0;
+let totalCorrectAnswers = 0;
+let totalQuestionsAsked = 0;
+let gameDifficulty = 'easy'; // Default difficulty
+let quizTimerValue = 0;
+let quizTimerInterval = null;
+let activeCategories = new Set();
+let particles = [];
+ 
+// Default questions with categories
+const defaultQuestions = [
+    { question: "What is 2+2?", options: ["3","4","5","6"], correct: 1, category: "Math" },
+    { question: "Capital of France?", options: ["Paris","Rome","Berlin","Madrid"], correct: 0, category: "Geography" },
+    { question: "H2O is?", options: ["Fire","Earth","Water","Air"], correct: 2, category: "Science" },
+    { question: "Sun rises in?", options: ["North","East","South","West"], correct: 1, category: "General" },
+    { question: "Which is prime?", options: ["6","9","11","15"], correct: 2, category: "Math" },
+    { question: "Symbol for Iron?", options: ["Fe","Ir","In","I"], correct: 0, category: "Science" },
+    { question: "Author of Hamlet?", options: ["Dickens","Shakespeare","Tolstoy","Austen"], correct: 1, category: "Literature" }
+];
+
+let questions = [];
+let usedQuestions = [];
+
+// Game assets
+const playerShipImage = new Image();
+const enemyShipImage = new Image();
+const specialEnemyShipImage = new Image();
+const powerupImage = new Image();
+const asteroidImage = new Image();
+const explosionImage = new Image();
+const shootingStarImage = new Image();
+const shieldImage = new Image();
+
+// Asset loading tracker
+let imagesToLoad = 0;
+let imagesLoaded = 0;
+let assetsLoaded = false;
+
+function imageLoaded() {
+    imagesLoaded++;
+    if (imagesLoaded === imagesToLoad) {
+        assetsLoaded = true;
+        showIntroScreen();
+    }
+}
+
+function loadGameImages() {
+    // Helper function to handle image loading
+    const loadImage = (img, src, fallbackColor) => {
+        imagesToLoad++;
+        img.src = src;
+        img.onload = imageLoaded;
+        img.onerror = () => { 
+            console.warn(`Failed to load image: ${src} - Using fallback`);
+            // Create a fallback colored rectangle
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = 50;
+            tempCanvas.height = 50;
+            tempCtx.fillStyle = fallbackColor;
+            tempCtx.fillRect(0, 0, 50, 50);
+            img.src = tempCanvas.toDataURL();
+            imageLoaded();
+        };
+    };
+
+    // Load all game images with fallbacks
+    loadImage(playerShipImage, 'playerShip.png', '#0f0');
+    loadImage(enemyShipImage, 'enemyShip.png', '#f00');
+    loadImage(specialEnemyShipImage, 'specialEnemyShip.png', '#ff0');
+    loadImage(powerupImage, 'powerup.png', '#0ff');
+    loadImage(asteroidImage, 'asteroid.png', '#888');
+    loadImage(explosionImage, 'explosion.png', '#f80');
+    loadImage(shootingStarImage, 'shootingStar.png', '#fff');
+    loadImage(shieldImage, 'shield.png', '#00f');
+}
+
+// Sound handling with error fallbacks
+function playSound(sound) {
+    if (!soundEnabled) return;
+    if (sound && sound.readyState >= 2) { // HAVE_CURRENT_DATA or higher
+        sound.currentTime = 0;
+        sound.play().catch(err => {
+            console.warn(`Error playing sound: ${err.message}`);
+        });
+    }
+}
+
+// Initialize and load assets
+loadGameImages();
+Here's the next 500 lines of the code with fixes to the game mechanics and rendering:
+
+```javascript
+// Player object
+const player = {
+    x: canvas.width / 2 - 25,
+    y: canvas.height - 60,
+    width: 50,
+    height: 50,
+    speed: 5,
+    bullets: [],
+    powerups: {
+        rapidFire: false,
+        shield: false,
+        doubleDamage: false
+    },
+    health: 100,
+    maxHealth: 100,
+    shootCooldown: 0,
+    shootInterval: 500, // Normal shooting interval
+    invulnerable: false,
+    invulnerableTimer: 0
+};
+
+// Game objects
+let enemies = [];
+let enemyBullets = [];
+
+const enemyTypes = [
+    { points: 10, name: 'Raw Materials', isSpecial: false, color: '#f00' },
+    { points: 20, name: 'Labor', isSpecial: false, color: '#f80' },
+    { points: 30, name: 'Capital Goods', isSpecial: false, color: '#ff0' },
+    { points: 50, name: 'Special Enemy', isSpecial: true, color: '#f0f' }
+];
+
+// Enemy timing variables - will be adjusted based on difficulty
+let enemyShootInterval = 5000;
+let enemySpeedMultiplier = 1.0;
+
+let powerUpItems = [];
+let stars = [];
+let asteroids = [];
+let shootingStars = [];
+let explosions = [];
+
+// Game UI Functions
+function showIntroScreen() {
+    introScreen.style.display = 'block';
+    gameActive = false;
+    clearCanvas();
+}
+
+introStartBtn.addEventListener('click', () => {
+    introScreen.style.display = 'none';
+    showSettingsScreen();
+});
+
+function showSettingsScreen() {
+    // Load default questions if none are present
+    if (questions.length === 0) {
+        questions = JSON.parse(JSON.stringify(defaultQuestions));
+    }
+    displayQuestionList();
+    updateCategorySelector();
+    settingsScreen.style.display = 'block';
+    gameActive = false;
+    clearCanvas();
+}
+
+// Difficulty selector
+difficultyButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        // Remove active class from all buttons
+        difficultyButtons.forEach(btn => btn.classList.remove('active'));
+        // Add active class to clicked button
+        button.classList.add('active');
+        // Set game difficulty
+        gameDifficulty = button.getAttribute('data-difficulty');
+        console.log(`Difficulty set to: ${gameDifficulty}`);
+        
+        // Apply difficulty settings
+        applyDifficultySettings();
+    });
+});
+
+function applyDifficultySettings() {
+    // Adjust game parameters based on difficulty
+    switch(gameDifficulty) {
+        case 'easy':
+            player.maxHealth = 120;
+            player.health = player.maxHealth;
+            enemySpeedMultiplier = 0.8;
+            enemyShootInterval = 6000;
+            break;
+        case 'medium':
+            player.maxHealth = 100;
+            player.health = player.maxHealth;
+            enemySpeedMultiplier = 1.0;
+            enemyShootInterval = 5000;
+            break;
+        case 'hard':
+            player.maxHealth = 80;
+            player.health = player.maxHealth;
+            enemySpeedMultiplier = 1.2;
+            enemyShootInterval = 4000;
+            break;
+    }
+    updateHealthBar();
+}
+
+// Reset to default questions
+resetToDefaultBtn.addEventListener('click', () => {
+    questions = JSON.parse(JSON.stringify(defaultQuestions));
+    usedQuestions = [];
+    displayQuestionList();
+    updateCategorySelector();
+});
+
+// Start the game
+startGameBtn.addEventListener('click', () => {
+    if (questions.length < 3) {
+        alert('Please add or import at least 3 questions to start the game.');
+        return;
+    }
+    
+    // Filter questions by selected categories if any are selected
+    if (activeCategories.size > 0) {
+        const filteredQuestions = questions.filter(q => 
+            !q.category || activeCategories.has(q.category));
+        
+        if (filteredQuestions.length < 3) {
+            alert('Please select more categories or add more questions to have at least 3 questions available.');
+            return;
+        }
+    }
+    
+    settingsScreen.style.display = 'none';
+    
+    // Reset game state
+    resetGameState();
+    
+    // Initialize and start the game
+    initializeGameState();
+    initEnemies();
+    
+    try {
+        backgroundMusic.currentTime = 0;
+        if (soundEnabled) {
+            backgroundMusic.play().catch(err => {
+                console.warn('Could not play background music:', err);
+            });
+        }
+    } catch (e) {
+        console.warn('Error playing background music:', e);
+    }
+    
+    // Start with initial quiz
+    gameActive = true;
+    gameRunning = false;
+    showInitialQuiz();
+});
+
+function resetGameState() {
+    // Reset game counters and state
+    currentWave = 1;
+    destroyedNormalEnemies = 0;
+    totalEnemiesDestroyed = 0;
+    totalCorrectAnswers = 0;
+    totalQuestionsAsked = 0;
+    score = 0;
+    
+    // Reset player state
+    player.health = player.maxHealth;
+    player.bullets = [];
+    player.powerups.rapidFire = false;
+    player.powerups.shield = false;
+    player.powerups.doubleDamage = false;
+    player.invulnerable = false;
+    player.invulnerableTimer = 0;
+    
+    // Reset game objects
+    enemies = [];
+    enemyBullets = [];
+    powerUpItems = [];
+    activePowerups = [];
+    particles = [];
+    
+    // Reset questions
+    usedQuestions = [];
+    
+    // Update UI
+    updateHealthBar();
+    updatePowerupsDisplay();
+    waveDisplay.textContent = `Wave: ${currentWave}`;
+    scoreDisplay.textContent = `Score: ${score}`;
+}
+
+// Excel template download
+function downloadExcelTemplate() {
+    const template = [
+        ['Question', 'Option 1', 'Option 2', 'Option 3', 'Option 4', 'Correct Answer (1-4)', 'Category (optional)'],
+        ['Sample question?', 'Option A', 'Option B', 'Option C', 'Option D', '1', 'Math']
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(template);
+    XLSX.utils.book_append_sheet(wb, ws, "Questions");
+    XLSX.writeFile(wb, 'question_template.xlsx');
+}
+
+downloadExcelTemplateBtn.addEventListener('click', downloadExcelTemplate);
+
+// Excel import handling
+function handleExcelImport(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            
+            // Remove header row if present
+            if (rows.length > 0 && typeof rows[0][0] === 'string' && 
+                (rows[0][0].toLowerCase().includes('question') || 
+                 rows[0][0].toLowerCase().includes('prompt'))) {
+                rows.shift();
+            }
+const newQuestions = rows.filter(row => row.length >= 6).map(row => ({
+                question: row[0],
+                options: [row[1], row[2], row[3], row[4]],
+                correct: parseInt(row[5]) - 1,
+                category: row[6] || 'General'
+            }));
+
+            if (newQuestions.length > 0) {
+                questions.push(...newQuestions);
+                usedQuestions = [];
+                displayQuestionList();
+                updateCategorySelector();
+                alert(`Successfully imported ${newQuestions.length} questions.`);
+            } else {
+                alert('No valid questions found in the file. Please check the format.');
+            }
+        } catch (err) {
+            console.error('Error parsing Excel file:', err);
+            alert('Error importing questions. Please check the file format.');
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+importExcelBtn.addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx, .xls';
+    input.onchange = handleExcelImport;
+    input.click();
+});
+
+// Add question manually
+addQuestionSetBtn.addEventListener('click', () => {
+    questionForm.style.display = 'block';
+    settingsScreen.style.display = 'none';
+});
+
+cancelNewQuestionBtn.addEventListener('click', () => {
+    questionForm.style.display = 'none';
+    settingsScreen.style.display = 'block';
+});
+
+saveNewQuestionBtn.addEventListener('click', () => {
+    const question = newQuestionText.value.trim();
+    const opts = Array.from(newOptions).map(i => i.value.trim());
+    const correct = parseInt(correctAnswer.value);
+    const category = questionCategory.value.trim() || 'General';
+
+    if (question && opts.every(o => o) && !isNaN(correct)) {
+        questions.push({ question, options: opts, correct, category });
+        
+        // Clear the form
+        newQuestionText.value = '';
+        newOptions.forEach(i => i.value = '');
+        correctAnswer.value = '0';
+        questionCategory.value = '';
+
+        questionForm.style.display = 'none';
+        settingsScreen.style.display = 'block';
+        displayQuestionList();
+        updateCategorySelector();
+    } else {
+        alert('Please fill all fields correctly.');
+    }
+});
+
+// Display the list of questions
+function displayQuestionList() {
+    questionList.innerHTML = '';
+    if (questions.length === 0) {
+        questionList.innerHTML = 'No questions loaded yet.';
+        return;
+    }
+    
+    // Group questions by category
+    const categorizedQuestions = {};
+    questions.forEach(q => {
+        const category = q.category || 'General';
+        if (!categorizedQuestions[category]) {
+            categorizedQuestions[category] = [];
+        }
+        categorizedQuestions[category].push(q);
+    });
+    
+    // Display questions by category
+    for (const category in categorizedQuestions) {
+        const categoryHeader = document.createElement('div');
+        categoryHeader.innerHTML = `<strong>${category}</strong> (${categorizedQuestions[category].length})`;
+        categoryHeader.style.color = '#0ff';
+        categoryHeader.style.marginTop = '10px';
+        questionList.appendChild(categoryHeader);
+        
+        categorizedQuestions[category].forEach((q, i) => {
+            const div = document.createElement('div');
+            div.innerHTML = `${i+1}. ${q.question}`;
+            div.style.marginLeft = '10px';
+            questionList.appendChild(div);
+        });
+    }
+}
+
+// Update category selector
+function updateCategorySelector() {
+    const categories = new Set();
+    questions.forEach(q => {
+        if (q.category) categories.add(q.category);
+        else categories.add('General');
+    });
+    
+    categorySelector.innerHTML = '<div style="font-weight: bold; margin-bottom: 10px;">Filter by Categories:</div>';
+    
+    if (categories.size === 0) {
+        categorySelector.innerHTML += '<div>No categories available</div>';
+        return;
+    }
+    
+    // Add "Select All" checkbox
+    const allCategoriesDiv = document.createElement('div');
+    allCategoriesDiv.className = 'category-checkbox';
+    
+    const allCheckbox = document.createElement('input');
+    allCheckbox.type = 'checkbox';
+    allCheckbox.id = 'all-categories';
+    allCheckbox.checked = activeCategories.size === 0;
+    allCheckbox.addEventListener('change', (e) => {
+        const categoryCheckboxes = document.querySelectorAll('.category-checkbox input:not(#all-categories)');
+        if (e.target.checked) {
+            activeCategories.clear();
+            categoryCheckboxes.forEach(cb => {
+                cb.checked = false;
+            });
+        }
+    });
+    
+    const allLabel = document.createElement('label');
+    allLabel.htmlFor = 'all-categories';
+    allLabel.textContent = 'All Categories';
+    
+    allCategoriesDiv.appendChild(allCheckbox);
+    allCategoriesDiv.appendChild(allLabel);
+    categorySelector.appendChild(allCategoriesDiv);
+    
+    // Add individual category checkboxes
+    categories.forEach(category => {
+        const div = document.createElement('div');
+        div.className = 'category-checkbox';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `category-${category}`;
+        checkbox.checked = activeCategories.has(category);
+        checkbox.addEventListener('change', (e) => {
+            const allCategoriesCheckbox = document.getElementById('all-categories');
+            if (e.target.checked) {
+                activeCategories.add(category);
+                allCategoriesCheckbox.checked = false;
+            } else {
+                activeCategories.delete(category);
+                if (activeCategories.size === 0) {
+                    allCategoriesCheckbox.checked = true;
+                }
+            }
+        });
+        
+        const label = document.createElement('label');
+        label.htmlFor = `category-${category}`;
+        label.textContent = category;
+        
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        categorySelector.appendChild(div);
+    });
+}
+
+// Initial quiz at game start
+function showInitialQuiz() {
+    if (questions.length === 0) {
+        handleGameOver();
+        return;
+    }
+    
+    // Always pause gameplay during quiz
+    gameRunning = false;
+    quizSession = [];
+    quizQuestionIndex = 0;
+    
+    let question = getRandomQuestion();
+    if (!question) {
+        handleGameOver();
+        return;
+    }
+    
+    quizSession.push(question);
+    displayQuizQuestion('initial');
+    playSound(quizSound);
+}
+
+// Get a random question, filtered by active categories if any
+function getRandomQuestion() {
+    let availableQuestions = questions.filter(q => !usedQuestions.includes(q));
+    
+    // Filter by active categories if any are selected
+    if (activeCategories.size > 0) {
+        availableQuestions = availableQuestions.filter(q => 
+            !q.category || activeCategories.has(q.category));
+    }
+    
+    if (availableQuestions.length === 0) {
+        return null;
+    }
+    
+    const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+    const question = availableQuestions[randomIndex];
+    usedQuestions.push(question);
+    return question;
+}
+// Display quiz question with timer
+function displayQuizQuestion(eventType = 'none') {
+    if (quizQuestionIndex >= quizSession.length) {
+        clearQuizTimer();
+        quizContainer.style.display = 'none';
+        
+        // Resume game after quiz is done
+        gameRunning = true;
+        gameActive = true;
+        
+        // If no enemies alive, init again to ensure gameplay is visible
+        if (!enemies.some(e => e.alive)) {
+            initEnemies();
+        }
+        return;
+    }
+
+    const q = quizSession[quizQuestionIndex];
+    quizContainer.style.display = 'block';
+    questionText.textContent = q.question;
+    
+    // Show category if available
+    if (q.category) {
+        quizCategory.textContent = `Category: ${q.category}`;
+        quizCategory.style.display = 'block';
+    } else {
+        quizCategory.style.display = 'none';
+    }
+    
+    optionsContainer.innerHTML = '';
+
+    // Add options as buttons
+    q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.textContent = opt;
+        btn.onclick = () => handleQuizAnswer(idx === q.correct, eventType);
+        optionsContainer.appendChild(btn);
+    });
+    
+    // Start quiz timer based on difficulty
+    startQuizTimer(getDifficultyQuizTime());
+}
+
+// Get quiz time based on difficulty
+function getDifficultyQuizTime() {
+    switch(gameDifficulty) {
+        case 'easy': return 20; // 20 seconds
+        case 'medium': return 15; // 15 seconds
+        case 'hard': return 10; // 10 seconds
+        default: return 15;
+    }
+}
+
+// Start the quiz timer
+function startQuizTimer(seconds) {
+    clearQuizTimer(); // Clear any existing timer
+    
+    quizTimerValue = seconds;
+    updateQuizTimerDisplay();
+    
+    quizTimerInterval = setInterval(() => {
+        quizTimerValue--;
+        updateQuizTimerDisplay();
+        
+        if (quizTimerValue <= 0) {
+            clearQuizTimer();
+            // Time's up - treat as wrong answer
+            handleQuizAnswer(false, 'timeout');
+        }
+    }, 1000);
+}
+
+// Update quiz timer display
+function updateQuizTimerDisplay() {
+    quizTimer.textContent = `Time: ${quizTimerValue}s`;
+    
+    // Change color based on time remaining
+    if (quizTimerValue <= 5) {
+        quizTimer.style.color = '#f00'; // Red when time is low
+    } else if (quizTimerValue <= 10) {
+        quizTimer.style.color = '#ff0'; // Yellow when time is medium
+    } else {
+        quizTimer.style.color = '#0f0'; // Green when plenty of time
+    }
+}
+
+// Clear the quiz timer
+function clearQuizTimer() {
+    if (quizTimerInterval) {
+        clearInterval(quizTimerInterval);
+        quizTimerInterval = null;
+    }
+}
+
+// Handle quiz answer selection
+function handleQuizAnswer(isCorrect, eventType) {
+    clearQuizTimer();
+    totalQuestionsAsked++;
+    
+    if (isCorrect) {
+        totalCorrectAnswers++;
+        playSound(correctSound);
+        
+        // Award power-ups based on event type
+        if (eventType === 'destroySpecial') {
+            activatePowerup('shield');
+        } else if (eventType === 'collectPowerup') {
+            activatePowerup('rapidFire');
+        } else if (eventType === 'destroy5Normal') {
+            activatePowerup('doubleDamage');
+        } else if (eventType === 'wave') {
+            // Random power-up for completing a wave
+            const randomPowerup = ['shield', 'rapidFire', 'doubleDamage'][Math.floor(Math.random() * 3)];
+            activatePowerup(randomPowerup);
+            
+            // Bonus health recovery between waves (scaled by difficulty)
+            let healthBonus = 0;
+            switch(gameDifficulty) {
+                case 'easy': healthBonus = 30; break;
+                case 'medium': healthBonus = 20; break;
+                case 'hard': healthBonus = 10; break;
+            }
+            
+            player.health = Math.min(player.health + healthBonus, player.maxHealth);
+            updateHealthBar();
+        }
+        
+        // Award bonus points for correct answer
+        score += 50;
+        scoreDisplay.textContent = `Score: ${score}`;
+    } else {
+        playSound(wrongSound);
+        
+        // Health penalty based on difficulty
+        let healthPenalty = 0;
+        switch(gameDifficulty) {
+            case 'easy': healthPenalty = 8; break; // 8% health penalty
+            case 'medium': healthPenalty = 10; break; // 10% health penalty
+            case 'hard': healthPenalty = 15; break; // 15% health penalty
+        }
+        
+        player.health = Math.max(player.health - (player.maxHealth * (healthPenalty/100)), 0);
+        updateHealthBar();
+        
+        // Create damage effect
+        createExplosionParticles(player.x + player.width/2, player.y + player.height/2, 15, '#f00');
+        playSound(explosionSound);
+        
+        // Make player briefly invulnerable after taking damage
+        player.invulnerable = true;
+        player.invulnerableTimer = 2000; // 2 seconds of invulnerability
+        
+        if (player.health <= 0) {
+            handleGameOver();
+            return;
+        }
+    }
+
+    quizQuestionIndex++;
+    if (quizQuestionIndex < quizSession.length) {
+        displayQuizQuestion(eventType);
+    } else {
+        quizContainer.style.display = 'none';
+        
+        // Check if we're out of questions
+        let availableQuestions = questions.filter(q => !usedQuestions.includes(q));
+        
+        // Also filter by active categories if needed
+        if (activeCategories.size > 0) {
+            availableQuestions = availableQuestions.filter(q => 
+                !q.category || activeCategories.has(q.category));
+        }
+        
+        if (availableQuestions.length === 0) {
+            handleGameOver("WIN"); // Win condition if all questions are used
+        } else {
+            // Quiz done, resume gameplay
+            gameRunning = true;
+            gameActive = true;
+            
+            // If no enemies, init them now:
+            if (!enemies.some(e => e.alive)) {
+                initEnemies();
+            }
+        }
+    }
+}
+
+// Power-up activation
+function activatePowerup(type) {
+    player.powerups[type] = true;
+    
+    // Find any existing powerups of the same type
+    const existingIndex = activePowerups.findIndex(p => p.type === type);
+    if (existingIndex >= 0) {
+        // Just reset the timer if same powerup already active
+        activePowerups[existingIndex].remainingTime = 10000; // 10 seconds
+    } else {
+        // Otherwise add a new powerup entry
+        activePowerups.push({ type, remainingTime: 10000 });
+    }
+    
+    updatePowerupsDisplay();
+    
+    // Display appropriate message
+    let msg = '';
+    if (type === 'rapidFire') msg = 'Rapid Fire Activated!';
+    else if (type === 'shield') msg = 'Shield Activated!';
+    else if (type === 'doubleDamage') msg = 'Double Damage Activated!';
+    else msg = 'Power-up Activated!';
+    
+    showPowerupMessage(msg);
+    playSound(powerupSound);
+}
+
+// Update power-ups display
+function updatePowerupsDisplay() {
+    if (activePowerups.length === 0) {
+        powerupsDisplay.textContent = 'Power-ups: None';
+        return;
+    }
+    
+    const activeNames = activePowerups.map(p => {
+        // Convert camelCase to readable format
+        let name = p.type.replace(/([A-Z])/g, ' $1').trim();
+        return name.charAt(0).toUpperCase() + name.slice(1);
+    });
+    
+    powerupsDisplay.textContent = `Power-ups: ${activeNames.join(', ')}`;
+}
+
+// Update health bar
+function updateHealthBar() {
+    const hp = (player.health / player.maxHealth) * 100;
+    healthBar.style.width = hp + '%';
+    
+    // Color based on health percentage
+    if (hp > 60) {
+        healthBar.style.background = '#0f0'; // Green
+    } else if (hp > 30) {
+        healthBar.style.background = '#ff0'; // Yellow
+    } else {
+        healthBar.style.background = '#f00'; // Red
+    }
+}
+
+// Show powerup message
+function showPowerupMessage(message) {
+    powerupMessage.textContent = message;
+    powerupMessage.style.display = 'block';
+    
+    // Pause game briefly to show message
+    let previousGameRunning = gameRunning;
+    gameRunning = false;
+    
+    setTimeout(() => {
+        powerupMessage.style.display = 'none';
+        
+        // Check if we have any available questions left
+        let availableQuestions = questions.filter(q => !usedQuestions.includes(q));
+        
+        // Filter by categories if needed
+        if (activeCategories.size > 0) {
+            availableQuestions = availableQuestions.filter(q => 
+                !q.category || activeCategories.has(q.category));
+        }
+        
+        if (availableQuestions.length === 0) {
+            handleGameOver("WIN");
+        } else {
+            // Resume previous game state
+            gameRunning = previousGameRunning || true;
+            gameActive = true;
+            
+            // If no enemies are alive, init again:
+            if (!enemies.some(e => e.alive)) {
+                initEnemies();
+            }
+        }
+    }, 2000);
+}
+// Handle game over
+function handleGameOver(outcome = "LOSE") {
+    gameRunning = false;
+    gameActive = false;
+    clearQuizTimer();
+    
+    // Update final statistics
+    finalScoreDisplay.textContent = score;
+    wavesCompletedDisplay.textContent = currentWave - 1;
+    enemiesDestroyedDisplay.textContent = totalEnemiesDestroyed;
+    correctAnswersDisplay.textContent = totalCorrectAnswers;
+    totalQuestionsDisplay.textContent = totalQuestionsAsked;
+    
+    // Display appropriate message based on outcome
+    const gameOverTitle = document.querySelector('#gameOverScreen h2');
+    if (outcome === "WIN") {
+        gameOverTitle.textContent = "Victory!";
+        gameOverTitle.style.color = "#0f0";
+        gameOverScreen.style.borderColor = "#0f0";
+        playSound(powerupSound); // Use powerup sound for win
+    } else {
+        gameOverTitle.textContent = "Game Over!";
+        gameOverTitle.style.color = "#f00";
+        gameOverScreen.style.borderColor = "#f00";
+        playSound(gameOverSound);
+    }
+    
+    gameOverScreen.style.display = 'block';
+    
+    // Stop background music
+    try {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+    } catch (e) {
+        console.warn('Error stopping background music:', e);
+    }
+}
+
+// Game restart handling
+restartButton.addEventListener('click', () => {
+    gameOverScreen.style.display = 'none';
+    // Reset everything
+    resetGameState();
+    
+    // Initialize and start
+    initializeGameState();
+    initEnemies();
+    
+    try {
+        if (soundEnabled) {
+            backgroundMusic.currentTime = 0;
+            backgroundMusic.play().catch(e => console.warn('Error playing music:', e));
+        }
+    } catch (e) {
+        console.warn('Error playing background music:', e);
+    }
+    
+    // Start with initial quiz
+    gameActive = true;
+    gameRunning = false;
+    showInitialQuiz();
+});
+
+// Back to menu button handler
+backToMenuButton.addEventListener('click', () => {
+    gameOverScreen.style.display = 'none';
+    showIntroScreen();
+});
+
+// Pause button handler
+pauseBtn.addEventListener('click', togglePause);
+
+// Help button handler
+helpBtn.addEventListener('click', () => {
+    helpScreen.style.display = 'block';
+    if (gameRunning) {
+        togglePause();
+    }
+});
+
+closeHelpBtn.addEventListener('click', () => {
+    helpScreen.style.display = 'none';
+});
+
+// Sound toggle handling
+soundBtn.addEventListener('click', toggleSound);
+
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    soundBtn.textContent = soundEnabled ? '🔊 Sound' : '🔇 Muted';
+    
+    try {
+        if (soundEnabled) {
+            if (gameRunning && !gamePaused) {
+                backgroundMusic.play().catch(e => console.warn('Error playing music:', e));
+            }
+        } else {
+            backgroundMusic.pause();
+        }
+    } catch (e) {
+        console.warn('Error toggling sound:', e);
+    }
+}
+
+// Toggle pause state
+function togglePause() {
+    gamePaused = !gamePaused;
+    
+    if (gamePaused) {
+        pauseScreen.style.display = 'block';
+        gameRunning = false;
+        try {
+            backgroundMusic.pause();
+        } catch (e) {
+            console.warn('Error pausing music:', e);
+        }
+    } else {
+        pauseScreen.style.display = 'none';
+        gameRunning = true;
+        try {
+            if (soundEnabled) {
+                backgroundMusic.play().catch(e => console.warn('Error resuming music:', e));
+            }
+        } catch (e) {
+            console.warn('Error resuming music:', e);
+        }
+    }
+}
+
+// Resume and quit buttons in pause screen
+resumeButton.addEventListener('click', () => {
+    togglePause();
+});
+
+quitButton.addEventListener('click', () => {
+    pauseScreen.style.display = 'none';
+    gamePaused = false;
+    gameRunning = false;
+    gameActive = false;
+    
+    try {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+    } catch (e) {
+        console.warn('Error stopping music:', e);
+    }
+    
+    showIntroScreen();
+});
+
+// Keyboard event handlers
+const keys = { left: false, right: false, space: false };
+
+window.addEventListener('keydown', e => {
+    if (e.key === 'p' || e.key === 'P') {
+        // Only toggle pause if game is active
+        if (gameActive && quizContainer.style.display === 'none') {
+            togglePause();
+        }
+    } else if (e.key === 'm' || e.key === 'M') {
+        toggleSound();
+    } else if (e.key === 'h' || e.key === 'H') {
+        if (gameActive) {
+            helpScreen.style.display = 'block';
+            if (gameRunning) {
+                togglePause();
+            }
+        }
+    }
+
+    if (!gameRunning || gamePaused) return; // Ignore gameplay inputs when paused
+
+    if (e.key === 'ArrowLeft') keys.left = true;
+    if (e.key === 'ArrowRight') keys.right = true;
+    if (e.key === ' ') keys.space = true;
+});
+
+document.addEventListener('keyup', e => {
+    if (!gameRunning || gamePaused) return; // Ignore gameplay inputs when paused
+    
+    if (e.key === 'ArrowLeft') keys.left = false;
+    if (e.key === 'ArrowRight') keys.right = false;
+    if (e.key === ' ') keys.space = false;
+});
+
+// Mouse events
+let isMousePressed = false;
+
+canvas.addEventListener('mousedown', (e) => {
+    if (!gameRunning || gamePaused) return; // Ignore inputs when paused
+    isMousePressed = true;
+    keys.space = true; // Simulate spacebar shooting
+});
+
+canvas.addEventListener('mouseup', () => {
+    if (!gameRunning || gamePaused) return;
+    isMousePressed = false;
+    keys.space = false;
+});
+
+canvas.addEventListener('mouseleave', () => {
+    if (!gameRunning || gamePaused) return;
+    isMousePressed = false;
+    keys.space = false;
+});
+
+canvas.addEventListener('mousemove', e => {
+    if (!gameRunning || gamePaused) return; // Prevent ship movement when game is paused
+    
+    let rect = canvas.getBoundingClientRect();
+    let mouseX = e.clientX - rect.left;
+    
+    // Move player ship to mouse X position
+    player.x = mouseX - player.width / 2;
+    
+    // Keep player within game boundaries
+    if (player.x < 0) player.x = 0;
+    if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+});
+
+// Touch events for mobile
+let isTouching = false;
+let touchStartX = 0;
+
+canvas.addEventListener('touchstart', e => {
+    if (!gameRunning || gamePaused) return;
+    
+    e.preventDefault(); // Prevent browser from handling the touch
+    if (e.touches.length === 1) {
+        isTouching = true;
+        touchStartX = e.touches[0].clientX;
+        keys.space = true; // Shoot when touching
+    }
+}, {passive: false});
+
+canvas.addEventListener('touchmove', e => {
+    if (!gameRunning || gamePaused) return;
+    
+    e.preventDefault(); // Prevent scrolling
+    if (isTouching && e.touches.length === 1) {
+        let touchX = e.touches[0].clientX;
+        let deltaX = touchX - touchStartX;
+        touchStartX = touchX;
+        
+        // Move player ship based on touch movement
+        player.x += deltaX;
+        
+        // Keep player within boundaries
+        if (player.x < 0) player.x = 0;
+        if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+    if (!gameRunning || gamePaused) return;
+    
+    e.preventDefault();
+    if (isTouching) {
+        isTouching = false;
+        keys.space = false; // Stop shooting when touch ends
+    }
+}, {passive: false});
+// Create particle effects
+function createExplosionParticles(x, y, count, color) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x: x,
+            y: y,
+            size: 1 + Math.random() * 3,
+            speed: 1 + Math.random() * 3,
+            angle: Math.random() * Math.PI * 2,
+            color: color || '#f80',
+            alpha: 1,
+            life: 30 + Math.random() * 20
+        });
+    }
+}
+
+// Update particles
+function updateParticles(deltaTime) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += Math.cos(p.angle) * p.speed * (deltaTime / 16.67);
+        p.y += Math.sin(p.angle) * p.speed * (deltaTime / 16.67);
+        p.alpha -= 0.02 * (deltaTime / 16.67);
+        p.life -= 1 * (deltaTime / 16.67);
+        
+        if (p.alpha <= 0 || p.life <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+}
+
+// Draw particles
+function drawParticles() {
+    for (let i = 0; i < particles.length; i++) {
+        let p = particles[i];
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+}
+
+// Initialize stars
+function initStars() {
+    stars = [];
+    for (let i = 0; i < 100; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2 + 0.5, // Slightly larger stars
+            speed: Math.random() * 0.5 + 0.5
+        });
+    }
+}
+
+// Update stars
+function updateStars(deltaTime) {
+    for (let i = 0; i < stars.length; i++) {
+        let star = stars[i];
+        
+        // Parallax effect - stars move at different speeds based on size
+        star.y += star.speed * (deltaTime / 16.67); 
+        
+        // Twinkle effect for some stars
+        if (Math.random() < 0.001) {
+            star.size = Math.random() * 2 + 0.5;
+        }
+        
+        // If the star moves off the bottom of the screen, reset it at the top
+        if (star.y > canvas.height) {
+            star.y = 0;
+            star.x = Math.random() * canvas.width;
+            star.size = Math.random() * 2 + 0.5;
+            star.speed = Math.random() * 0.5 + 0.5;
+        }
+    }
+    
+    // Occasionally add a shooting star
+    if (Math.random() < 0.005 && shootingStars.length < 3) {
+        shootingStars.push({
+            x: Math.random() * canvas.width,
+            y: 0,
+            length: 30 + Math.random() * 30,
+            speed: 3 + Math.random() * 3,
+            angle: Math.PI / 4 + (Math.random() * Math.PI / 4)
+        });
+    }
+}
+
+// Draw stars
+function drawStars() {
+    for (let i = 0; i < stars.length; i++) {
+        let star = stars[i];
+        
+        // Create twinkling effect
+        const twinkle = 0.7 + (Math.sin(Date.now() * 0.003 + i) * 0.3);
+        
+        // Different star colors based on size
+        if (star.size < 1) {
+            ctx.fillStyle = `rgba(200, 200, 255, ${twinkle})`;
+        } else if (star.size < 1.5) {
+            ctx.fillStyle = `rgba(220, 220, 255, ${twinkle})`;
+        } else {
+            ctx.fillStyle = `rgba(255, 255, 255, ${twinkle})`;
+        }
+        
+        // Draw the star
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+// Initialize asteroids
+function initAsteroids() {
+    asteroids = [];
+    for (let i = 0; i < 5; i++) {
+        asteroids.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: 30 + Math.random() * 20,
+            speed: 1 + Math.random(),
+            direction: Math.random() * Math.PI * 2,
+            rotation: 0,
+            rotationSpeed: (Math.random() - 0.5) * 0.02,
+            isExploding: false,
+            explosionTimer: 0
+        });
+    }
+}
+
+// Initialize shooting stars
+function initShootingStars() {
+    shootingStars = [];
+}
+
+// Update shooting stars
+function updateShootingStars(deltaTime) {
+    for (let i = shootingStars.length - 1; i >= 0; i--) {
+        let star = shootingStars[i];
+        
+        // Calculate velocity components from angle and speed
+        const speedX = Math.cos(star.angle) * star.speed;
+        const speedY = Math.sin(star.angle) * star.speed;
+        
+        // Update position
+        star.x += speedX * (deltaTime / 16.67);
+        star.y += speedY * (deltaTime / 16.67);
+        
+        // Create trail particles
+        if (Math.random() < 0.3) {
+            particles.push({
+                x: star.x,
+                y: star.y,
+                size: 1 + Math.random(),
+                speed: 0.2,
+                angle: Math.random() * Math.PI * 2,
+                color: '#fff',
+                alpha: 0.7,
+                life: 30 + Math.random() * 20
+            });
+        }
+        
+        // Remove if off screen
+        if (star.x > canvas.width + 100 || star.y > canvas.height + 100 || star.x < -100) {
+            shootingStars.splice(i, 1);
+        }
+    }
+}
+
+// Draw shooting stars
+function drawShootingStars() {
+    for (let i = 0; i < shootingStars.length; i++) {
+        let star = shootingStars[i];
+        
+        // Draw the shooting star as a line with gradient
+        ctx.save();
+        
+        // Create linear gradient for the tail
+        const gradient = ctx.createLinearGradient(
+            star.x, 
+            star.y, 
+            star.x - Math.cos(star.angle) * star.length,
+            star.y - Math.sin(star.angle) * star.length
+        );
+        
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+        gradient.addColorStop(0.3, 'rgba(100, 255, 255, 0.5)');
+        gradient.addColorStop(1, 'rgba(100, 255, 255, 0)');
+        
+        // Draw shooting star tail
+        ctx.beginPath();
+        ctx.moveTo(star.x, star.y);
+        ctx.lineTo(
+            star.x - Math.cos(star.angle) * star.length,
+            star.y - Math.sin(star.angle) * star.length
+        );
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = gradient;
+        ctx.stroke();
+        
+        // Draw star head
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        
+        ctx.restore();
+    }
+}
+
+// Initialize explosions
+function initExplosions() {
+    explosions = [];
+}
+
+// Update explosions
+function updateExplosions(deltaTime) {
+    for (let i = explosions.length - 1; i >= 0; i--) {
+        let explosion = explosions[i];
+        
+        // Count down timer
+        explosion.timer -= deltaTime;
+        
+        // Update animation frame
+        if (explosion.totalFrames) {
+            // Advance frame based on timer
+            explosion.currentFrame = Math.min(
+                Math.floor((1 - explosion.timer / 500) * explosion.totalFrames),
+                explosion.totalFrames - 1
+            );
+        }
+        
+        // Remove explosion when timer runs out
+        if (explosion.timer <= 0) {
+            explosions.splice(i, 1);
+        }
+    }
+}
+
+// Draw explosions
+function drawExplosions() {
+    for (let i = 0; i < explosions.length; i++) {
+        let explosion = explosions[i];
+        
+        // If using spritesheet animation
+        if (explosion.currentFrame !== undefined) {
+            // For a spritesheet, we would use this code:
+            // const frameWidth = explosionImage.width / explosion.totalFrames;
+            // ctx.drawImage(
+            //    explosionImage, 
+            //    frameWidth * explosion.currentFrame, 0, frameWidth, explosionImage.height,
+            //    explosion.x - explosion.size/2, explosion.y - explosion.size/2, 
+            //    explosion.size, explosion.size
+            // );
+            
+            // Since we're using a single image, simulate animation with scale and opacity
+            const progress = explosion.currentFrame / (explosion.totalFrames - 1);
+            const scale = 1 + progress * 0.5; // Grows slightly as animation progresses
+            const opacity = 1 - progress; // Fades out as animation progresses
+            
+            ctx.save();
+            ctx.globalAlpha = opacity;
+            ctx.drawImage(
+                explosionImage, 
+                explosion.x - (explosion.size * scale)/2, 
+                explosion.y - (explosion.size * scale)/2, 
+                explosion.size * scale, 
+                explosion.size * scale
+            );
+            ctx.restore();
+        } else {
+            // Fallback to static explosion
+            ctx.drawImage(
+                explosionImage, 
+                explosion.x - explosion.size/2, 
+                explosion.y - explosion.size/2, 
+                explosion.size, 
+                explosion.size
+            );
+        }
+    }
+}
+// Initialize enemies
+function initEnemies() {
+    enemies = [];
+    enemyBullets = [];
+    
+    // Adjust enemy configuration based on wave and difficulty
+    let rows = 4 + Math.min(Math.floor(currentWave / 3), 2); // Max 6 rows
+    let cols = 7 + Math.min(Math.floor(currentWave / 2), 3); // Max 10 cols
+    
+    // Scale speed based on wave and difficulty
+    let baseSpeed = 1 + (currentWave * 0.1);
+    let enemySpeed = baseSpeed * enemySpeedMultiplier;
+    
+    // Scale shoot interval based on wave and difficulty
+    let waveAdjustedInterval = Math.max(2000, enemyShootInterval - (currentWave * 300));
+    
+    // Increase chance of special enemies based on wave
+    let specialEnemyChance = 0.08 + (currentWave * 0.02);
+    if (specialEnemyChance > 0.35) specialEnemyChance = 0.35; // Cap at 35%
+    
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            let isSpecial = Math.random() < specialEnemyChance;
+            const enemyType = isSpecial ? enemyTypes[3] : enemyTypes[Math.floor(Math.random() * 3)];
+            
+            enemies.push({
+                x: 80 + j * 80,
+                y: 50 + i * 50,
+                width: 40,
+                height: 40,
+                type: enemyType,
+                alive: true,
+                health: isSpecial ? currentWave + 1 : currentWave, // Special enemies have more health
+                dx: enemySpeed * (Math.random() > 0.5 ? 1 : -1), // Random initial direction
+                dy: 0,
+                shootTimer: Math.random() * waveAdjustedInterval,
+                flashTimer: 0, // For hit feedback
+                waveSine: Math.random() * Math.PI * 2, // For wave motion
+                waveAmplitude: isSpecial ? 0.5 + Math.random() * 0.5 : 0 // Only special enemies wave
+            });
+        }
+    }
+    
+    // Update wave display
+    waveDisplay.textContent = `Wave: ${currentWave}`;
+    
+    // Play level up sound for waves after the first
+    if (currentWave > 1) {
+        playSound(levelUpSound);
+    }
+}
+
+// This function was missing - crucial for game functionality
+function runGameLogic(deltaTime) {
+    // Update player ship
+    updatePlayer(deltaTime);
+    
+    // Update enemies
+    updateEnemies(deltaTime);
+    
+    // Update bullets
+    updatePlayerBullets(deltaTime);
+    updateEnemyBullets(deltaTime);
+    
+    // Update power-up items
+    updatePowerUpItems(deltaTime);
+    
+    // Update active powerups
+    updateActivePowerups(deltaTime);
+    
+    // Check for wave completion
+    checkWaveCompletion();
+}
+
+// Update player ship
+function updatePlayer(deltaTime) {
+    // Move player based on keyboard input
+    if (keys.left) {
+        player.x -= player.speed * (deltaTime / 16.67);
+    }
+    if (keys.right) {
+        player.x += player.speed * (deltaTime / 16.67);
+    }
+    
+    // Keep player within game boundaries
+    if (player.x < 0) player.x = 0;
+    if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+    
+    // Handle player invulnerability timer
+    if (player.invulnerable) {
+        player.invulnerableTimer -= deltaTime;
+        if (player.invulnerableTimer <= 0) {
+            player.invulnerable = false;
+        }
+    }
+    
+    // Handle shooting cooldown
+    if (player.shootCooldown > 0) {
+        player.shootCooldown -= deltaTime;
+    }
+    
+    // Player shooting based on shoot interval (adjusted for rapid fire powerup)
+    const currentShootInterval = player.powerups.rapidFire ? player.shootInterval / 3 : player.shootInterval;
+    
+    if (keys.space && player.shootCooldown <= 0) {
+        // Create new bullet
+        let bulletWidth = 3;
+        let bulletHeight = 15;
+        
+        player.bullets.push({
+            x: player.x + player.width / 2 - bulletWidth / 2,
+            y: player.y - bulletHeight,
+            width: bulletWidth,
+            height: bulletHeight,
+            speed: 10,
+            damage: player.powerups.doubleDamage ? 2 : 1
+        });
+        
+        // Reset cooldown
+        player.shootCooldown = currentShootInterval;
+        
+        // Play shoot sound
+        playSound(shootSound);
+    }
+    
+    // Draw player ship
+    drawPlayer();
+}
+
+// Draw player ship
+function drawPlayer() {
+    // If player is invulnerable, flicker the ship
+    if (player.invulnerable && Math.floor(Date.now() / 100) % 2 === 0) {
+        return; // Skip drawing to create flicker effect
+    }
+    
+    // Draw shield effect if active
+    if (player.powerups.shield) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(
+            player.x + player.width/2, 
+            player.y + player.height/2, 
+            player.width * 0.75, 
+            0, 
+            Math.PI * 2
+        );
+        ctx.strokeStyle = '#0ff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Add glow effect
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#0ff';
+        ctx.stroke();
+        ctx.restore();
+    }
+    
+    // Draw the player ship image
+    ctx.drawImage(
+        playerShipImage, 
+        player.x, 
+        player.y, 
+        player.width, 
+        player.height
+    );
+    
+    // Add engine flame effect
+    ctx.save();
+    ctx.beginPath();
+    
+    // Flame shape varies slightly with time for animation
+    const flameHeight = 15 + Math.sin(Date.now() * 0.01) * 5;
+    const flameWidth = 10 + Math.sin(Date.now() * 0.02) * 2;
+    
+    ctx.moveTo(player.x + player.width/2, player.y + player.height);
+    ctx.quadraticCurveTo(
+        player.x + player.width/2 - flameWidth/2, 
+        player.y + player.height + flameHeight/2,
+        player.x + player.width/2, 
+        player.y + player.height + flameHeight
+    );
+    ctx.quadraticCurveTo(
+        player.x + player.width/2 + flameWidth/2, 
+        player.y + player.height + flameHeight/2,
+        player.x + player.width/2, 
+        player.y + player.height
+    );
+    
+    // Create gradient for flame
+    const gradient = ctx.createLinearGradient(
+        player.x + player.width/2, 
+        player.y + player.height,
+        player.x + player.width/2, 
+        player.y + player.height + flameHeight
+    );
+    gradient.addColorStop(0, '#f80');
+    gradient.addColorStop(0.5, '#f00');
+    gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    ctx.restore();
+}
+
+// Update enemies
+function updateEnemies(deltaTime) {
+    let allEnemiesMoveDown = false;
+    let enemiesAtEdge = false;
+    
+    // Check if any enemy is at screen edge
+    for (let i = 0; i < enemies.length; i++) {
+        const enemy = enemies[i];
+        if (!enemy.alive) continue;
+        
+        if ((enemy.x <= 10 && enemy.dx < 0) || 
+            (enemy.x >= canvas.width - enemy.width - 10 && enemy.dx > 0)) {
+            enemiesAtEdge = true;
+            break;
+        }
+    }
+    
+    // If enemies hit edge, reverse direction and move down
+    if (enemiesAtEdge) {
+        allEnemiesMoveDown = true;
+        for (let i = 0; i < enemies.length; i++) {
+            if (enemies[i].alive) {
+                enemies[i].dx *= -1;
+            }
+        }
+    }
+    
+    // Update each enemy
+    for (let i = 0; i < enemies.length; i++) {
+        let enemy = enemies[i];
+        if (!enemy.alive) continue;
+        
+        // Move horizontally
+        enemy.x += enemy.dx * (deltaTime / 16.67);
+        
+        // Move down if needed
+        if (allEnemiesMoveDown) {
+            enemy.y += 20;
+        }
+        
+        // Add wave motion for special enemies
+        if (enemy.waveAmplitude > 0) {
+            enemy.waveSine += 0.05 * (deltaTime / 16.67);
+            enemy.y += Math.sin(enemy.waveSine) * enemy.waveAmplitude;
+        }
+        
+        // Update shoot timer and fire if ready
+        enemy.shootTimer -= deltaTime;
+        if (enemy.shootTimer <= 0) {
+            // Only shoot if in view
+            if (enemy.y > 0 && enemy.y < canvas.height) {
+                // Create enemy bullet
+                const bulletWidth = enemy.type.isSpecial ? 10 : 5;
+                const bulletHeight = enemy.type.isSpecial ? 10 : 10;
+                
+                enemyBullets.push({
+                    x: enemy.x + enemy.width/2 - bulletWidth/2,
+                    y: enemy.y + enemy.height,
+                    width: bulletWidth,
+                    height: bulletHeight,
+                    speed: enemy.type.isSpecial ? 4 : 3,
+                    special: enemy.type.isSpecial,
+                    damage: enemy.type.isSpecial ? 20 : 10
+                });
+            }
+            
+            // Reset timer (random interval between min and max)
+            const baseInterval = enemyShootInterval * (enemy.type.isSpecial ? 0.8 : 1);
+            enemy.shootTimer = baseInterval * (0.8 + Math.random() * 0.4);
+        }
+        
+        // Update flash timer
+        if (enemy.flashTimer > 0) {
+            enemy.flashTimer -= deltaTime;
+        }
+        
+        // Draw the enemy
+        drawEnemy(enemy);
+    }
+}
+
+// Draw enemy ship
+function drawEnemy(enemy) {
+    // Draw flashing effect when hit
+    if (enemy.flashTimer > 0 && Math.floor(Date.now() / 50) % 2 === 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        ctx.restore();
+        return;
+    }
+    
+    // Draw special enemy with flashing effect
+    if (enemy.type.isSpecial) {
+        ctx.save();
+        
+        // Pulsating glow for special enemies
+        const pulseIntensity = (Math.sin(Date.now() * 0.01) + 1) * 0.5;
+        ctx.shadowBlur = 10 + pulseIntensity * 5;
+        ctx.shadowColor = enemy.type.color;
+        
+        // Draw the enemy with the special image
+        ctx.drawImage(
+            specialEnemyShipImage,
+            enemy.x,
+            enemy.y,
+            enemy.width,
+            enemy.height
+        );
+        
+        ctx.restore();
+    } else {
+        // Draw regular enemy
+        ctx.drawImage(
+            enemyShipImage,
+            enemy.x,
+            enemy.y,
+            enemy.width,
+            enemy.height
+        );
+    }
+}
+// Update enemy bullets
+function updateEnemyBullets(deltaTime) {
+    for (let i = enemyBullets.length - 1; i >= 0; i--) {
+        let bullet = enemyBullets[i];
+        bullet.y += bullet.speed * (deltaTime / 16.67);
+        
+        // Draw different bullet types
+        if (bullet.special) {
+            // Special enemy bullets are larger and have a glow effect
+            ctx.save();
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#f0f';
+            ctx.fillStyle = '#f0f';
+            ctx.beginPath();
+            ctx.arc(bullet.x, bullet.y, bullet.width/2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.restore();
+            
+            // Add trail particles for special bullets
+            if (Math.random() < 0.3) {
+                particles.push({
+                    x: bullet.x,
+                    y: bullet.y,
+                    size: 1 + Math.random() * 2,
+                    speed: 0.5,
+                    angle: Math.random() * Math.PI * 2,
+                    color: '#f0f',
+                    alpha: 0.7,
+                    life: 20
+                });
+            }
+        } else {
+            // Regular enemy bullets
+            ctx.fillStyle = '#f00';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        }
+
+        // Check collision with player
+        if (
+            bullet.x < player.x + player.width && 
+            bullet.x + bullet.width > player.x &&
+            bullet.y < player.y + player.height && 
+            bullet.y + bullet.height > player.y
+        ) {
+            // Check if player has shield or is invulnerable
+            if (!player.powerups.shield && !player.invulnerable) {
+                // Apply damage
+                player.health -= bullet.damage || 10;
+                updateHealthBar();
+                
+                // Create hit effect
+                createExplosionParticles(
+                    bullet.x, 
+                    bullet.y, 
+                    10, 
+                    bullet.special ? '#f0f' : '#f00'
+                );
+                
+                // Play sound
+                playSound(explosionSound);
+                
+                // Make player briefly invulnerable after hit
+                player.invulnerable = true;
+                player.invulnerableTimer = 1000; // 1 second of invulnerability
+                
+                // Check if player is dead
+                if (player.health <= 0) {
+                    handleGameOver();
+                }
+            } else {
+                // Shield blocks the shot - create shield impact effect
+                createExplosionParticles(
+                    bullet.x, 
+                    bullet.y, 
+                    5, 
+                    '#0ff'
+                );
+            }
+            
+            // Remove the bullet
+            enemyBullets.splice(i, 1);
+            continue;
+        }
+
+        // Remove bullets that go off screen
+        if (bullet.y > canvas.height + 20) {
+            enemyBullets.splice(i, 1);
+        }
+    }
+}
+
+// Update power-up items
+function updatePowerUpItems(deltaTime) {
+    for (let i = powerUpItems.length - 1; i >= 0; i--) {
+        let item = powerUpItems[i];
+        
+        // Update position
+        item.y += item.dy * (deltaTime / 16.67);
+        
+        // Add rotation effect for visual appeal
+        if (item.rotation !== undefined) {
+            item.rotation += item.rotationSpeed * (deltaTime / 16.67);
+        }
+        
+        // Draw powerup with rotation
+        ctx.save();
+        ctx.translate(item.x + item.width/2, item.y + item.height/2);
+        if (item.rotation !== undefined) {
+            ctx.rotate(item.rotation);
+        }
+        
+        // Add glow effect for powerups
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#0ff';
+        
+        // Draw the image centered
+        ctx.drawImage(
+            powerupImage, 
+            -item.width/2, 
+            -item.height/2, 
+            item.width, 
+            item.height
+        );
+        ctx.restore();
+        
+        // Add sparkle particles occasionally
+        if (Math.random() < 0.1) {
+            particles.push({
+                x: item.x + Math.random() * item.width,
+                y: item.y + Math.random() * item.height,
+                size: 1 + Math.random() * 1.5,
+                speed: 0.5,
+                angle: Math.random() * Math.PI * 2,
+                color: '#fff',
+                alpha: 0.7,
+                life: 30
+            });
+        }
+
+        // Check collision with player
+        if (
+            item.x < player.x + player.width && 
+            item.x + item.width > player.x &&
+            item.y < player.y + player.height && 
+            item.y + item.height > player.y
+        ) {
+            // Remove the powerup
+            powerUpItems.splice(i, 1);
+            
+            // Create collection effect
+            createExplosionParticles(
+                item.x + item.width/2, 
+                item.y + item.height/2, 
+                15, 
+                '#0ff'
+            );
+            
+            // Pause game and show quiz
+            gameRunning = false; 
+            showQuizForEvent('collectPowerup');
+            playSound(powerupSound);
+            continue;
+        }
+
+        // Remove if off screen
+        if (item.y > canvas.height + 20) {
+            powerUpItems.splice(i, 1);
+        }
+    }
+}
+
+// Update active powerups
+function updateActivePowerups(deltaTime) {
+    for (let i = activePowerups.length - 1; i >= 0; i--) {
+        let powerup = activePowerups[i];
+        
+        // Decrease remaining time
+        powerup.remainingTime -= deltaTime;
+        
+        // Draw countdown indicator around player for active powerups
+        if (powerup.type === 'shield' && player.powerups.shield) {
+            // Shield powerup visual countdown - pulsing effect
+            const pulseRate = 0.005;
+            const baseSize = 35;
+            const pulseAmount = 5;
+            const remainingRatio = powerup.remainingTime / 10000; // 10 seconds total
+            const pulseSize = baseSize + Math.sin(Date.now() * pulseRate) * pulseAmount;
+            
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(
+                player.x + player.width/2, 
+                player.y + player.height/2, 
+                pulseSize, 
+                0, 
+                Math.PI * 2 * remainingRatio
+            );
+            ctx.strokeStyle = '#0ff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // Warning flash when powerup about to expire (< 2 seconds)
+        if (powerup.remainingTime < 2000 && Math.floor(Date.now() / 200) % 2 === 0) {
+            // Create visual indicator - small particles at player position
+            const colors = {
+                'shield': '#0ff',
+                'rapidFire': '#ff0',
+                'doubleDamage': '#f88'
+            };
+            
+            if (Math.random() < 0.2) {
+                particles.push({
+                    x: player.x + Math.random() * player.width,
+                    y: player.y + Math.random() * player.height,
+                    size: 1 + Math.random() * 1.5,
+                    speed: 1,
+                    angle: Math.random() * Math.PI * 2,
+                    color: colors[powerup.type] || '#fff',
+                    alpha: 0.7,
+                    life: 20
+                });
+            }
+        }
+
+        // Remove expired powerups
+        if (powerup.remainingTime <= 0) {
+            player.powerups[powerup.type] = false;
+            activePowerups.splice(i, 1);
+            updatePowerupsDisplay();
+            
+            // Create expiration effect
+            createExplosionParticles(
+                player.x + player.width/2, 
+                player.y + player.height/2, 
+                10, 
+                '#888'
+            );
+        }
+    }
+}
+
+// Check for wave completion
+function checkWaveCompletion() {
+    // If all enemies are destroyed, move to next wave
+    if (!enemies.some(e => e.alive)) {
+        // Increase wave counter
+        currentWave++;
+        
+        // Show wave completed quiz
+        gameRunning = false;
+        // Make sure player is not being damaged during wave transition
+        player.invulnerable = true;
+        player.invulnerableTimer = 3000;
+        
+        // Show quiz - completion triggers initEnemies for next wave
+        showQuizForEvent('wave');
+    }
+}
+
+// Show quiz for game events
+function showQuizForEvent(eventType, numberOfQuestions = 1) {
+    let available = questions.filter(q => !usedQuestions.includes(q));
+    
+    // Filter by active categories if needed
+    if (activeCategories.size > 0) {
+        available = available.filter(q => 
+            !q.category || activeCategories.has(q.category));
+    }
+    
+    if (available.length === 0) {
+        handleGameOver("WIN"); // Win if all questions used
+        return;
+    }
+
+    // Limit number of questions to what's available
+    if (available.length < numberOfQuestions) {
+        numberOfQuestions = available.length;
+    }
+
+    // Always pause gameplay during quiz for better concentration
+    gameRunning = false;
+    
+    // Reset quiz session
+    quizSession = [];
+    quizQuestionIndex = 0;
+
+    // Get questions based on event type
+    for (let i = 0; i < numberOfQuestions; i++) {
+        let q = getRandomQuestion();
+        if (!q) break;
+        quizSession.push(q);
+    }
+
+    if (quizSession.length === 0) {
+        handleGameOver("WIN");
+        return;
+    }
+
+    // Display first question
+    displayQuizQuestion(eventType);
+    
+    // Play quiz sound
+    playSound(quizSound);
+    
+    // Show appropriate message based on event type
+    let eventMessage;
+    switch(eventType) {
+        case 'destroySpecial':
+            eventMessage = "Special Enemy Destroyed!";
+            break;
+        case 'destroy5Normal':
+            eventMessage = "Combat Efficiency Bonus!";
+            break;
+        case 'collectPowerup':
+            eventMessage = "Power-up Collected!";
+            break;
+        case 'wave':
+            eventMessage = `Wave ${currentWave - 1} Completed!`;
+            break;
+        case 'initial':
+            eventMessage = "Ready For Battle!";
+            break;
+        default:
+            eventMessage = "Quiz Time!";
+    }
+    
+    // Show event message before quiz appears
+    showPowerupMessage(eventMessage);
+}
+
+// Draw asteroids 
+function drawAsteroids() {
+    for (let i = 0; i < asteroids.length; i++) {
+        let asteroid = asteroids[i];
+        
+        // Skip drawing if exploding (explosion is handled separately)
+        if (asteroid.isExploding) {
+            continue;
+        }
+        
+        // Draw with rotation for more dynamic appearance
+        ctx.save();
+        ctx.translate(
+            asteroid.x + asteroid.size/2, 
+            asteroid.y + asteroid.size/2
+        );
+        ctx.rotate(asteroid.rotation);
+        
+        // Draw the asteroid image centered
+        ctx.drawImage(
+            asteroidImage, 
+            -asteroid.size/2, 
+            -asteroid.size/2, 
+            asteroid.size, 
+            asteroid.size
+        );
+        
+        ctx.restore();
+    }
+}
+// Update asteroids
+function updateAsteroids(deltaTime) {
+    for (let i = asteroids.length - 1; i >= 0; i--) {
+        let asteroid = asteroids[i];
+
+        if (asteroid.isExploding) {
+            // Count down the explosion timer
+            asteroid.explosionTimer -= deltaTime;
+            
+            // If explosion is finished, remove the asteroid
+            if (asteroid.explosionTimer <= 0) {
+                asteroids.splice(i, 1);
+            }
+            
+            // Skip moving/rotating if it's exploding
+            continue;
+        }
+
+        // Update position
+        asteroid.x += Math.cos(asteroid.direction) * asteroid.speed * (deltaTime / 16.67);
+        asteroid.y += Math.sin(asteroid.direction) * asteroid.speed * (deltaTime / 16.67);
+        
+        // Update rotation
+        asteroid.rotation += asteroid.rotationSpeed * (deltaTime / 16.67);
+
+        // Wrap around screen edges with some margin
+        const margin = asteroid.size * 2;
+        if (asteroid.x < -margin) asteroid.x = canvas.width + margin / 2;
+        if (asteroid.x > canvas.width + margin) asteroid.x = -margin / 2;
+        if (asteroid.y < -margin) asteroid.y = canvas.height + margin / 2;
+        if (asteroid.y > canvas.height + margin) asteroid.y = -margin / 2;
+        
+        // Check collision with player if not invulnerable
+        if (!player.invulnerable && !asteroid.isExploding &&
+            asteroid.x < player.x + player.width && 
+            asteroid.x + asteroid.size > player.x &&
+            asteroid.y < player.y + player.height && 
+            asteroid.y + asteroid.size > player.y) {
+            
+            if (!player.powerups.shield) {
+                // Damage player
+                player.health -= 15; // Asteroids do significant damage
+                updateHealthBar();
+                
+                // Make player briefly invulnerable
+                player.invulnerable = true;
+                player.invulnerableTimer = 1500;
+                
+                // Create hit effect
+                createExplosionParticles(
+                    player.x + player.width/2, 
+                    player.y + player.height/2, 
+                    20, 
+                    '#f00'
+                );
+                
+                playSound(explosionSound);
+                
+                // Check if player is dead
+                if (player.health <= 0) {
+                    handleGameOver();
+                }
+            }
+            
+            // Start asteroid explosion
+            asteroid.isExploding = true;
+            asteroid.explosionTimer = 500;
+            
+            // Create explosion effect
+            explosions.push({
+                x: asteroid.x + asteroid.size / 2,
+                y: asteroid.y + asteroid.size / 2,
+                size: asteroid.size * 1.5,
+                timer: 500,
+                currentFrame: 0,
+                totalFrames: 8
+            });
+            
+            // Create particle effect
+            createExplosionParticles(
+                asteroid.x + asteroid.size / 2,
+                asteroid.y + asteroid.size / 2,
+                25,
+                '#aaa'
+            );
+        }
+    }
+}
+
+// Update player bullets
+function updatePlayerBullets(deltaTime) {
+    for (let i = player.bullets.length - 1; i >= 0; i--) {
+        let bullet = player.bullets[i];
+        bullet.y -= bullet.speed * (deltaTime / 16.67);
+        
+        // Draw bullet with appropriate color
+        let bulletColor = '#fff'; // Default white
+        
+        if (player.powerups.doubleDamage && player.powerups.rapidFire) {
+            bulletColor = '#f0f'; // Purple for both powerups
+        } else if (player.powerups.doubleDamage) {
+            bulletColor = '#f88'; // Red for double damage
+        } else if (player.powerups.rapidFire) {
+            bulletColor = '#0ff'; // Cyan for rapid fire
+        }
+        
+        ctx.fillStyle = bulletColor;
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+        let bulletHit = false;
+
+        // Check bullet collision with enemies
+        for (let j = enemies.length - 1; j >= 0; j--) {
+            let enemy = enemies[j];
+            if (enemy.alive && 
+                bullet.x < enemy.x + enemy.width &&
+                bullet.x + bullet.width > enemy.x &&
+                bullet.y < enemy.y + enemy.height &&
+                bullet.y + bullet.height > enemy.y) {
+                
+                // Calculate damage based on powerups
+                let dmg = bullet.damage || 1;
+                enemy.health -= dmg;
+                
+                // Add flash effect on hit
+                enemy.flashTimer = 200;
+                
+                // Create hit particles
+                createExplosionParticles(
+                    bullet.x + bullet.width/2, 
+                    bullet.y, 
+                    5, 
+                    enemy.type.isSpecial ? '#ff0' : '#f88'
+                );
+                
+                if (enemy.health <= 0) {
+                    enemy.alive = false;
+                    score += enemy.type.points;
+                    scoreDisplay.textContent = `Score: ${score}`;
+                    totalEnemiesDestroyed++;
+                    
+                    // Create explosion effect
+                    createExplosionParticles(
+                        enemy.x + enemy.width/2,
+                        enemy.y + enemy.height/2,
+                        enemy.type.isSpecial ? 30 : 20,
+                        enemy.type.isSpecial ? '#ff0' : '#f80'
+                    );
+                    playSound(explosionSound);
+                    
+                    // Create a new explosion animation
+                    explosions.push({
+                        x: enemy.x + enemy.width/2,
+                        y: enemy.y + enemy.height/2,
+                        size: enemy.width * 1.5,
+                        timer: 500,
+                        currentFrame: 0,
+                        totalFrames: 8
+                    });
+                    
+                    // Handle special enemy destruction - trigger quiz
+                    if (enemy.type.isSpecial) {
+                        gameRunning = false;
+                        showQuizForEvent('destroySpecial');
+                    } else {
+                        // Regular enemy destroyed
+                        destroyedNormalEnemies++;
+                        if (destroyedNormalEnemies >= 5) {
+                            gameRunning = false;
+                            showQuizForEvent('destroy5Normal');
+                            destroyedNormalEnemies = 0;
+                        }
+                        
+                        // Random chance to drop a power-up
+                        if (Math.random() < 0.15) { // 15% chance
+                            powerUpItems.push({
+                                x: enemy.x + enemy.width/2 - 15,
+                                y: enemy.y + enemy.height,
+                                width: 30,
+                                height: 30,
+                                type: 'random',
+                                dy: 2,
+                                rotation: 0,
+                                rotationSpeed: 0.05
+                            });
+                        }
+                    }
+                }
+                
+                // Remove the bullet
+                player.bullets.splice(i, 1);
+                bulletHit = true;
+                break;
+            }
+        }
+
+        if (bulletHit) continue;
+
+        // Check bullet collision with asteroids
+        for (let a = asteroids.length - 1; a >= 0; a--) {
+            let asteroid = asteroids[a];
+            if (!asteroid.isExploding &&
+                bullet.x < asteroid.x + asteroid.size &&
+                bullet.x + bullet.width > asteroid.x &&
+                bullet.y < asteroid.y + asteroid.size &&
+                bullet.y + bullet.height > asteroid.y) {
+                
+                asteroid.isExploding = true;
+                asteroid.explosionTimer = 500;
+                
+                // Create asteroid explosion
+                explosions.push({
+                    x: asteroid.x + asteroid.size / 2,
+                    y: asteroid.y + asteroid.size / 2,
+                    size: asteroid.size * 1.5,
+                    timer: 500,
+                    currentFrame: 0,
+                    totalFrames: 8
+                });
+
+                // Create particle effect
+                createExplosionParticles(
+                    asteroid.x + asteroid.size / 2,
+                    asteroid.y + asteroid.size / 2,
+                    15,
+                    '#aaa'
+                );
+                
+                playSound(explosionSound);
+                
+                // Award small points for asteroid destruction
+                score += 5;
+                scoreDisplay.textContent = `Score: ${score}`;
+                
+                // Remove bullet
+                player.bullets.splice(i, 1);
+                bulletHit = true;
+                break;
+            }
+        }
+
+        // Remove bullets that go off screen
+        if (!bulletHit && bullet.y < -20) {
+            player.bullets.splice(i, 1);
+        }
+    }
+}
+
+// These functions were missing but referenced in the game loop - critical for paused state rendering
+function drawBackgroundStatic() {
+    // Draw stars
+    drawStars();
+    
+    // Draw asteroids
+    drawAsteroids();
+    
+    // Draw shooting stars
+    drawShootingStars();
+}
+
+function drawEnemiesStatic() {
+    // Draw all enemies
+    for (let i = 0; i < enemies.length; i++) {
+        if (enemies[i].alive) {
+            drawEnemy(enemies[i]);
+        }
+    }
+    
+    // Draw enemy bullets
+    for (let i = 0; i < enemyBullets.length; i++) {
+        let bullet = enemyBullets[i];
+        
+        if (bullet.special) {
+            ctx.save();
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#f0f';
+            ctx.fillStyle = '#f0f';
+            ctx.beginPath();
+            ctx.arc(bullet.x, bullet.y, bullet.width/2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.restore();
+        } else {
+            ctx.fillStyle = '#f00';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        }
+    }
+    
+    // Draw power-up items
+    for (let i = 0; i < powerUpItems.length; i++) {
+        let item = powerUpItems[i];
+        
+        ctx.save();
+        ctx.translate(item.x + item.width/2, item.y + item.height/2);
+        if (item.rotation !== undefined) {
+            ctx.rotate(item.rotation);
+        }
+        
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#0ff';
+        
+        ctx.drawImage(
+            powerupImage, 
+            -item.width/2, 
+            -item.height/2, 
+            item.width, 
+            item.height
+        );
+        ctx.restore();
+    }
+}
+
+function drawPlayerStatic() {
+    // Draw player
+    drawPlayer();
+    
+    // Draw player bullets
+    for (let i = 0; i < player.bullets.length; i++) {
+        let bullet = player.bullets[i];
+        
+        let bulletColor = '#fff';
+        
+        if (player.powerups.doubleDamage && player.powerups.rapidFire) {
+            bulletColor = '#f0f';
+        } else if (player.powerups.doubleDamage) {
+            bulletColor = '#f88';
+        } else if (player.powerups.rapidFire) {
+            bulletColor = '#0ff';
+        }
+        
+        ctx.fillStyle = bulletColor;
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    }
+}
+
+function initializeGameState() {
+    updateHealthBar();
+    updatePowerupsDisplay();
+    initStars();
+    initAsteroids();
+    initShootingStars();
+    initExplosions();
+    clearCanvas();
+    
+    // Reset canvas size to ensure proper dimensions
+    resizeCanvas();
+}
+
+// Make sure the canvas size is updated when window resizes
+function resizeCanvas() {
+    // Get container dimensions
+    const container = document.getElementById('gameContainer');
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+    
+    // Set canvas dimensions to match container
+    canvas.width = containerWidth;
+    canvas.height = containerHeight;
+    
+    // Center the player
+    player.x = (canvas.width / 2) - (player.width / 2);
+    player.y = canvas.height - 60;
+}
+
+// Add window resize handler
+window.addEventListener('resize', () => {
+    if (gameActive) {
+        resizeCanvas();
+    }
+});
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function gameLoop(timestamp) {
+    requestAnimationFrame(gameLoop);
+
+    if (!gameActive) {
+        clearCanvas();
+        return;
+    }
+
+    let deltaTime = timestamp - lastFrameTime;
+    lastFrameTime = timestamp;
+
+    // Cap deltaTime to prevent large jumps on tab switch
+    if (deltaTime > 100) deltaTime = 100;
+
+    updateStars(deltaTime);
+    updateAsteroids(deltaTime);
+    updateShootingStars(deltaTime);
+    updateExplosions(deltaTime);
+    updateParticles(deltaTime);
+
+    clearCanvas();
+    drawStars();
+    drawAsteroids();
+    drawShootingStars();
+    drawExplosions();
+    drawParticles();
+
+    if (gameRunning && !gamePaused) {
+        runGameLogic(deltaTime);
+    } else {
+        // Draw static game state when paused or during quiz
+        drawBackgroundStatic();
+        drawEnemiesStatic();
+        drawPlayerStatic();
+    }
+}
+
+// Start the game initialization
+function startFresh() {
+    // Initialize particles array
+    particles = [];
+
+    // Make sure canvas is properly sized
+    resizeCanvas();
+    
+    // Initialize game state
+    initializeGameState();
+
+    // Start the game loop
+    requestAnimationFrame(gameLoop);
+}
+
+// Initial call to start the game
+startFresh();
+</script>
+</body>
+</html>
