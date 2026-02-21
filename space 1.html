@@ -1,0 +1,1624 @@
+<!DOCTYPE html>  
+<html>
+<head>
+    <title>Economics Space Invaders</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Press Start 2P', cursive;
+            color: #fff;
+        }
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            margin: auto;
+            background: #000;
+            overflow: hidden;
+        }
+        #gameCanvas {
+            display: block;
+            background: #000;
+        }
+        .quiz-container, #gameOverScreen, #introScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle at center, rgba(0, 0, 128, 0.9), rgba(0, 0, 64, 0.9));
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            color: #0ff;
+            width: 80%;
+            text-align: center;
+            font-size: 14px;
+            text-shadow: 0 0 5px #0ff;
+            z-index: 3;
+        }
+        .quiz-container h2, #gameOverScreen h2, #introScreen h2 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .quiz-option, #startButton, #restartButton {
+            margin: 10px;
+            padding: 10px 20px;
+            background: #222;
+            border: 2px solid #0ff;
+            color: #0ff;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 80%;
+            transition: background 0.3s, box-shadow 0.3s;
+            font-size: 14px;
+            text-shadow: 0 0 5px #0ff;
+        }
+        .quiz-option:hover, #startButton:hover, #restartButton:hover {
+            background: #333;
+            box-shadow: 0 0 10px #0ff;
+        }
+        #score, #powerups {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 14px;
+            z-index: 1;
+        }
+        #powerups {
+            top: 30px;
+        }
+        #healthBarContainer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 200px;
+            height: 20px;
+            border: 2px solid #0ff;
+            background: #000;
+            z-index: 1;
+        }
+        #healthBar {
+            width: 100%;
+            height: 100%;
+            background: #0f0;
+            transition: width 0.3s, background 0.3s;
+        }
+        #powerupMessage {
+            display: none;
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 64, 0.9);
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            color: #0ff;
+            font-size: 14px;
+            text-align: center;
+            z-index: 2;
+            box-shadow: 0 0 10px #0ff;
+        }
+        /* Game Over Screen Styling */
+        #gameOverScreen {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #f00;
+            color: #f00;
+        }
+        /* Intro Screen Styling */
+        #introScreen {
+            background: rgba(0, 0, 64, 0.9);
+            border: 2px solid #0ff;
+            color: #0ff;
+            padding: 40px;
+        }
+        #introScreen h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #introScreen p {
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .upload-section {
+    margin: 20px;
+    padding: 15px;
+    border: 1px solid #0ff;
+    border-radius: 5px;
+    background: rgba(0, 0, 64, 0.5);
+}
+
+.import-tip {
+    font-size: 12px;
+    color: #0ff;
+    margin-top: 10px;
+    text-align: left;
+}
+.option-input {
+    width: 90%;
+    margin: 5px;
+    padding: 8px;
+    border: 1px solid #0ff;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 5px;
+}
+
+#questionText {
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border: 1px solid #0ff;
+    border-radius: 5px;
+    font-family: inherit;
+}
+
+#correctAnswer {
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border: 1px solid #0ff;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.question-item {
+    border: 1px solid #0ff;
+    margin: 5px;
+    padding: 10px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.delete-btn {
+    color: #f00;
+    border: 1px solid #f00;
+    background: none;
+    padding: 2px 5px;
+    margin-left: 10px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+            </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="score">Score: 0</div>
+        <div id="powerups">Power-ups: None</div>
+        <div id="healthBarContainer">
+            <div id="healthBar"></div>
+        </div>
+        <!-- Intro Screen -->
+        <div id="introScreen">
+            <h2>Economics Space Invaders</h2>
+            <p>Defend the economic system by shooting down invaders and answering economic questions!</p>
+            <button id="startButton">Start Game</button>
+        </div>
+
+<!-- Add this new screen here -->
+<div id="questionManagerScreen" style="display: none;" class="quiz-container">
+    <h2>Question Manager</h2>
+    
+    <div class="upload-section">
+        <h3>Import Questions From:</h3>
+        <button id="downloadExcelTemplateBtn" class="quiz-option">Download Excel Template</button>
+        <button id="importExcelBtn" class="quiz-option">Import Excel File (.xlsx)</button>
+        <button id="downloadWordTemplateBtn" class="quiz-option">Download Word Template</button>
+        <p class="import-tip">
+            Excel Format: Each row should have the question, 4 options, and the correct answer (1-4)<br>
+            Word Format: Use Q: for questions, 1-4: for options, A: for the correct answer (1-4)
+        </p>
+    </div>
+
+    <div id="questionList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;"></div>
+    <button id="addQuestionBtn" class="quiz-option">Add New Question</button>
+    <button id="startGameBtn" class="quiz-option">Start Game</button>
+
+    <!-- Question Form (hidden by default) -->
+    <div id="questionForm" style="display: none;">
+        <h3>Add Question</h3>
+        <textarea id="questionText" placeholder="Enter question" rows="3" style="width: 90%; margin: 10px;"></textarea>
+        <div id="options">
+            <input type="text" placeholder="Option 1" class="option-input">
+            <input type="text" placeholder="Option 2" class="option-input">
+            <input type="text" placeholder="Option 3" class="option-input">
+            <input type="text" placeholder="Option 4" class="option-input">
+        </div>
+        <select id="correctAnswer" style="margin: 10px;">
+            <option value="0">Option 1 is correct</option>
+            <option value="1">Option 2 is correct</option>
+            <option value="2">Option 3 is correct</option>
+            <option value="3">Option 4 is correct</option>
+        </select>
+        <button id="saveQuestionBtn" class="quiz-option">Save Question</button>
+        <button id="cancelQuestionBtn" class="quiz-option">Cancel</button>
+    </div>
+</div>
+        <!-- Quiz Container -->
+        <div class="quiz-container" id="quizContainer">
+            <h2 id="questionText"></h2>
+            <div id="options"></div>
+        </div>
+        <!-- Power-up Message -->
+        <div id="powerupMessage"></div>
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen">
+            <h2>Game Over!</h2>
+            <p>Your score: <span id="finalScore">0</span></p>
+            <button id="restartButton">Restart Game</button>
+        </div>
+            </div>
+
+    <!-- Audio Elements -->
+    <audio id="shootSound" src="shoot.mp3" preload="auto"></audio>
+    <audio id="explosionSound" src="explosion.mp3" preload="auto"></audio>
+    <audio id="powerupSound" src="powerup.mp3" preload="auto"></audio>
+    <audio id="quizSound" src="quiz.mp3" preload="auto"></audio>
+    <audio id="gameOverSound" src="gameover.mp3" preload="auto"></audio>
+    <audio id="backgroundMusic" src="background.mp3" preload="auto" loop></audio>
+    <audio id="correctSound" src="correct.mp3" preload="auto"></audio> <!-- Correct Answer Sound -->
+    <audio id="wrongSound" src="wrong.mp3" preload="auto"></audio> <!-- Wrong Answer Sound -->
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const quizContainer = document.getElementById('quizContainer');
+        const scoreDisplay = document.getElementById('score');
+        const powerupsDisplay = document.getElementById('powerups');
+        const healthBar = document.getElementById('healthBar');
+        const powerupMessage = document.getElementById('powerupMessage');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const restartButton = document.getElementById('restartButton');
+        const introScreen = document.getElementById('introScreen');
+        const startButton = document.getElementById('startButton');
+
+        // Touch Controls
+        
+
+        // Audio Elements
+        const shootSound = document.getElementById('shootSound');
+        const explosionSound = document.getElementById('explosionSound');
+        const powerupSound = document.getElementById('powerupSound');
+        const quizSound = document.getElementById('quizSound');
+        const gameOverSound = document.getElementById('gameOverSound');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const correctSound = document.getElementById('correctSound');
+        const wrongSound = document.getElementById('wrongSound');
+
+        // Game state
+        let score = 0;
+        let gameRunning = false; // Initially false until the game starts
+        let activePowerups = [];
+        let currentWave = 1;
+        let lastFrameTime = performance.now(); // Initialize lastFrameTime
+        let quizSession = []; // To hold quiz questions
+        let quizQuestionIndex = 0; // To track current quiz question
+        let destroyedNormalEnemies = 0; // To track destruction of normal enemies
+        // Question Management System
+const questionManagerScreen = document.getElementById('questionManagerScreen');
+const questionForm = document.getElementById('questionForm');
+const questionList = document.getElementById('questionList');
+const addQuestionBtn = document.getElementById('addQuestionBtn');
+const startGameBtn = document.getElementById('startGameBtn');
+const saveQuestionBtn = document.getElementById('saveQuestionBtn');
+const cancelQuestionBtn = document.getElementById('cancelQuestionBtn');
+// Game Controls System
+const controls = {
+    touchActive: false,
+    mouseActive: false,
+    touchX: 0,
+    mouseX: 0,
+    isShooting: false,
+    sensitivity: 0.8,
+};
+
+// Touch Controls
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    controls.touchActive = true;
+    controls.touchX = touch.clientX - rect.left;
+    
+    // Only trigger shooting if touch is in the bottom third of the screen
+    if (touch.clientY - rect.top > canvas.height * 0.7) {
+        controls.isShooting = true;
+        keys.space = true;
+    }
+});
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (controls.touchActive) {
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        controls.touchX = touch.clientX - rect.left;
+    }
+});
+
+canvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    controls.touchActive = false;
+    controls.isShooting = false;
+    keys.space = false;
+});
+
+// Mouse Controls
+canvas.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    controls.mouseActive = true;
+    controls.mouseX = e.clientX - rect.left;
+    
+    // Only trigger shooting if mouse is in the bottom third of the screen
+    if (e.clientY - rect.top > canvas.height * 0.7) {
+        controls.isShooting = true;
+        keys.space = true;
+    }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    e.preventDefault();
+    if (controls.mouseActive) {
+        const rect = canvas.getBoundingClientRect();
+        controls.mouseX = e.clientX - rect.left;
+    }
+});
+
+canvas.addEventListener('mouseup', (e) => {
+    e.preventDefault();
+    controls.mouseActive = false;
+    controls.isShooting = false;
+    keys.space = false;
+});
+
+// Prevent context menu on right-click
+canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+});
+        // Load images
+        const playerShipImage = new Image();
+        playerShipImage.src = 'playerShip.png'; // Provide your player ship image
+
+        const enemyShipImage = new Image();
+        enemyShipImage.src = 'enemyShip.png'; // Provide your enemy ship image
+
+        const specialEnemyShipImage = new Image();
+        specialEnemyShipImage.src = 'specialEnemyShip.png'; // Provide your special enemy ship image
+
+        const powerupImage = new Image();
+        powerupImage.src = 'powerup.png'; // Provide your power-up image
+
+        const asteroidImage = new Image();
+        asteroidImage.src = 'asteroid.png'; // Provide your asteroid image
+
+        const explosionImage = new Image();
+        explosionImage.src = 'explosion.png'; // Provide your explosion image
+
+        const shootingStarImage = new Image();
+        shootingStarImage.src = 'shootingStar.png'; // Provide your shooting star image
+
+        // Player ship
+        const player = {
+            x: canvas.width / 2 - 25,
+            y: canvas.height - 60,
+            width: 50,
+            height: 50,
+            speed: 5,
+            bullets: [],
+            powerups: {
+                rapidFire: false,
+                shield: false,
+                doubleDamage: false
+            },
+            health: 100,
+            maxHealth: 100,
+            shootCooldown: 0, // Initialize shootCooldown
+            shootInterval: 500 // Time in milliseconds between shots
+        };
+
+        // Enemies
+        let enemies = [];
+        let enemyBullets = [];
+        const enemyTypes = [
+            { points: 10, name: 'Raw Materials', isSpecial: false },
+            { points: 20, name: 'Labor', isSpecial: false },
+            { points: 30, name: 'Capital Goods', isSpecial: false },
+            { points: 50, name: 'Special Enemy', isSpecial: true }
+        ];
+        let enemyShootInterval = 5000; // Enemy shooting interval in milliseconds
+
+        // Power-up items
+        let powerUpItems = [];
+
+        // Questions database
+        let usedQuestions = [];
+        const questions = [
+            // Initial 40 questions from previous implementation
+            // [Insert all 40 existing questions here]
+            {
+                question: "What defines an economic good?",
+                options: [
+                    "Requires resources to produce and has an opportunity cost",
+                    "Is freely available without production costs",
+                    "Is always made from renewable resources",
+                    "Does not require labor to produce"
+                ],
+                correct: 0,
+            },
+            {
+                question: "An economic good is a product that...",
+                options: [
+                    "Has no opportunity cost",
+                    "Requires resources and incurs an opportunity cost",
+                    "Is available in unlimited quantities",
+                    "Is provided by nature for free"
+                ],
+                correct: 1,
+            },
+            // ... [Include all 40 existing questions here]
+            {
+                question: "Time value of money implies that...",
+                options: [
+                    "Money today is worth less than money in the future",
+                    "Money today is worth more than the same amount in the future",
+                    "Money has no value over time",
+                    "Interest rates are irrelevant"
+                ],
+                correct: 1,
+            },
+            // Adding 20 new questions with real-life examples of economic goods
+            {
+                question: "Why is a smartphone considered an economic good?",
+                options: [
+                    "It's freely available to everyone",
+                    "It requires resources and has an opportunity cost to produce",
+                    "It has no production cost",
+                    "It's provided by the government"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Which of the following is a real-life example of an economic good?",
+                options: [
+                    "Air in a vacuum",
+                    "Freshwater bottled for sale",
+                    "Sunlight on a clear day",
+                    "Public parks"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Why is electricity considered an economic good?",
+                options: [
+                    "It's always available without cost",
+                    "Generating electricity requires resources and technology",
+                    "It's a free natural resource",
+                    "It doesn't require any infrastructure"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Which item is an economic good used in daily life?",
+                options: [
+                    "Rainwater collected from rooftops",
+                    "A washing machine",
+                    "Wind blowing on a windy day",
+                    "Birdsong in the morning"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Why is clothing an economic good?",
+                options: [
+                    "It's provided freely by communities",
+                    "Manufacturing clothing requires labor and materials",
+                    "It's always abundant and inexpensive",
+                    "It doesn't require any production effort"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Which of these is an economic good used in education?",
+                options: [
+                    "Natural sunlight in classrooms",
+                    "Textbooks and computers",
+                    "Air quality in schools",
+                    "Wind energy in school buildings"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Why is a car considered an economic good?",
+                options: [
+                    "It's always given away for free",
+                    "Producing a car requires labor, materials, and technology",
+                    "It's a naturally occurring resource",
+                    "It doesn't require maintenance"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Which of the following is a non-essential economic good?",
+                options: [
+                    "Water for drinking",
+                    "Luxury watches",
+                    "Bread for sustenance",
+                    "Clothing for protection"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Why is a laptop considered an economic good?",
+                options: [
+                    "It's freely available to all",
+                    "Manufacturing laptops involves costs and resources",
+                    "It's provided by nature",
+                    "It requires no maintenance"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Which of these is an economic good used in healthcare?",
+                options: [
+                    "Natural herbs found in the wild",
+                    "Medical equipment like MRI machines",
+                    "Air in hospital corridors",
+                    "Wind in hospital gardens"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Why is gasoline considered an economic good?",
+                options: [
+                    "It's produced without any cost",
+                    "Extracting and refining gasoline requires resources",
+                    "It's unlimited in supply",
+                    "It's provided for free by governments"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Which of the following is an economic good in agriculture?",
+                options: [
+                    "Rainfall in farming areas",
+                    "Tractors and seeds used for planting",
+                    "Sunlight for crops",
+                    "Natural winds affecting crop growth"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Why is furniture considered an economic good?",
+                options: [
+                    "It's naturally occurring in forests",
+                    "Producing furniture involves materials and labor",
+                    "It's provided for free by the government",
+                    "It requires no production effort"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Which of these is an economic good used in entertainment?",
+                options: [
+                    "Natural waterfalls",
+                    "Video game consoles",
+                    "Sunset views",
+                    "Birdsong in parks"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Why is bottled water considered an economic good?",
+                options: [
+                    "It's free and abundant",
+                    "Packaging and distributing water requires resources",
+                    "It's naturally available without effort",
+                    "It's provided by rivers without cost"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Which of the following is a real-life example of an economic good in transportation?",
+                options: [
+                    "Air in airplane cabins",
+                    "Airplanes and fuel",
+                    "Wind in airplane flight paths",
+                    "Sunlight through airplane windows"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Why is electricity a critical economic good in modern society?",
+                options: [
+                    "It's generated without any cost",
+                    "It powers industries, homes, and technology",
+                    "It's provided for free by all governments",
+                    "It's an unlimited resource"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Which of these is an economic good used in communication?",
+                options: [
+                    "Natural radio waves",
+                    "Smartphones and internet services",
+                    "Birdsong in urban areas",
+                    "Wind affecting wireless signals"
+                ],
+                correct: 1,
+            },
+            // Total of 60 questions now
+        ];
+
+        // Animated background elements
+        let stars = [];
+        let asteroids = [];
+        let shootingStars = [];
+        let explosions = [];
+
+        function initStars() {
+            stars = []; // Reset stars
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2,
+                    speed: Math.random() * 0.5 + 0.5
+                });
+            }
+        }
+
+        function initAsteroids() {
+            asteroids = [];
+            for (let i = 0; i < 5; i++) {
+                asteroids.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: 30 + Math.random() * 20,
+                    speed: 1 + Math.random(),
+                    direction: Math.random() * Math.PI * 2,
+                    isExploding: false,
+                    explosionTimer: 0,
+                    soundPlayed: false // To prevent multiple sound plays
+                });
+            }
+        }
+
+        function initShootingStars() {
+            shootingStars = [];
+            // Shooting stars are added sporadically during the game loop
+        }
+
+        function initExplosions() {
+            explosions = [];
+        }
+
+        function updateStars(deltaTime) {
+            stars.forEach(star => {
+                star.y += star.speed * (deltaTime / 16.67); // Adjust speed based on deltaTime
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
+            });
+        }
+
+        function updateAsteroids(deltaTime) {
+            asteroids.forEach(asteroid => {
+                if (!asteroid.isExploding) {
+                    asteroid.x += Math.cos(asteroid.direction) * asteroid.speed;
+                    asteroid.y += Math.sin(asteroid.direction) * asteroid.speed;
+
+                    // Wrap around the screen
+                    if (asteroid.x < -asteroid.size) asteroid.x = canvas.width + asteroid.size;
+                    if (asteroid.x > canvas.width + asteroid.size) asteroid.x = -asteroid.size;
+                    if (asteroid.y < -asteroid.size) asteroid.y = canvas.height + asteroid.size;
+                    if (asteroid.y > canvas.height + asteroid.size) asteroid.y = -asteroid.size;
+                } else {
+                    asteroid.explosionTimer -= deltaTime;
+                    if (asteroid.explosionTimer <= 0) {
+                        asteroid.isExploding = false;
+                        asteroid.explosionTimer = 0;
+                        asteroid.x = Math.random() * canvas.width;
+                        asteroid.y = Math.random() * canvas.height;
+                        asteroid.direction = Math.random() * Math.PI * 2;
+                        asteroid.speed = 1 + Math.random();
+                        asteroid.soundPlayed = false;
+                    }
+                }
+            });
+        }
+
+        function updateShootingStars(deltaTime) {
+            // Add a new shooting star randomly
+            if (Math.random() < 0.002 * (deltaTime / 16.67)) { // Adjust probability based on deltaTime
+                shootingStars.push({
+                    x: Math.random() * canvas.width,
+                    y: 0,
+                    length: 15 + Math.random() * 15,
+                    speed: 4 + Math.random() * 2,
+                    angle: Math.PI / 4 // 45 degrees downward
+                });
+            }
+
+            // Update existing shooting stars
+            for (let i = shootingStars.length - 1; i >= 0; i--) {
+                let star = shootingStars[i];
+                star.x += Math.cos(star.angle) * star.speed;
+                star.y += Math.sin(star.angle) * star.speed;
+
+                // Remove if out of bounds
+                if (star.x > canvas.width || star.y > canvas.height) {
+                    shootingStars.splice(i, 1);
+                }
+            }
+        }
+
+        function updateExplosions(deltaTime) {
+            for (let i = explosions.length - 1; i >= 0; i--) {
+                let explosion = explosions[i];
+                explosion.timer -= deltaTime;
+                if (explosion.timer <= 0) {
+                    explosions.splice(i, 1);
+                }
+            }
+        }
+
+        function drawStars() {
+            ctx.fillStyle = '#fff';
+            stars.forEach(star => {
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+            });
+        }
+
+        function drawAsteroids() {
+            asteroids.forEach(asteroid => {
+                if (!asteroid.isExploding) {
+                    ctx.drawImage(asteroidImage, asteroid.x, asteroid.y, asteroid.size, asteroid.size);
+                } else {
+                    // Draw explosion
+                    ctx.drawImage(explosionImage, asteroid.x - asteroid.size / 2, asteroid.y - asteroid.size / 2, asteroid.size * 2, asteroid.size * 2);
+                    // Play explosion sound once
+                    if (!asteroid.soundPlayed) {
+                        explosionSound.currentTime = 0;
+                        explosionSound.play();
+                        asteroid.soundPlayed = true;
+                    }
+                }
+            });
+        }
+
+        function drawShootingStars() {
+            shootingStars.forEach(star => {
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(star.x, star.y);
+                ctx.lineTo(star.x - Math.cos(star.angle) * star.length, star.y - Math.sin(star.angle) * star.length);
+                ctx.stroke();
+            });
+        }
+
+        function drawExplosions() {
+            explosions.forEach(explosion => {
+                ctx.drawImage(explosionImage, explosion.x - explosion.size / 2, explosion.y - explosion.size / 2, explosion.size, explosion.size);
+            });
+        }
+
+        // Initialize enemies
+        function initEnemies() {
+            enemies = [];
+            enemyBullets = [];
+            powerUpItems = [];
+            let rows = 5;
+            let cols = 8;
+            let enemySpeed = 1 + currentWave * 0.1;
+            enemyShootInterval = Math.max(2000, 5000 - currentWave * 500); // Decrease interval with each wave
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    let isSpecial = Math.random() < 0.1; // 10% chance to be a special enemy
+                    const enemyType = isSpecial ? enemyTypes[3] : enemyTypes[Math.floor(Math.random() * 3)];
+                    enemies.push({
+                        x: 80 + j * 80,
+                        y: 50 + i * 50,
+                        width: 40,
+                        height: 40,
+                        type: enemyType,
+                        alive: true,
+                        health: currentWave, // Enemy health increases with each wave
+                        dx: enemySpeed,
+                        dy: 0,
+                        shootTimer: Math.random() * enemyShootInterval,
+                        soundPlayed: false // To prevent multiple sound plays
+                    });
+                }
+            }
+        }
+
+        // Game controls
+        const keys = {
+            left: false,
+            right: false,
+            space: false
+        };
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') keys.left = true;
+            if (e.key === 'ArrowRight') keys.right = true;
+            if (e.key === ' ') keys.space = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft') keys.left = false;
+            if (e.key === 'ArrowRight') keys.right = false;
+            if (e.key === ' ') keys.space = false;
+        });
+
+                // Show initial quiz before game starts
+        function showInitialQuiz() {
+            gameRunning = false; // Pause the game loop during the quiz
+            quizSession = [];
+            quizQuestionIndex = 0;
+            // Select 1 random question
+            let question = getRandomQuestion();
+            quizSession.push(question);
+            displayQuizQuestion('initial'); // 'initial' indicates the initial quiz
+            quizSound.currentTime = 0;
+            quizSound.play();
+        }
+
+        // Show quiz during gameplay (triggered by special enemy destruction, power-up collection, or destroying 5 normal enemies)
+        function showQuizForEvent(eventType, numberOfQuestions = 1) {
+    gameRunning = false;
+    quizSession = [];
+    quizQuestionIndex = 0;
+
+    // Check if we have enough questions left
+    const remainingQuestions = questions.length - usedQuestions.length;
+    if (remainingQuestions === 0) {
+        // No more questions, trigger game over
+        handleGameOver();
+        return;
+    }
+
+    // Only request as many questions as we have available
+    const questionsToGet = Math.min(numberOfQuestions, remainingQuestions);
+
+    // Try to get required number of questions
+    for (let i = 0; i < questionsToGet; i++) {
+        let question = getRandomQuestion();
+        if (question) {
+            quizSession.push(question);
+        } else {
+            // Something went wrong getting a question
+            handleGameOver();
+            return;
+        }
+    }
+
+    if (quizSession.length > 0) {
+        displayQuizQuestion(eventType);
+        quizSound.currentTime = 0;
+        quizSound.play();
+    } else {
+        // No questions were added to session
+        handleGameOver();
+    }
+}
+
+      // Display current quiz question
+function displayQuizQuestion(eventType = 'none') {
+    if (quizQuestionIndex >= quizSession.length) {
+        // All quiz questions answered, resume game
+        quizContainer.style.display = 'none';
+        gameRunning = true;
+        return;
+    }
+
+    const question = quizSession[quizQuestionIndex];
+    quizContainer.style.display = 'block';
+    document.getElementById('questionText').textContent = question.question;
+    
+    // Create array of option objects with their original index
+    let optionsWithIndex = question.options.map((option, index) => ({
+        text: option,
+        isCorrect: index === question.correct
+    }));
+    
+    // Improved shuffle using multiple passes and random swaps
+    for (let pass = 0; pass < 3; pass++) { // Multiple shuffle passes
+        for (let i = optionsWithIndex.length - 1; i > 0; i--) {
+            // Generate multiple random indices for better distribution
+            const j = Math.floor(Math.random() * (i + 1));
+            const k = Math.floor(Math.random() * (i + 1));
+            // Decide randomly which indices to swap
+            const swapIndex = Math.random() < 0.5 ? j : k;
+            [optionsWithIndex[i], optionsWithIndex[swapIndex]] = 
+            [optionsWithIndex[swapIndex], optionsWithIndex[i]];
+        }
+    }
+    
+    // Additional random position shift
+    if (Math.random() < 0.5) {
+        const shift = Math.floor(Math.random() * optionsWithIndex.length);
+        optionsWithIndex = [
+            ...optionsWithIndex.slice(shift),
+            ...optionsWithIndex.slice(0, shift)
+        ];
+    }
+    
+    const optionsContainer = document.getElementById('options');
+    optionsContainer.innerHTML = '';
+    
+    optionsWithIndex.forEach((option) => {
+        const button = document.createElement('button');
+        button.className = 'quiz-option';
+        button.textContent = option.text;
+        button.onclick = () => handleQuizAnswer(option.isCorrect, eventType);
+        optionsContainer.appendChild(button);
+    });
+        }
+
+        // Get a random question without repetition
+        function getRandomQuestion() {
+    // If we've used all questions, end the game
+    if (usedQuestions.length === questions.length) {
+        handleGameOver();
+        return null;
+    }
+    
+    let availableQuestions = questions.filter(q => !usedQuestions.includes(q));
+    let randomIndex = Math.floor(Math.random() * availableQuestions.length);
+    let question = availableQuestions[randomIndex];
+    usedQuestions.push(question);
+    return question;
+}
+        // Handle quiz answer
+        function handleQuizAnswer(isCorrect, eventType) {
+            if (isCorrect) {
+                correctSound.currentTime = 0;
+                correctSound.play();
+                if (eventType === 'initial') {
+                    // No specific action needed
+                } else if (eventType === 'destroySpecial') {
+                    activatePowerup('shield'); // Example power-up
+                } else if (eventType === 'collectPowerup') {
+                    activatePowerup('rapidFire'); // Example power-up
+                } else if (eventType === 'destroy5Normal') {
+                    activatePowerup('doubleDamage'); // Example power-up
+                } else if (eventType === 'wave') {
+                    // No specific power-up
+                }
+            } else {
+                wrongSound.currentTime = 0;
+                wrongSound.play();
+                // Wrong answer penalty: reduce health by 10%
+                player.health = Math.max(player.health - (player.maxHealth * 0.10), 0);
+                updateHealthBar();
+                explosionSound.currentTime = 0;
+                explosionSound.play();
+                if (eventType === 'initial') {
+                    // Prevent game start if initial quiz is failed
+                    if (player.health <= 0) {
+                        handleGameOver();
+                        return;
+                    }
+                }
+            }
+
+            quizQuestionIndex++;
+            if (quizQuestionIndex < quizSession.length) {
+                displayQuizQuestion(eventType);
+            } else {
+                quizContainer.style.display = 'none';
+                gameRunning = true;
+            }
+        }
+
+        // Activate powerup
+        function activatePowerup(type) {
+            player.powerups[type] = true;
+            activePowerups.push({ type, remainingTime: 10000 }); // Duration in milliseconds
+            updatePowerupsDisplay();
+            let message = '';
+            switch(type) {
+                case 'rapidFire':
+                    message = 'Rapid Fire Activated!';
+                    break;
+                case 'shield':
+                    message = 'Shield Activated!';
+                    break;
+                case 'doubleDamage':
+                    message = 'Double Damage Activated!';
+                    break;
+                default:
+                    message = 'Power-up Activated!';
+            }
+            showPowerupMessage(message);
+            powerupSound.currentTime = 0;
+            powerupSound.play();
+        }
+
+        function updatePowerupsDisplay() {
+            powerupsDisplay.textContent = 'Power-ups: ' + 
+                (activePowerups.length ? activePowerups.map(p => p.type).join(', ') : 'None');
+        }
+
+        // Update health bar
+        function updateHealthBar() {
+            const healthPercent = (player.health / player.maxHealth) * 100;
+            healthBar.style.width = healthPercent + '%';
+            if (healthPercent > 50) {
+                healthBar.style.background = '#0f0';
+            } else if (healthPercent > 25) {
+                healthBar.style.background = '#ff0';
+            } else {
+                healthBar.style.background = '#f00';
+            }
+        }
+
+        // Show powerup message
+        function showPowerupMessage(message) {
+            powerupMessage.textContent = message;
+            powerupMessage.style.display = 'block';
+            gameRunning = false;
+            setTimeout(() => {
+                powerupMessage.style.display = 'none';
+                gameRunning = true;
+            }, 2000);
+        }
+
+        // Handle game over
+     function handleGameOver() {
+    // Prevent multiple calls
+    if (!gameRunning) return;
+    
+    gameRunning = false;
+    finalScoreDisplay.textContent = score;
+    
+    // Add message about questions answered
+    const questionsAnswered = usedQuestions.length;
+    const totalQuestions = questions.length;
+    const gameOverMessage = document.createElement('p');
+    gameOverMessage.textContent = `You answered ${questionsAnswered} out of ${totalQuestions} questions!`;
+    
+    // Clear any existing messages
+    while (gameOverScreen.children.length > 3) {
+        gameOverScreen.removeChild(gameOverScreen.lastChild);
+    }
+    
+    gameOverScreen.insertBefore(gameOverMessage, restartButton);
+    
+    // Stop all ongoing actions
+    player.bullets = [];
+    enemyBullets = [];
+    activePowerups = [];
+    
+    gameOverSound.currentTime = 0;
+    gameOverSound.play();
+    gameOverScreen.style.display = 'block';
+}
+
+        // Restart game
+        restartButton.addEventListener('click', () => {
+    // Clear game over screen of any additional messages
+    while (gameOverScreen.children.length > 3) {
+        gameOverScreen.removeChild(gameOverScreen.lastChild);
+    }
+    
+    // Reset all game state variables
+    score = 0;
+    currentWave = 1;
+    player.health = player.maxHealth;
+    player.bullets = [];
+    enemies = [];
+    enemyBullets = [];
+    powerUpItems = [];
+    activePowerups = [];
+    usedQuestions = []; // Make sure questions are reset
+    quizSession = [];
+    quizQuestionIndex = 0;
+    destroyedNormalEnemies = 0;
+    
+    // Update displays
+    updateHealthBar();
+    updatePowerupsDisplay();
+    scoreDisplay.textContent = `Score: ${score}`;
+    powerupsDisplay.textContent = 'Power-ups: None';
+    gameOverScreen.style.display = 'none';
+    
+    // Initialize game elements
+    initEnemies();
+    initStars();
+    initAsteroids();
+    initShootingStars();
+    initExplosions();
+    
+    // Start game
+    gameRunning = true;
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play();
+});
+        // Start game from intro screen
+        startButton.addEventListener('click', () => {
+    introScreen.style.display = 'none';
+    questionManagerScreen.style.display = 'block';
+    displayQuestionList();
+});
+// Excel handling functions
+function downloadExcelTemplate() {
+    const template = [
+        ['Question', 'Option 1', 'Option 2', 'Option 3', 'Option 4', 'Correct Answer (1-4)'],
+        ['What is an example question?', 'First option', 'Second option', 'Third option', 'Fourth option', '2'],
+        ['What is another example?', 'Option A', 'Option B', 'Option C', 'Option D', '1']
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(template);
+    XLSX.utils.book_append_sheet(wb, ws, "Questions");
+    XLSX.writeFile(wb, 'question_template.xlsx');
+}
+
+function handleExcelImport(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        
+        // Remove header row
+        rows.shift();
+
+        const newQuestions = rows
+            .filter(row => row.length >= 6) // Ensure row has all required fields
+            .map(row => ({
+                question: row[0],
+                options: [row[1], row[2], row[3], row[4]],
+                correct: parseInt(row[5]) - 1
+            }));
+
+        if (newQuestions.length > 0) {
+            if (confirm(`Found ${newQuestions.length} questions. Add them to the game?`)) {
+                questions.push(...newQuestions);
+                displayQuestionList();
+                alert('Questions imported successfully!');
+            }
+        } else {
+            alert('No valid questions found in the file. Please check the template format.');
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+function displayQuestionList() {
+    questionList.innerHTML = '';
+    questions.forEach((q, index) => {
+        const div = document.createElement('div');
+        div.className = 'question-item';
+        div.innerHTML = `
+            <div>${q.question}</div>
+            <button class="delete-btn" onclick="deleteQuestion(${index})">Delete</button>
+        `;
+        questionList.appendChild(div);
+    });
+}
+
+function deleteQuestion(index) {
+    questions.splice(index, 1);
+    displayQuestionList();
+}
+
+// Add event listeners
+document.getElementById('downloadExcelTemplateBtn').addEventListener('click', downloadExcelTemplate);
+
+document.getElementById('importExcelBtn').addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx';
+    input.onchange = handleExcelImport;
+    input.click();
+});
+
+startGameBtn.addEventListener('click', () => {
+    if (questions.length < 1) {
+        alert('Please add at least one question');
+        return;
+    }
+    questionManagerScreen.style.display = 'none';
+    showInitialQuiz();
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play();
+});
+
+addQuestionBtn.addEventListener('click', () => {
+    questionForm.style.display = 'block';
+});
+
+cancelQuestionBtn.addEventListener('click', () => {
+    questionForm.style.display = 'none';
+});
+
+saveQuestionBtn.addEventListener('click', () => {
+    const questionText = document.getElementById('questionText').value;
+    const options = Array.from(document.querySelectorAll('.option-input')).map(input => input.value);
+    const correct = parseInt(document.getElementById('correctAnswer').value);
+
+    if (questionText && options.every(opt => opt) && !isNaN(correct)) {
+        questions.push({
+            question: questionText,
+            options: options,
+            correct: correct
+        });
+
+        // Clear form
+        document.getElementById('questionText').value = '';
+        document.querySelectorAll('.option-input').forEach(input => input.value = '');
+        questionForm.style.display = 'none';
+        displayQuestionList();
+    } else {
+        alert('Please fill in all fields');
+    }
+});
+// Make deleteQuestion function globally available
+window.deleteQuestion = function(index) {
+    questions.splice(index, 1);
+    displayQuestionList();
+}
+        // Game loop
+        function gameLoop(timestamp) {
+            // Calculate deltaTime
+            let deltaTime = timestamp - lastFrameTime;
+            lastFrameTime = timestamp;
+
+            // Always call requestAnimationFrame to keep the loop running
+            requestAnimationFrame(gameLoop);
+
+            // Do not proceed with game logic if game is not running
+            if (!gameRunning) {
+                return;
+            }
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw background stars
+            updateStars(deltaTime);
+            updateAsteroids(deltaTime);
+            updateShootingStars(deltaTime);
+            updateExplosions(deltaTime);
+            drawStars();
+            drawAsteroids();
+            drawShootingStars();
+            drawExplosions();
+// Draw control area indicator
+ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+           //// Move player
+if (controls.touchActive || controls.mouseActive) {
+    // Get target X position from touch or mouse
+    const targetX = controls.touchActive ? controls.touchX : controls.mouseX;
+    // Calculate center of the ship
+    const shipCenterX = player.x + player.width / 2;
+    // Move ship towards target position
+    const moveDistance = (targetX - shipCenterX) * 0.1; // Smooth movement factor
+    player.x += moveDistance;
+    
+    // Keep player within canvas bounds
+    player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+} else {
+    // Regular keyboard controls
+    if (keys.left && player.x > 0) player.x -= player.speed;
+    if (keys.right && player.x < canvas.width - player.width) player.x += player.speed;
+}
+
+            // Draw player
+            if (player.powerups.shield) {
+                // Draw shield bubble
+                ctx.beginPath();
+                ctx.arc(player.x + player.width / 2, player.y + player.height / 2, 30, 0, Math.PI * 2);
+                ctx.strokeStyle = '#0ff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            ctx.drawImage(playerShipImage, player.x, player.y, player.width, player.height);
+
+            // Shooting cooldown management
+            player.shootCooldown -= deltaTime;
+            if (player.shootCooldown < 0) player.shootCooldown = 0;
+
+            // Shooting
+            if (keys.space && player.shootCooldown <= 0 && player.bullets.length < (player.powerups.rapidFire ? 10 : 3)) {
+                player.bullets.push({
+                    x: player.x + player.width / 2 - 2,
+                    y: player.y,
+                    width: 4,
+                    height: 10,
+                    speed: 7
+                });
+                player.shootCooldown = player.shootInterval / (player.powerups.rapidFire ? 2 : 1);
+                shootSound.currentTime = 0;
+                shootSound.play();
+            }
+
+            // Update and draw player bullets
+            for (let bulletIndex = player.bullets.length - 1; bulletIndex >= 0; bulletIndex--) {
+                let bullet = player.bullets[bulletIndex];
+                bullet.y -= bullet.speed;
+
+                // Set bullet color based on power-ups
+                if (player.powerups.doubleDamage) {
+                    ctx.fillStyle = '#F88';
+                } else if (player.powerups.rapidFire) {
+                    ctx.fillStyle = '#0FF';
+                } else {
+                    ctx.fillStyle = '#FF0';
+                }
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+                let bulletHit = false;
+
+                // Check bullet-enemy collision
+                for (let enemyIndex = enemies.length - 1; enemyIndex >= 0; enemyIndex--) {
+                    let enemy = enemies[enemyIndex];
+                    if (enemy.alive && 
+                        bullet.x < enemy.x + enemy.width &&
+                        bullet.x + bullet.width > enemy.x &&
+                        bullet.y < enemy.y + enemy.height &&
+                        bullet.y + bullet.height > enemy.y) {
+                        
+                        // Decrease enemy health
+                        let damage = player.powerups.doubleDamage ? 2 : 1;
+                        enemy.health -= damage;
+                        if (enemy.health <= 0) {
+                            enemy.alive = false;
+                            score += enemy.type.points;
+                            // Play explosion sound
+                            explosionSound.currentTime = 0;
+                            explosionSound.play();
+
+                            // If special enemy, trigger quiz for power-up
+                            if (enemy.type.isSpecial) {
+                                showQuizForEvent('destroySpecial');
+                            } else {
+                                // Track normal enemy destruction
+                                destroyedNormalEnemies++;
+                                if (destroyedNormalEnemies >= 5) { // Trigger after 5 normal enemies
+                                    showQuizForEvent('destroy5Normal');
+                                    destroyedNormalEnemies = 0;
+                                }
+                                // Small chance to drop a power-up item
+                                if (Math.random() < 0.1) {
+                                    powerUpItems.push({
+                                        x: enemy.x + enemy.width / 2 - 15,
+                                        y: enemy.y + enemy.height,
+                                        width: 30,
+                                        height: 30,
+                                        type: 'random',
+                                        dy: 2
+                                    });
+                                }
+                            }
+                        }
+                        // Remove the bullet
+                        player.bullets.splice(bulletIndex, 1);
+                        bulletHit = true;
+                        break; // Exit the enemy loop since bullet is removed
+                    }
+                }
+
+                if (bulletHit) continue; // Move to next bullet
+
+                // Check bullet-asteroid collision
+                for (let asteroidIndex = asteroids.length - 1; asteroidIndex >= 0; asteroidIndex--) {
+                    let asteroid = asteroids[asteroidIndex];
+                    if (!asteroid.isExploding &&
+                        bullet.x < asteroid.x + asteroid.size &&
+                        bullet.x + bullet.width > asteroid.x &&
+                        bullet.y < asteroid.y + asteroid.size &&
+                        bullet.y + bullet.height > asteroid.y) {
+                        
+                        // Trigger asteroid explosion
+                        asteroid.isExploding = true;
+                        asteroid.explosionTimer = 500; // Duration of explosion in ms
+                        explosions.push({
+                            x: asteroid.x + asteroid.size / 2,
+                            y: asteroid.y + asteroid.size / 2,
+                            size: asteroid.size * 1.5,
+                            timer: 500
+                        });
+
+                        // Play explosion sound
+                        explosionSound.currentTime = 0;
+                        explosionSound.play();
+
+                        // Remove the bullet
+                        player.bullets.splice(bulletIndex, 1);
+                        break;
+                    }
+                }
+
+                // Remove bullets that are off screen
+                if (bullet.y < 0) {
+                    player.bullets.splice(bulletIndex, 1);
+                }
+            }
+
+            // Update and draw enemies
+            let anyEnemyAlive = false;
+            for (let enemyIndex = enemies.length - 1; enemyIndex >= 0; enemyIndex--) {
+                let enemy = enemies[enemyIndex];
+                if (enemy.alive) {
+                    anyEnemyAlive = true;
+                    // Enemy movement
+                    enemy.x += enemy.dx;
+                    if (enemy.x <= 0 || enemy.x + enemy.width >= canvas.width) {
+                        enemy.dx *= -1;
+                        enemy.y += 10;
+                    }
+
+                    // Draw enemy
+                    if (enemy.type.isSpecial) {
+                        ctx.drawImage(specialEnemyShipImage, enemy.x, enemy.y, enemy.width, enemy.height);
+                    } else {
+                        ctx.drawImage(enemyShipImage, enemy.x, enemy.y, enemy.width, enemy.height);
+                    }
+
+                    // Enemy shooting
+                    enemy.shootTimer -= deltaTime;
+                    if (enemy.shootTimer <= 0) {
+                        if (Math.random() < 0.2) { // Shooting chance
+                            enemyBullets.push({
+                                x: enemy.x + enemy.width / 2 - 2,
+                                y: enemy.y + enemy.height,
+                                width: 4,
+                                height: 10,
+                                speed: 2 + currentWave * 0.3
+                            });
+                            shootSound.currentTime = 0;
+                            shootSound.play();
+                        }
+                        enemy.shootTimer = enemyShootInterval + Math.random() * 500;
+                    }
+
+                    // Check for collision with player
+                    if (
+                        enemy.x < player.x + player.width &&
+                        enemy.x + enemy.width > player.x &&
+                        enemy.y < player.y + player.height &&
+                        enemy.y + enemy.height > player.y
+                    ) {
+                        player.health = 0;
+                        updateHealthBar();
+                    }
+                }
+            }
+
+            // Update and draw enemy bullets
+            for (let bulletIndex = enemyBullets.length - 1; bulletIndex >= 0; bulletIndex--) {
+                let bullet = enemyBullets[bulletIndex];
+                bullet.y += bullet.speed;
+
+                ctx.fillStyle = '#F00';
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+                // Check bullet-player collision
+                if (
+                    bullet.x < player.x + player.width &&
+                    bullet.x + bullet.width > player.x &&
+                    bullet.y < player.y + player.height &&
+                    bullet.y + bullet.height > player.y
+                ) {
+                    if (!player.powerups.shield) {
+                        player.health -= 10;
+                        updateHealthBar();
+                        // Play hit sound
+                        explosionSound.currentTime = 0;
+                        explosionSound.play();
+                    }
+                    enemyBullets.splice(bulletIndex, 1);
+                    continue; // Move to next bullet
+                }
+
+                // Remove bullets that are off screen
+                if (bullet.y > canvas.height) {
+                    enemyBullets.splice(bulletIndex, 1);
+                }
+            }
+
+            // Update and draw power-up items
+            for (let itemIndex = powerUpItems.length - 1; itemIndex >= 0; itemIndex--) {
+                let item = powerUpItems[itemIndex];
+                item.y += item.dy;
+
+                ctx.drawImage(powerupImage, item.x, item.y, item.width, item.height);
+
+                // Check for collision with player
+                if (
+                    item.x < player.x + player.width &&
+                    item.x + item.width > player.x &&
+                    item.y < player.y + player.height &&
+                    item.y + item.height > player.y
+                ) {
+                    // Player collects the power-up
+                    powerUpItems.splice(itemIndex, 1);
+                    showQuizForEvent('collectPowerup');
+                    powerupSound.currentTime = 0;
+                    powerupSound.play();
+                }
+
+                // Remove items that are off screen
+                if (item.y > canvas.height) {
+                    powerUpItems.splice(itemIndex, 1);
+                }
+            }
+
+            // Update active power-ups
+            for (let i = activePowerups.length - 1; i >= 0; i--) {
+                let powerUp = activePowerups[i];
+                powerUp.remainingTime -= deltaTime;
+                if (powerUp.remainingTime <= 0) {
+                    player.powerups[powerUp.type] = false;
+                    activePowerups.splice(i, 1);
+                    updatePowerupsDisplay();
+                }
+            }
+
+            // Update score display
+            scoreDisplay.textContent = `Score: ${score}`;
+
+            // Check player health
+            if (player.health <= 0) {
+                handleGameOver();
+            }
+
+            // Check wave completion
+            if (!anyEnemyAlive) {
+                // Initiate quiz session before starting the next wave
+                showQuizForEvent('wave', 3); // 3 questions before next wave
+                // Reset for next wave after quiz
+                currentWave++;
+                destroyedNormalEnemies = 0;
+                initEnemies();
+            }
+        }
+
+        // Start the game loop
+        requestAnimationFrame(gameLoop);
+
+        // Initialize the game
+        function initializeGame() {
+            updateHealthBar();
+            updatePowerupsDisplay();
+            initStars();
+            initAsteroids();
+            initShootingStars();
+            initExplosions();
+        }
+
+        // Initialize the game when all images are loaded
+        window.onload = () => {
+            initializeGame();
+            introScreen.style.display = 'block';
+        };
+
+        // Handle asteroid explosions
+        function drawExplosions() {
+            explosions.forEach(explosion => {
+                ctx.drawImage(explosionImage, explosion.x - explosion.size / 2, explosion.y - explosion.size / 2, explosion.size, explosion.size);
+            });
+        }
+    </script>
+</body>
+</html>

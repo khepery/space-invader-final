@@ -1,0 +1,587 @@
+<!DOCTYPE html> 
+<html>
+<head>
+    <title>Economic Space Invaders</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Press Start 2P', cursive;
+            color: #fff;
+        }
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            margin: auto;
+            background: #000;
+        }
+        #gameCanvas {
+            display: block;
+        }
+        .quiz-container {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle at center, rgba(0, 0, 128, 0.9), rgba(0, 0, 64, 0.9));
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            color: #0ff;
+            width: 80%;
+            text-align: center;
+            font-size: 14px;
+            text-shadow: 0 0 5px #0ff;
+            z-index: 2;
+        }
+        .quiz-container h2 {
+            font-size: 16px;
+        }
+        .quiz-option {
+            margin: 10px;
+            padding: 10px 20px;
+            background: #222;
+            border: 1px solid #0ff;
+            color: #0ff;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 80%;
+            transition: background 0.3s, box-shadow 0.3s;
+            font-size: 14px;
+            text-shadow: 0 0 5px #0ff;
+        }
+        .quiz-option:hover {
+            background: #333;
+            box-shadow: 0 0 10px #0ff;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 14px;
+        }
+        #powerups {
+            position: absolute;
+            top: 30px;
+            left: 10px;
+            color: #fff;
+            font-size: 14px;
+        }
+        #healthBarContainer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 200px;
+            height: 20px;
+            border: 2px solid #0ff;
+            background: #000;
+        }
+        #healthBar {
+            width: 100%;
+            height: 100%;
+            background: #0f0;
+        }
+        #powerupMessage {
+            display: none;
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 64, 0.9);
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            color: #0ff;
+            font-size: 14px;
+            text-align: center;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="score">Score: 0</div>
+        <div id="powerups">Power-ups: None</div>
+        <div id="healthBarContainer">
+            <div id="healthBar"></div>
+        </div>
+        <div class="quiz-container" id="quizContainer">
+            <h2 id="questionText"></h2>
+            <div id="options"></div>
+        </div>
+        <div id="powerupMessage"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const quizContainer = document.getElementById('quizContainer');
+        const scoreDisplay = document.getElementById('score');
+        const powerupsDisplay = document.getElementById('powerups');
+        const healthBar = document.getElementById('healthBar');
+        const powerupMessage = document.getElementById('powerupMessage');
+
+        // Game state
+        let score = 0;
+        let gameRunning = false;
+        let activePowerups = [];
+        let currentWave = 1;
+
+        // Player ship
+        const player = {
+            x: canvas.width / 2 - 25,
+            y: canvas.height - 60,
+            width: 50,
+            height: 30,
+            speed: 5,
+            bullets: [],
+            powerups: {
+                rapidFire: false,
+                shield: false,
+                doubleDamage: false
+            },
+            health: 100,
+            maxHealth: 100
+        };
+
+        // Enemies
+        let enemies = [];
+        let enemyBullets = [];
+        const enemyTypes = [
+            { color: '#FF4444', points: 10, name: 'Raw Materials' },
+            { color: '#44FF44', points: 20, name: 'Labor' },
+            { color: '#4444FF', points: 30, name: 'Capital Goods' }
+        ];
+        let enemyShootInterval = 2000; // Enemy shooting interval in milliseconds
+
+        // Questions database
+        let usedQuestions = [];
+        const questions = [
+            {
+                question: "What defines an economic good?",
+                options: [
+                    "Requires resources to produce and has an opportunity cost",
+                    "Is freely available without production costs",
+                    "Is always made from renewable resources",
+                    "Does not require labor to produce"
+                ],
+                correct: 0,
+                reward: "health"
+            },
+            {
+                question: "An economic good is a product that...",
+                options: [
+                    "Has no opportunity cost",
+                    "Requires resources and incurs an opportunity cost",
+                    "Is available in unlimited quantities",
+                    "Is provided by nature for free"
+                ],
+                correct: 1,
+                reward: "health"
+            },
+            {
+                question: "Which statement about economic goods is true?",
+                options: [
+                    "They are free and abundant",
+                    "They require resources to produce",
+                    "They have no opportunity cost",
+                    "They don't utilize scarce resources"
+                ],
+                correct: 1,
+                reward: "health"
+            },
+            {
+                question: "Opportunity cost is associated with economic goods because...",
+                options: [
+                    "They are free to produce",
+                    "Producing them uses up scarce resources",
+                    "They don't require any trade-offs",
+                    "They are always expensive"
+                ],
+                correct: 1,
+                reward: "health"
+            },
+            // Add more unique questions here
+        ];
+
+        // Animated star field background
+        let stars = [];
+        function initStars() {
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2,
+                    speed: Math.random() * 0.5 + 0.5
+                });
+            }
+        }
+
+        function updateStars() {
+            stars.forEach(star => {
+                star.y += star.speed;
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
+            });
+        }
+
+        function drawStars() {
+            ctx.fillStyle = '#fff';
+            stars.forEach(star => {
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+            });
+        }
+
+        // Initialize enemies
+        function initEnemies() {
+            enemies = [];
+            enemyBullets = [];
+            let rows = 5;
+            let cols = 8;
+            let enemySpeed = 1 + currentWave * 0.2;
+            enemyShootInterval = Math.max(500, 2000 - currentWave * 200); // Decrease interval with each wave
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+                    enemies.push({
+                        x: 80 + j * 80,
+                        y: 50 + i * 50,
+                        width: 40,
+                        height: 40,
+                        type: enemyType,
+                        alive: true,
+                        dx: enemySpeed,
+                        dy: 0,
+                        shootTimer: Math.random() * enemyShootInterval
+                    });
+                }
+            }
+        }
+
+        // Game controls
+        const keys = {
+            left: false,
+            right: false,
+            space: false
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') keys.left = true;
+            if (e.key === 'ArrowRight') keys.right = true;
+            if (e.key === ' ') keys.space = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft') keys.left = false;
+            if (e.key === 'ArrowRight') keys.right = false;
+            if (e.key === ' ') keys.space = false;
+        });
+
+        // Show initial quiz before game starts
+        function showInitialQuiz() {
+            const question = getRandomQuestion();
+            quizContainer.style.display = 'block';
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'quiz-option';
+                button.textContent = option;
+                button.onclick = () => {
+                    if (index === question.correct) {
+                        player.health = 100;
+                    } else {
+                        player.health = 50;
+                    }
+                    quizContainer.style.display = 'none';
+                    gameRunning = true;
+                    initEnemies();
+                    initStars();
+                    gameLoop();
+                };
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // Show quiz during gameplay
+        function showQuizDuringGame() {
+            gameRunning = false;
+            const question = getRandomQuestion();
+            quizContainer.style.display = 'block';
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'quiz-option';
+                button.textContent = option;
+                button.onclick = () => handleAnswer(index === question.correct, question.reward);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // Get a random question without repetition
+        function getRandomQuestion() {
+            if (usedQuestions.length === questions.length) {
+                usedQuestions = [];
+            }
+            let question;
+            do {
+                question = questions[Math.floor(Math.random() * questions.length)];
+            } while (usedQuestions.includes(question));
+            usedQuestions.push(question);
+            return question;
+        }
+
+        // Handle quiz answer
+        function handleAnswer(correct, reward) {
+            if (correct) {
+                if (reward === 'health') {
+                    player.health = Math.min(player.health + 25, player.maxHealth);
+                    updateHealthBar();
+                } else {
+                    activatePowerup(reward);
+                }
+                score += 100;
+            } else {
+                // Wrong answer penalty
+                player.health = Math.max(player.health - player.maxHealth / 2, 0);
+                updateHealthBar();
+            }
+            quizContainer.style.display = 'none';
+            gameRunning = true;
+        }
+
+        // Activate powerup
+        function activatePowerup(type) {
+            player.powerups[type] = true;
+            activePowerups.push({ type, duration: 10000 });
+            updatePowerupsDisplay();
+            showPowerupMessage(type);
+            setTimeout(() => {
+                player.powerups[type] = false;
+                activePowerups = activePowerups.filter(p => p.type !== type);
+                updatePowerupsDisplay();
+            }, 10000);
+        }
+
+        function updatePowerupsDisplay() {
+            powerupsDisplay.textContent = 'Power-ups: ' + 
+                (activePowerups.length ? activePowerups.map(p => p.type).join(', ') : 'None');
+        }
+
+        // Update health bar
+        function updateHealthBar() {
+            const healthPercent = (player.health / player.maxHealth) * 100;
+            healthBar.style.width = healthPercent + '%';
+            if (healthPercent > 50) {
+                healthBar.style.background = '#0f0';
+            } else if (healthPercent > 25) {
+                healthBar.style.background = '#ff0';
+            } else {
+                healthBar.style.background = '#f00';
+            }
+        }
+
+        // Show powerup message
+        function showPowerupMessage(type) {
+            let message = '';
+            switch(type) {
+                case 'rapidFire':
+                    message = 'Rapid Fire Activated!';
+                    break;
+                case 'shield':
+                    message = 'Shield Activated!';
+                    break;
+                case 'doubleDamage':
+                    message = 'Double Damage Activated!';
+                    break;
+                default:
+                    message = 'Power-up Activated!';
+            }
+            powerupMessage.textContent = message;
+            powerupMessage.style.display = 'block';
+            gameRunning = false;
+            setTimeout(() => {
+                powerupMessage.style.display = 'none';
+                gameRunning = true;
+            }, 2000);
+        }
+
+        // Game loop
+        let lastEnemyShootTime = 0;
+        function gameLoop(timestamp) {
+            if (!gameRunning) {
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw background stars
+            updateStars();
+            drawStars();
+
+            // Move player
+            if (keys.left && player.x > 0) player.x -= player.speed;
+            if (keys.right && player.x < canvas.width - player.width) player.x += player.speed;
+
+            // Draw player
+            if (player.powerups.shield) {
+                // Draw shield bubble
+                ctx.beginPath();
+                ctx.arc(player.x + player.width / 2, player.y + player.height / 2, 30, 0, Math.PI * 2);
+                ctx.strokeStyle = '#0ff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            ctx.fillStyle = '#FFF';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            // Shooting
+            if (keys.space && player.bullets.length < (player.powerups.rapidFire ? 10 : 3)) {
+                player.bullets.push({
+                    x: player.x + player.width / 2 - 2,
+                    y: player.y,
+                    width: 4,
+                    height: 10,
+                    speed: 7
+                });
+            }
+
+            // Update and draw player bullets
+            player.bullets.forEach((bullet, bulletIndex) => {
+                bullet.y -= bullet.speed;
+                ctx.fillStyle = player.powerups.doubleDamage ? '#F88' : (player.powerups.rapidFire ? '#0FF' : '#FF0');
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+                // Check bullet-enemy collision
+                enemies.forEach((enemy, enemyIndex) => {
+                    if (enemy.alive && 
+                        bullet.x < enemy.x + enemy.width &&
+                        bullet.x + bullet.width > enemy.x &&
+                        bullet.y < enemy.y + enemy.height &&
+                        bullet.y + bullet.height > enemy.y) {
+                        
+                        enemy.alive = false;
+                        score += enemy.type.points * (player.powerups.doubleDamage ? 2 : 1);
+                        player.bullets.splice(bulletIndex, 1);
+                        
+                        // Randomly show quiz (20% chance)
+                        if (Math.random() < 0.2) {
+                            showQuizDuringGame();
+                        }
+                    }
+                });
+
+                // Remove bullets that are off screen
+                if (bullet.y < 0) {
+                    player.bullets.splice(bulletIndex, 1);
+                }
+            });
+
+            // Update and draw enemies
+            let anyEnemyAlive = false;
+            enemies.forEach((enemy) => {
+                if (enemy.alive) {
+                    anyEnemyAlive = true;
+                    // Enemy movement
+                    enemy.x += enemy.dx;
+                    if (enemy.x <= 0 || enemy.x + enemy.width >= canvas.width) {
+                        enemy.dx *= -1;
+                        enemy.y += 10;
+                    }
+                    ctx.fillStyle = enemy.type.color;
+                    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+
+                    // Enemy shooting
+                    enemy.shootTimer -= 16.67; // Approximate frame time
+                    if (enemy.shootTimer <= 0) {
+                        enemyBullets.push({
+                            x: enemy.x + enemy.width / 2 - 2,
+                            y: enemy.y + enemy.height,
+                            width: 4,
+                            height: 10,
+                            speed: 4 + currentWave * 0.5 // Increase speed with wave
+                        });
+                        enemy.shootTimer = enemyShootInterval + Math.random() * 500;
+                    }
+
+                    // Check for collision with player
+                    if (
+                        enemy.x < player.x + player.width &&
+                        enemy.x + enemy.width > player.x &&
+                        enemy.y < player.y + player.height &&
+                        enemy.y + enemy.height > player.y
+                    ) {
+                        player.health = 0;
+                        updateHealthBar();
+                    }
+                }
+            });
+
+            // Update and draw enemy bullets
+            enemyBullets.forEach((bullet, bulletIndex) => {
+                bullet.y += bullet.speed;
+                ctx.fillStyle = '#F00';
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+                // Check bullet-player collision
+                if (
+                    bullet.x < player.x + player.width &&
+                    bullet.x + bullet.width > player.x &&
+                    bullet.y < player.y + player.height &&
+                    bullet.y + bullet.height > player.y
+                ) {
+                    if (!player.powerups.shield) {
+                        player.health -= 10;
+                        updateHealthBar();
+                    }
+                    enemyBullets.splice(bulletIndex, 1);
+                }
+
+                // Remove bullets that are off screen
+                if (bullet.y > canvas.height) {
+                    enemyBullets.splice(bulletIndex, 1);
+                }
+            });
+
+            // Update score display
+            scoreDisplay.textContent = `Score: ${score}`;
+
+            // Check player health
+            if (player.health <= 0) {
+                gameRunning = false;
+                alert('Game Over! Your score: ' + score);
+                location.reload();
+            }
+
+            // Check wave completion
+            if (!anyEnemyAlive) {
+                currentWave++;
+                initEnemies();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start game
+        updateHealthBar();
+        showInitialQuiz();
+    </script>
+</body>
+</html>
