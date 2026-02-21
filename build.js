@@ -49,7 +49,8 @@ async function build() {
     }
   }
   if (fs.existsSync(XLSX_PATH)) {
-    const xlsxSrc = fs.readFileSync(XLSX_PATH, 'utf8');
+    let xlsxSrc = fs.readFileSync(XLSX_PATH, 'utf8');
+    xlsxSrc = xlsxSrc.replace(/<\/(script)/gi, '<\\/$1');
     html = html.replace(
       '<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>',
       `<script>${xlsxSrc}</script>`
