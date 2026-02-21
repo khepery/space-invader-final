@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Economics Space Invaders</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Press Start 2P', cursive;
+            color: #fff;
+        }
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            margin: auto;
+            background: #000;
+            overflow: hidden;
+        }
+        #gameCanvas {
+            display: block;
+            background: #000;
+        }
+        .quiz-container, #gameOverScreen, #introScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle at center, rgba(0, 0, 128, 0.9), rgba(0, 0, 64, 0.9));
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            color: #0ff;
+            width: 80%;
+            text-align: center;
+            font-size: 14px;
+            text-shadow: 0 0 5px #0ff;
+            z-index: 3;
+        }
+        .quiz-container h2, #gameOverScreen h2, #introScreen h2 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .quiz-option, #startButton, #restartButton {
+            margin: 10px;
+            padding: 10px 20px;
+            background: #222;
+            border: 2px solid #0ff;
+            color: #0ff;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 80%;
+            transition: background 0.3s, box-shadow 0.3s;
+            font-size: 14px;
+            text-shadow: 0 0 5px #0ff;
+        }
+        .quiz-option:hover, #startButton:hover, #restartButton:hover {
+            background: #333;
+            box-shadow: 0 0 10px #0ff;
+        }
+        #score, #powerups {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 14px;
+            z-index: 1;
+        }
+        #powerups {
+            top: 30px;
+        }
+        #healthBarContainer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 200px;
+            height: 20px;
+            border: 2px solid #0ff;
+            background: #000;
+            z-index: 1;
+        }
+        #healthBar {
+            width: 100%;
+            height: 100%;
+            background: #0f0;
+            transition: width 0.3s, background 0.3s;
+        }
+        #powerupMessage {
+            display: none;
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 64, 0.9);
+            padding: 20px;
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            color: #0ff;
+            font-size: 14px;
+            text-align: center;
+            z-index: 2;
+            box-shadow: 0 0 10px #0ff;
+        }
+        /* Game Over Screen Styling */
+        #gameOverScreen {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #f00;
+            color: #f00;
+        }
+        /* Intro Screen Styling */
+        #introScreen {
+            background: rgba(0, 0, 64, 0.9);
+            border: 2px solid #0ff;
+            color: #0ff;
+            padding: 40px;
+        }
+        #introScreen h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #introScreen p {
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="score">Score: 0</div>
+        <div id="powerups">Power-ups: None</div>
+        <div id="healthBarContainer">
+            <div id="healthBar"></div>
+        </div>
+        <!-- Intro Screen -->
+        <div id="introScreen">
+            <h2>Economics Space Invaders</h2>
+            <p>Defend the economic system by shooting down invaders and answering economic questions!</p>
+            <button id="startButton">Start Game</button>
+        </div>
+        <!-- Quiz Container -->
+        <div class="quiz-container" id="quizContainer">
+            <h2 id="questionText"></h2>
+            <div id="options"></div>
+        </div>
+        <!-- Power-up Message -->
+        <div id="powerupMessage"></div>
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen">
+            <h2>Game Over!</h2>
+            <p>Your score: <span id="finalScore">0</span></p>
+            <button id="restartButton">Restart Game</button>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="shootSound" src="shoot.mp3" preload="auto"></audio>
+    <audio id="explosionSound" src="explosion.mp3" preload="auto"></audio>
+    <audio id="powerupSound" src="powerup.mp3" preload="auto"></audio>
+    <audio id="quizSound" src="quiz.mp3" preload="auto"></audio>
+    <audio id="gameOverSound" src="gameover.mp3" preload="auto"></audio>
+    <audio id="backgroundMusic" src="background.mp3" preload="auto" loop></audio>
+    <audio id="correctSound" src="correct.mp3" preload="auto"></audio> <!-- Correct Answer Sound -->
+    <audio id="wrongSound" src="wrong.mp3" preload="auto"></audio> <!-- Wrong Answer Sound -->
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const quizContainer = document.getElementById('quizContainer');
+        const scoreDisplay = document.getElementById('score');
+        const powerupsDisplay = document.getElementById('powerups');
+        const healthBar = document.getElementById('healthBar');
+        const powerupMessage = document.getElementById('powerupMessage');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const restartButton = document.getElementById('restartButton');
+        const introScreen = document.getElementById('introScreen');
+        const startButton = document.getElementById('startButton');
+
+        // Audio Elements
+        const shootSound = document.getElementById('shootSound');
+        const explosionSound = document.getElementById('explosionSound');
+        const powerupSound = document.getElementById('powerupSound');
+        const quizSound = document.getElementById('quizSound');
+        const gameOverSound = document.getElementById('gameOverSound');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const correctSound = document.getElementById('correctSound');
+        const wrongSound = document.getElementById('wrongSound');
+
+        // Game state
+        let score = 0;
+        let gameRunning = false; // Initially false until the game starts
+        let activePowerups = [];
+        let currentWave = 1;
+        let lastFrameTime = performance.now(); // Initialize lastFrameTime
+        let quizSession = []; // To hold quiz questions
+        let quizQuestionIndex = 0; // To track current quiz question
+        let destroyedNormalEnemies = 0; // To track destruction of normal enemies
+
+        // Load images
+        const playerShipImage = new Image();
+        const enemyShipImage = new Image();
+        const specialEnemyShipImage = new Image();
+        const powerupImage = new Image();
+        const asteroidImage = new Image();
+        const explosionImage = new Image();
+        const shootingStarImage = new Image();
+
+        // Image loading management
+        let imagesToLoad = 0;
+        let imagesLoaded = 0;
+
+        function imageLoaded() {
+            imagesLoaded++;
+            if (imagesLoaded === imagesToLoad) {
+                // All images have loaded
+                initializeGame();
+                introScreen.style.display = 'block';
+            }
+        }
+
+        function loadGameImages() {
+            const loadImage = (img, src) => {
+                imagesToLoad++;
+                img.src = src;
+                img.onload = imageLoaded;
+                img.onerror = () => {
+                    console.error('Failed to load image:', src);
+                    imageLoaded();
+                };
+            };
+
+            loadImage(playerShipImage, 'playerShip.png');
+            loadImage(enemyShipImage, 'enemyShip.png');
+            loadImage(specialEnemyShipImage, 'specialEnemyShip.png');
+            loadImage(powerupImage, 'powerup.png');
+            loadImage(asteroidImage, 'asteroid.png');
+            loadImage(explosionImage, 'explosion.png');
+            loadImage(shootingStarImage, 'shootingStar.png');
+        }
+
+        // Start loading images
+        loadGameImages();
+
+        // Player ship
+        const player = {
+            x: canvas.width / 2 - 25,
+            y: canvas.height - 60,
+            width: 50,
+            height: 50,
+            speed: 5,
+            bullets: [],
+            powerups: {
+                rapidFire: false,
+                shield: false,
+                doubleDamage: false
+            },
+            health: 100,
+            maxHealth: 100,
+            shootCooldown: 0, // Initialize shootCooldown
+            shootInterval: 500 // Time in milliseconds between shots
+        };
+
+        // Enemies
+        let enemies = [];
+        let enemyBullets = [];
+        const enemyTypes = [
+            { points: 10, name: 'Raw Materials', isSpecial: false },
+            { points: 20, name: 'Labor', isSpecial: false },
+            { points: 30, name: 'Capital Goods', isSpecial: false },
+            { points: 50, name: 'Special Enemy', isSpecial: true }
+        ];
+        let enemyShootInterval = 5000; // Enemy shooting interval in milliseconds
+
+        // Power-up items
+        let powerUpItems = [];
+
+        // Questions database
+        let usedQuestions = [];
+        const questions = [
+            {
+                question: "What defines an economic good?",
+                options: [
+                    "Requires resources to produce and has an opportunity cost",
+                    "Is freely available without production costs",
+                    "Is always made from renewable resources",
+                    "Does not require labor to produce"
+                ],
+                correct: 0,
+            },
+            {
+                question: "An economic good is a product that...",
+                options: [
+                    "Has no opportunity cost",
+                    "Requires resources and incurs an opportunity cost",
+                    "Is available in unlimited quantities",
+                    "Is provided by nature for free"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Time value of money implies that...",
+                options: [
+                    "Money today is worth less than money in the future",
+                    "Money today is worth more than the same amount in the future",
+                    "Money has no value over time",
+                    "Interest rates are irrelevant"
+                ],
+                correct: 1,
+            },
+            {
+                question: "Why is a smartphone considered an economic good?",
+                options: [
+                    "It's freely available to everyone",
+                    "It requires resources and has an opportunity cost to produce",
+                    "It has no production cost",
+                    "It's provided by the government"
+                ],
+                correct: 1,
+            },
+            // ... [Include all your other questions here]
+        ];
+
+        // Animated background elements
+        let stars = [];
+        let asteroids = [];
+        let shootingStars = [];
+        let explosions = [];
+
+        function initStars() {
+            stars = []; // Reset stars
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2,
+                    speed: Math.random() * 0.5 + 0.5
+                });
+            }
+        }
+
+        function initAsteroids() {
+            asteroids = [];
+            for (let i = 0; i < 5; i++) {
+                asteroids.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: 30 + Math.random() * 20,
+                    speed: 1 + Math.random(),
+                    direction: Math.random() * Math.PI * 2,
+                    isExploding: false,
+                    explosionTimer: 0,
+                    soundPlayed: false // To prevent multiple sound plays
+                });
+            }
+        }
+
+        function initShootingStars() {
+            shootingStars = [];
+            // Shooting stars are added sporadically during the game loop
+        }
+
+        function initExplosions() {
+            explosions = [];
+        }
+
+        function updateStars(deltaTime) {
+            stars.forEach(star => {
+                star.y += star.speed * (deltaTime / 16.67); // Adjust speed based on deltaTime
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
+            });
+        }
+
+        function updateAsteroids(deltaTime) {
+            asteroids.forEach(asteroid => {
+                if (!asteroid.isExploding) {
+                    asteroid.x += Math.cos(asteroid.direction) * asteroid.speed;
+                    asteroid.y += Math.sin(asteroid.direction) * asteroid.speed;
+
+                    // Wrap around the screen
+                    if (asteroid.x < -asteroid.size) asteroid.x = canvas.width + asteroid.size;
+                    if (asteroid.x > canvas.width + asteroid.size) asteroid.x = -asteroid.size;
+                    if (asteroid.y < -asteroid.size) asteroid.y = canvas.height + asteroid.size;
+                    if (asteroid.y > canvas.height + asteroid.size) asteroid.y = -asteroid.size;
+                } else {
+                    asteroid.explosionTimer -= deltaTime;
+                    if (asteroid.explosionTimer <= 0) {
+                        asteroid.isExploding = false;
+                        asteroid.explosionTimer = 0;
+                        asteroid.x = Math.random() * canvas.width;
+                        asteroid.y = Math.random() * canvas.height;
+                        asteroid.direction = Math.random() * Math.PI * 2;
+                        asteroid.speed = 1 + Math.random();
+                        asteroid.soundPlayed = false;
+                    }
+                }
+            });
+        }
+
+        function updateShootingStars(deltaTime) {
+            // Add a new shooting star randomly
+            if (Math.random() < 0.002 * (deltaTime / 16.67)) { // Adjust probability based on deltaTime
+                shootingStars.push({
+                    x: Math.random() * canvas.width,
+                    y: 0,
+                    length: 15 + Math.random() * 15,
+                    speed: 4 + Math.random() * 2,
+                    angle: Math.PI / 4 // 45 degrees downward
+                });
+            }
+
+            // Update existing shooting stars
+            for (let i = shootingStars.length - 1; i >= 0; i--) {
+                let star = shootingStars[i];
+                star.x += Math.cos(star.angle) * star.speed;
+                star.y += Math.sin(star.angle) * star.speed;
+
+                // Remove if out of bounds
+                if (star.x > canvas.width || star.y > canvas.height) {
+                    shootingStars.splice(i, 1);
+                }
+            }
+        }
+
+        function updateExplosions(deltaTime) {
+            for (let i = explosions.length - 1; i >= 0; i--) {
+                let explosion = explosions[i];
+                explosion.timer -= deltaTime;
+                if (explosion.timer <= 0) {
+                    explosions.splice(i, 1);
+                }
+            }
+        }
+
+        function drawStars() {
+            ctx.fillStyle = '#fff';
+            stars.forEach(star => {
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+            });
+        }
+
+        function drawAsteroids() {
+            asteroids.forEach(asteroid => {
+                if (!asteroid.isExploding) {
+                    ctx.drawImage(asteroidImage, asteroid.x, asteroid.y, asteroid.size, asteroid.size);
+                } else {
+                    // Draw explosion
+                    ctx.drawImage(explosionImage, asteroid.x - asteroid.size / 2, asteroid.y - asteroid.size / 2, asteroid.size * 2, asteroid.size * 2);
+                    // Play explosion sound once
+                    if (!asteroid.soundPlayed) {
+                        explosionSound.currentTime = 0;
+                        explosionSound.play();
+                        asteroid.soundPlayed = true;
+                    }
+                }
+            });
+        }
+
+        function drawShootingStars() {
+            shootingStars.forEach(star => {
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(star.x, star.y);
+                ctx.lineTo(star.x - Math.cos(star.angle) * star.length, star.y - Math.sin(star.angle) * star.length);
+                ctx.stroke();
+            });
+        }
+
+        function drawExplosions() {
+            explosions.forEach(explosion => {
+                ctx.drawImage(explosionImage, explosion.x - explosion.size / 2, explosion.y - explosion.size / 2, explosion.size, explosion.size);
+            });
+        }
+
+        // Initialize enemies
+        function initEnemies() {
+            enemies = [];
+            enemyBullets = [];
+            powerUpItems = [];
+            let rows = 5;
+            let cols = 8;
+            let enemySpeed = 1 + currentWave * 0.1;
+            enemyShootInterval = Math.max(2000, 5000 - currentWave * 500); // Decrease interval with each wave
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    let isSpecial = Math.random() < 0.1; // 10% chance to be a special enemy
+                    const enemyType = isSpecial ? enemyTypes[3] : enemyTypes[Math.floor(Math.random() * 3)];
+                    enemies.push({
+                        x: 80 + j * 80,
+                        y: 50 + i * 50,
+                        width: 40,
+                        height: 40,
+                        type: enemyType,
+                        alive: true,
+                        health: currentWave, // Enemy health increases with each wave
+                        dx: enemySpeed,
+                        dy: 0,
+                        shootTimer: Math.random() * enemyShootInterval,
+                        soundPlayed: false // To prevent multiple sound plays
+                    });
+                }
+            }
+        }
+
+        // Game controls
+        const keys = {
+            left: false,
+            right: false,
+            space: false
+        };
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') keys.left = true;
+            if (e.key === 'ArrowRight') keys.right = true;
+            if (e.key === ' ') keys.space = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft') keys.left = false;
+            if (e.key === 'ArrowRight') keys.right = false;
+            if (e.key === ' ') keys.space = false;
+        });
+
+        // Touch controls for moving the player ship smoothly
+        let isTouching = false;
+        let touchStartX = 0;
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                isTouching = true;
+                touchStartX = e.touches[0].clientX;
+                keys.space = true; // Start shooting when touch starts
+            }
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (isTouching && e.touches.length === 1) {
+                let touchX = e.touches[0].clientX;
+                // Calculate movement delta
+                let deltaX = touchX - touchStartX;
+                touchStartX = touchX;
+                // Update player position
+                player.x += deltaX;
+                // Ensure player stays within bounds
+                if (player.x < 0) player.x = 0;
+                if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+            }
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (isTouching) {
+        isTouching = false;
+        keys.space = false; // Stop shooting when touch ends
+                }
+            }
+            isTouching = true;
+        });
+
+        // Mouse controls for moving the player ship
+        canvas.addEventListener('mousemove', (e) => {
+            let rect = canvas.getBoundingClientRect();
+            let mouseX = e.clientX - rect.left;
+            // Update player position
+            player.x = mouseX - player.width / 2;
+            // Ensure player stays within bounds
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+        });
+
+        // Mouse click to shoot
+        canvas.addEventListener('mousedown', (e) => {
+            keys.space = true;
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            keys.space = false;
+        });
+
+        // Show initial quiz before game starts
+        function showInitialQuiz() {
+            gameRunning = false; // Pause the game loop during the quiz
+            quizSession = [];
+            quizQuestionIndex = 0;
+            // Select 1 random question
+            let question = getRandomQuestion();
+            quizSession.push(question);
+            displayQuizQuestion('initial'); // 'initial' indicates the initial quiz
+            quizSound.currentTime = 0;
+            quizSound.play();
+        }
+
+        // Get a random question without repetition
+        function getRandomQuestion() {
+            if (usedQuestions.length === questions.length) {
+                usedQuestions = [];
+            }
+            let question;
+            do {
+                question = questions[Math.floor(Math.random() * questions.length)];
+            } while (usedQuestions.includes(question));
+            usedQuestions.push(question);
+            return question;
+        }
+
+        // Display current quiz question
+        function displayQuizQuestion(eventType = 'none') {
+            if (quizQuestionIndex >= quizSession.length) {
+                // All quiz questions answered, resume game
+                quizContainer.style.display = 'none';
+                gameRunning = true; // Ensure game resumes after quiz
+                return;
+            }
+
+            const question = quizSession[quizQuestionIndex];
+            quizContainer.style.display = 'block';
+            document.getElementById('questionText').textContent = question.question;
+
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'quiz-option';
+                button.textContent = option;
+                button.onclick = () => handleQuizAnswer(index === question.correct, eventType);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // Handle quiz answer
+        function handleQuizAnswer(isCorrect, eventType) {
+            if (isCorrect) {
+                correctSound.currentTime = 0;
+                correctSound.play();
+                if (eventType === 'initial') {
+                    // No specific action needed
+                } else if (eventType === 'destroySpecial') {
+                    activatePowerup('shield'); // Example power-up
+                } else if (eventType === 'collectPowerup') {
+                    activatePowerup('rapidFire'); // Example power-up
+                } else if (eventType === 'destroy5Normal') {
+                    activatePowerup('doubleDamage'); // Example power-up
+                } else if (eventType === 'wave') {
+                    // No specific power-up
+                }
+            } else {
+                wrongSound.currentTime = 0;
+                wrongSound.play();
+                // Wrong answer penalty: reduce health by 10%
+                player.health = Math.max(player.health - (player.maxHealth * 0.10), 0);
+                updateHealthBar();
+                explosionSound.currentTime = 0;
+                explosionSound.play();
+                if (player.health <= 0) {
+                    handleGameOver();
+                    return;
+                }
+            }
+
+            quizQuestionIndex++;
+            if (quizQuestionIndex < quizSession.length) {
+                displayQuizQuestion(eventType);
+            } else {
+                quizContainer.style.display = 'none';
+                gameRunning = true; // Resume game after quiz
+            }
+        }
+
+        // Activate powerup
+        function activatePowerup(type) {
+            player.powerups[type] = true;
+            activePowerups.push({ type, remainingTime: 10000 }); // Duration in milliseconds
+            updatePowerupsDisplay();
+            let message = '';
+            switch(type) {
+                case 'rapidFire':
+                    message = 'Rapid Fire Activated!';
+                    break;
+                case 'shield':
+                    message = 'Shield Activated!';
+                    break;
+                case 'doubleDamage':
+                    message = 'Double Damage Activated!';
+                    break;
+                default:
+                    message = 'Power-up Activated!';
+            }
+            showPowerupMessage(message);
+            powerupSound.currentTime = 0;
+            powerupSound.play();
+        }
+
+        function updatePowerupsDisplay() {
+            powerupsDisplay.textContent = 'Power-ups: ' + 
+                (activePowerups.length ? activePowerups.map(p => p.type).join(', ') : 'None');
+        }
+
+        // Update health bar
+        function updateHealthBar() {
+            const healthPercent = (player.health / player.maxHealth) * 100;
+            healthBar.style.width = healthPercent + '%';
+            if (healthPercent > 50) {
+                healthBar.style.background = '#0f0';
+            } else if (healthPercent > 25) {
+                healthBar.style.background = '#ff0';
+            } else {
+                healthBar.style.background = '#f00';
+            }
+        }
+
+        // Show powerup message
+        function showPowerupMessage(message) {
+            powerupMessage.textContent = message;
+            powerupMessage.style.display = 'block';
+            gameRunning = false;
+            setTimeout(() => {
+                powerupMessage.style.display = 'none';
+                gameRunning = true;
+            }, 2000);
+        }
+
+        // Handle game over
+        function handleGameOver() {
+            gameRunning = false;
+            finalScoreDisplay.textContent = score;
+            gameOverSound.currentTime = 0;
+            gameOverSound.play();
+            gameOverScreen.style.display = 'block';
+        }
+
+        // Restart game
+        restartButton.addEventListener('click', () => {
+            // Reset game state variables
+            score = 0;
+            currentWave = 1;
+            player.health = player.maxHealth;
+            player.bullets = [];
+            enemies = [];
+            enemyBullets = [];
+            powerUpItems = [];
+            activePowerups = [];
+            usedQuestions = [];
+            quizSession = [];
+            quizQuestionIndex = 0;
+            destroyedNormalEnemies = 0;
+            updateHealthBar();
+            updatePowerupsDisplay();
+            scoreDisplay.textContent = `Score: ${score}`;
+            powerupsDisplay.textContent = 'Power-ups: None';
+            gameOverScreen.style.display = 'none';
+            initEnemies();
+            initStars();
+            initAsteroids();
+            initShootingStars();
+            initExplosions();
+            gameRunning = true;
+            backgroundMusic.currentTime = 0;
+            backgroundMusic.play();
+        });
+
+        // Start game from intro screen
+        startButton.addEventListener('click', () => {
+            introScreen.style.display = 'none';
+            showInitialQuiz();
+            backgroundMusic.currentTime = 0;
+            backgroundMusic.play();
+        });
+
+        // Game loop
+        function gameLoop(timestamp) {
+            // Calculate deltaTime
+            let deltaTime = timestamp - lastFrameTime;
+            lastFrameTime = timestamp;
+
+            // Always call requestAnimationFrame to keep the loop running
+            requestAnimationFrame(gameLoop);
+
+            // Do not proceed with game logic if game is not running
+            if (!gameRunning) {
+                return;
+            }
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw background stars
+            updateStars(deltaTime);
+            updateAsteroids(deltaTime);
+            updateShootingStars(deltaTime);
+            updateExplosions(deltaTime);
+            drawStars();
+            drawAsteroids();
+            drawShootingStars();
+            drawExplosions();
+
+            // Move player based on keyboard input
+            if (keys.left && player.x > 0) player.x -= player.speed;
+            if (keys.right && player.x < canvas.width - player.width) player.x += player.speed;
+
+            // Draw player
+            if (player.powerups.shield) {
+                // Draw shield bubble
+                ctx.beginPath();
+                ctx.arc(player.x + player.width / 2, player.y + player.height / 2, 30, 0, Math.PI * 2);
+                ctx.strokeStyle = '#0ff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            ctx.drawImage(playerShipImage, player.x, player.y, player.width, player.height);
+
+            // Shooting cooldown management
+            player.shootCooldown -= deltaTime;
+            if (player.shootCooldown < 0) player.shootCooldown = 0;
+
+            // Shooting
+            if (keys.space && player.shootCooldown <= 0 && player.bullets.length < (player.powerups.rapidFire ? 10 : 3)) {
+                player.bullets.push({
+                    x: player.x + player.width / 2 - 2,
+                    y: player.y,
+                    width: 4,
+                    height: 10,
+                    speed: 7
+                });
+                player.shootCooldown = player.shootInterval / (player.powerups.rapidFire ? 2 : 1);
+                shootSound.currentTime = 0;
+                shootSound.play();
+            }
+
+            // Update and draw player bullets
+            for (let bulletIndex = player.bullets.length - 1; bulletIndex >= 0; bulletIndex--) {
+                let bullet = player.bullets[bulletIndex];
+                bullet.y -= bullet.speed;
+
+                // Set bullet color based on power-ups
+                if (player.powerups.doubleDamage) {
+                    ctx.fillStyle = '#F88';
+                } else if (player.powerups.rapidFire) {
+                    ctx.fillStyle = '#0FF';
+                } else {
+                    ctx.fillStyle = '#FF0';
+                }
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+                let bulletHit = false;
+
+                // Check bullet-enemy collision
+                for (let enemyIndex = enemies.length - 1; enemyIndex >= 0; enemyIndex--) {
+                    let enemy = enemies[enemyIndex];
+                    if (enemy.alive && 
+                        bullet.x < enemy.x + enemy.width &&
+                        bullet.x + bullet.width > enemy.x &&
+                        bullet.y < enemy.y + enemy.height &&
+                        bullet.y + bullet.height > enemy.y) {
+                        
+                        // Decrease enemy health
+                        let damage = player.powerups.doubleDamage ? 2 : 1;
+                        enemy.health -= damage;
+                        if (enemy.health <= 0) {
+                            enemy.alive = false;
+                            score += enemy.type.points;
+                            // Play explosion sound
+                            explosionSound.currentTime = 0;
+                            explosionSound.play();
+
+                            // If special enemy, trigger quiz for power-up
+                            if (enemy.type.isSpecial) {
+                                showQuizForEvent('destroySpecial');
+                            } else {
+                                // Track normal enemy destruction
+                                destroyedNormalEnemies++;
+                                if (destroyedNormalEnemies >= 5) { // Trigger after 5 normal enemies
+                                    showQuizForEvent('destroy5Normal');
+                                    destroyedNormalEnemies = 0;
+                                }
+                                // Small chance to drop a power-up item
+                                if (Math.random() < 0.1) {
+                                    powerUpItems.push({
+                                        x: enemy.x + enemy.width / 2 - 15,
+                                        y: enemy.y + enemy.height,
+                                        width: 30,
+                                        height: 30,
+                                        type: 'random',
+                                        dy: 2
+                                    });
+                                }
+                            }
+                        }
+                        // Remove the bullet
+                        player.bullets.splice(bulletIndex, 1);
+                        bulletHit = true;
+                        break; // Exit the enemy loop since bullet is removed
+                    }
+                }
+
+                if (bulletHit) continue; // Move to next bullet
+
+                // Check bullet-asteroid collision
+                for (let asteroidIndex = asteroids.length - 1; asteroidIndex >= 0; asteroidIndex--) {
+                    let asteroid = asteroids[asteroidIndex];
+                    if (!asteroid.isExploding &&
+                        bullet.x < asteroid.x + asteroid.size &&
+                        bullet.x + bullet.width > asteroid.x &&
+                        bullet.y < asteroid.y + asteroid.size &&
+                        bullet.y + bullet.height > asteroid.y) {
+                        
+                        // Trigger asteroid explosion
+                        asteroid.isExploding = true;
+                        asteroid.explosionTimer = 500; // Duration of explosion in ms
+                        explosions.push({
+                            x: asteroid.x + asteroid.size / 2,
+                            y: asteroid.y + asteroid.size / 2,
+                            size: asteroid.size * 1.5,
+                            timer: 500
+                        });
+
+                        // Play explosion sound
+                        explosionSound.currentTime = 0;
+                        explosionSound.play();
+
+                        // Remove the bullet
+                        player.bullets.splice(bulletIndex, 1);
+                        break;
+                    }
+                }
+
+                // Remove bullets that are off screen
+                if (bullet.y < 0) {
+                    player.bullets.splice(bulletIndex, 1);
+                }
+            }
+
+            // Update and draw enemies
+            let anyEnemyAlive = false;
+            for (let enemyIndex = enemies.length - 1; enemyIndex >= 0; enemyIndex--) {
+                let enemy = enemies[enemyIndex];
+                if (enemy.alive) {
+                    anyEnemyAlive = true;
+                    // Enemy movement
+                    enemy.x += enemy.dx;
+                    if (enemy.x <= 0 || enemy.x + enemy.width >= canvas.width) {
+                        enemy.dx *= -1;
+                        enemy.y += 10;
+                    }
+
+                    // Draw enemy
+                    if (enemy.type.isSpecial) {
+                        ctx.drawImage(specialEnemyShipImage, enemy.x, enemy.y, enemy.width, enemy.height);
+                    } else {
+                        ctx.drawImage(enemyShipImage, enemy.x, enemy.y, enemy.width, enemy.height);
+                    }
+
+                    // Enemy shooting
+                    enemy.shootTimer -= deltaTime;
+                    if (enemy.shootTimer <= 0) {
+                        if (Math.random() < 0.2) { // Shooting chance
+                            enemyBullets.push({
+                                x: enemy.x + enemy.width / 2 - 2,
+                                y: enemy.y + enemy.height,
+                                width: 4,
+                                height: 10,
+                                speed: 2 + currentWave * 0.3
+                            });
+                            shootSound.currentTime = 0;
+                            shootSound.play();
+                        }
+                        enemy.shootTimer = enemyShootInterval + Math.random() * 500;
+                    }
+
+                    // Check for collision with player
+                    if (
+                        enemy.x < player.x + player.width &&
+                        enemy.x + enemy.width > player.x &&
+                        enemy.y < player.y + player.height &&
+                        enemy.y + enemy.height > player.y
+                    ) {
+                        player.health = 0;
+                        updateHealthBar();
+                    }
+                }
+            }
+
+            // Update and draw enemy bullets
+            for (let bulletIndex = enemyBullets.length - 1; bulletIndex >= 0; bulletIndex--) {
+                let bullet = enemyBullets[bulletIndex];
+                bullet.y += bullet.speed;
+
+                ctx.fillStyle = '#F00';
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+                // Check bullet-player collision
+                if (
+                    bullet.x < player.x + player.width &&
+                    bullet.x + bullet.width > player.x &&
+                    bullet.y < player.y + player.height &&
+                    bullet.y + bullet.height > player.y
+                ) {
+                    if (!player.powerups.shield) {
+                        player.health -= 10;
+                        updateHealthBar();
+                        // Play hit sound
+                        explosionSound.currentTime = 0;
+                        explosionSound.play();
+                    }
+                    enemyBullets.splice(bulletIndex, 1);
+                    continue; // Move to next bullet
+                }
+
+                // Remove bullets that are off screen
+                if (bullet.y > canvas.height) {
+                    enemyBullets.splice(bulletIndex, 1);
+                }
+            }
+
+            // Update and draw power-up items
+            for (let itemIndex = powerUpItems.length - 1; itemIndex >= 0; itemIndex--) {
+                let item = powerUpItems[itemIndex];
+                item.y += item.dy;
+
+                ctx.drawImage(powerupImage, item.x, item.y, item.width, item.height);
+
+                // Check for collision with player
+                if (
+                    item.x < player.x + player.width &&
+                    item.x + item.width > player.x &&
+                    item.y < player.y + player.height &&
+                    item.y + item.height > player.y
+                ) {
+                    // Player collects the power-up
+                    powerUpItems.splice(itemIndex, 1);
+                    showQuizForEvent('collectPowerup');
+                    powerupSound.currentTime = 0;
+                    powerupSound.play();
+                }
+
+                // Remove items that are off screen
+                if (item.y > canvas.height) {
+                    powerUpItems.splice(itemIndex, 1);
+                }
+            }
+
+            // Update active power-ups
+            for (let i = activePowerups.length - 1; i >= 0; i--) {
+                let powerUp = activePowerups[i];
+                powerUp.remainingTime -= deltaTime;
+                if (powerUp.remainingTime <= 0) {
+                    player.powerups[powerUp.type] = false;
+                    activePowerups.splice(i, 1);
+                    updatePowerupsDisplay();
+                }
+            }
+
+            // Update score display
+            scoreDisplay.textContent = `Score: ${score}`;
+
+            // Check player health
+            if (player.health <= 0) {
+                handleGameOver();
+            }
+
+            // Check wave completion
+            if (!anyEnemyAlive) {
+                // Initiate quiz session before starting the next wave
+                showQuizForEvent('wave', 3); // 3 questions before next wave
+                // Reset for next wave after quiz
+                currentWave++;
+                destroyedNormalEnemies = 0;
+                initEnemies();
+            }
+        }
+
+        // Show quiz during gameplay
+        function showQuizForEvent(eventType, numberOfQuestions = 1) {
+            gameRunning = false;
+            quizSession = [];
+            quizQuestionIndex = 0;
+
+            // Select required number of questions
+            for (let i = 0; i < numberOfQuestions; i++) {
+                let question = getRandomQuestion();
+                quizSession.push(question);
+            }
+
+            displayQuizQuestion(eventType);
+            quizSound.currentTime = 0;
+            quizSound.play();
+        }
+
+        // Initialize the game
+        function initializeGame() {
+            updateHealthBar();
+            updatePowerupsDisplay();
+            initStars();
+            initAsteroids();
+            initShootingStars();
+            initExplosions();
+            initEnemies(); // Ensure enemies are initialized
+            requestAnimationFrame(gameLoop); // Start the game loop
+        }
+
+    </script>
+</body>
+</html>
