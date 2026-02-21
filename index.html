@@ -1,0 +1,4111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Ultra Pro Space Invaders - Premium Educational Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            user-select: none; 
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            position: relative;
+        }
+
+        /* Premium animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center bottom, #001a44 0%, #000 70%);
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at top right, rgba(138, 43, 226, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            animation: nebulaPulse 20s ease-in-out infinite;
+        }
+
+        @keyframes nebulaPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.1; }
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            margin: auto;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        #gameCanvas {
+            display: block;
+            background: transparent;
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        /* Enhanced HUD styling */
+        .hud-element {
+            position: absolute;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 20, 40, 0.9) 100%);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), inset 0 0 10px rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .hud-element.pulse {
+            animation: hudPulse 0.5s ease-out;
+        }
+
+        @keyframes hudPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        #score {
+            top: 20px;
+            left: 20px;
+            min-width: 180px;
+        }
+
+        #powerups {
+            top: 70px;
+            left: 20px;
+            min-width: 250px;
+        }
+
+        #wave {
+            top: 120px;
+            left: 20px;
+            min-width: 120px;
+        }
+
+        /* Combo counter with special effects */
+        #comboContainer {
+            position: absolute;
+            top: 170px;
+            left: 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 18px;
+            color: #ff0;
+            text-shadow: 0 0 10px #ff0, 0 0 20px #ff8800;
+            opacity: 0;
+            transition: opacity 0.3s;
+            transform-origin: center;
+        }
+
+        #comboContainer.active {
+            opacity: 1;
+            animation: comboShake 0.3s ease-out;
+        }
+
+        #comboContainer.super {
+            color: #f0f;
+            text-shadow: 0 0 15px #f0f, 0 0 30px #ff00ff;
+            font-size: 24px;
+        }
+
+        @keyframes comboShake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-5px) rotate(-5deg); }
+            75% { transform: translateX(5px) rotate(5deg); }
+        }
+
+        /* Multiplier display */
+        #multiplierDisplay {
+            position: absolute;
+            top: 220px;
+            left: 20px;
+            font-size: 16px;
+            color: #0ff;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #multiplierDisplay.active {
+            opacity: 1;
+        }
+
+        /* Enhanced control buttons */
+        .control-button {
+            position: absolute;
+            top: 20px;
+            background: linear-gradient(135deg, rgba(0, 30, 60, 0.9) 0%, rgba(0, 10, 30, 0.9) 100%);
+            border: 2px solid #0ff;
+            color: #0ff;
+            padding: 10px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .control-button:hover {
+            background: linear-gradient(135deg, rgba(0, 60, 120, 0.9) 0%, rgba(0, 20, 60, 0.9) 100%);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .control-button:active {
+            transform: translateY(0);
+        }
+
+        #pauseBtn { right: 220px; }
+        #soundBtn { right: 320px; }
+        #helpBtn { right: 420px; }
+
+        /* Premium health bar */
+        #healthBarContainer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            height: 30px;
+            border: 2px solid #0ff;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #healthBar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00 0%, #00ffaa 50%, #00ff00 100%);
+            background-size: 200% 100%;
+            transition: width 0.3s ease, background 0.3s ease;
+            position: relative;
+            animation: healthGradient 3s linear infinite;
+        }
+
+        @keyframes healthGradient {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        #healthBar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(0,0,0,0.2) 100%);
+        }
+
+        #healthText {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: #000;
+            text-shadow: 0 0 3px rgba(255,255,255,0.5);
+            z-index: 1;
+        }
+
+        /* Shield indicator */
+        #shieldIndicator {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            width: 200px;
+            height: 10px;
+            border: 1px solid #0ff;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #shieldIndicator.active {
+            opacity: 1;
+        }
+
+        #shieldBar {
+            height: 100%;
+            background: linear-gradient(90deg, #0ff, #00f);
+            width: 100%;
+            transition: width 0.1s linear;
+        }
+
+        /* Streak display */
+        #streakDisplay {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            font-size: 16px;
+            color: #ff0;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        #streakDisplay.active {
+            opacity: 1;
+            animation: streakGlow 1s ease-out;
+        }
+
+        @keyframes streakGlow {
+            0%, 100% { text-shadow: 0 0 10px #ff0; }
+            50% { text-shadow: 0 0 20px #ff0, 0 0 30px #ff8800; }
+        }
+
+        /* Enhanced intro screen */
+        #introScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(0, 20, 80, 0.95) 0%, rgba(0, 10, 40, 0.95) 100%);
+            padding: 50px;
+            border: 3px solid #0ff;
+            box-shadow: 0 0 50px #0ff, inset 0 0 30px rgba(0, 255, 255, 0.2);
+            border-radius: 20px;
+            text-align: center;
+            width: 80%;
+            max-width: 700px;
+            animation: introSlide 0.5s ease-out;
+        }
+
+        @keyframes introSlide {
+            from {
+                transform: translate(-50%, -50%) scale(0.8) rotateX(90deg);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1) rotateX(0deg);
+                opacity: 1;
+            }
+        }
+
+        #introScreen h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 32px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #0ff, #f0f, #0ff);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGradient 3s linear infinite;
+        }
+
+        @keyframes titleGradient {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        #introScreen .subtitle {
+            font-size: 18px;
+            color: #ff0;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px #ff0;
+            letter-spacing: 3px;
+        }
+
+        /* Premium button */
+        .game-button {
+            margin: 10px;
+            padding: 18px 40px;
+            background: linear-gradient(45deg, #0066cc, #004499);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 102, 204, 0.4);
+        }
+
+        .game-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .game-button:hover::before {
+            left: 100%;
+        }
+
+        .game-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 102, 204, 0.6);
+        }
+
+        /* Settings screen */
+        #settingsScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(0, 20, 80, 0.95) 0%, rgba(0, 10, 40, 0.95) 100%);
+            padding: 40px;
+            border: 3px solid #0ff;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 5;
+            width: 85%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 0 50px #0ff, inset 0 0 30px rgba(0, 255, 255, 0.1);
+        }
+
+        /* Enhanced action buttons */
+        .action-button {
+            display: inline-block;
+            margin: 8px;
+            padding: 0;
+            background: linear-gradient(135deg, rgba(0, 60, 120, 0.9) 0%, rgba(0, 30, 60, 0.9) 100%);
+            border: 2px solid #0ff;
+            border-radius: 15px;
+            cursor: pointer;
+            min-width: 220px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .action-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .action-button:hover::before {
+            left: 100%;
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5);
+            background: linear-gradient(135deg, rgba(0, 80, 160, 0.9) 0%, rgba(0, 40, 80, 0.9) 100%);
+        }
+
+        .action-button.danger {
+            background: linear-gradient(135deg, rgba(120, 30, 30, 0.9) 0%, rgba(60, 15, 15, 0.9) 100%);
+            border-color: #f88;
+            box-shadow: 0 5px 15px rgba(255, 136, 136, 0.3);
+        }
+
+        .action-button.danger:hover {
+            background: linear-gradient(135deg, rgba(160, 40, 40, 0.9) 0%, rgba(80, 20, 20, 0.9) 100%);
+            box-shadow: 0 8px 25px rgba(255, 136, 136, 0.5);
+        }
+
+        .button-icon {
+            display: block;
+            font-size: 28px;
+            padding-top: 15px;
+            padding-bottom: 5px;
+        }
+
+        .button-text {
+            display: block;
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 0 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .button-subtitle {
+            display: block;
+            color: #8cf;
+            font-size: 11px;
+            padding: 0 20px 15px;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        .action-button.danger .button-subtitle {
+            color: #faa;
+        }
+
+        /* Basic quiz option style for other buttons */
+        .quiz-option {
+            margin: 10px;
+            padding: 12px 25px;
+            background: rgba(0,50,100,0.8);
+            border: 2px solid #0ff;
+            color: #0ff;
+            cursor: pointer;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .quiz-option:hover {
+            background: rgba(0,100,200,0.9);
+            box-shadow: 0 0 20px #0ff;
+        }
+
+        #settingsScreen::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #settingsScreen::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        #settingsScreen::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #0ff, #00f);
+            border-radius: 10px;
+        }
+
+        /* Quiz container with premium effects */
+        .quiz-container {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(0, 30, 100, 0.95) 0%, rgba(0, 15, 50, 0.95) 100%);
+            padding: 40px;
+            border: 3px solid #0ff;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            z-index: 6;
+            box-shadow: 0 0 60px #0ff, inset 0 0 30px rgba(0, 255, 255, 0.2);
+            animation: quizAppear 0.5s ease-out;
+        }
+
+        @keyframes quizAppear {
+            from {
+                transform: translate(-50%, -50%) scale(0) rotate(180deg);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        /* Quiz timer with circular progress */
+        #quizTimerContainer {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timer-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+            top: 0;
+            left: 0;
+        }
+
+        .timer-circle-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 8;
+        }
+
+        .timer-circle-progress {
+            fill: none;
+            stroke: #0ff;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s linear, stroke 0.3s;
+        }
+
+        .timer-circle-progress.warning {
+            stroke: #ff0;
+        }
+
+        .timer-circle-progress.danger {
+            stroke: #f00;
+        }
+
+        #quizTimerText {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        /* Power-up message with effects */
+        #powerupMessage {
+            display: none;
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(0, 50, 150, 0.95) 0%, rgba(0, 25, 75, 0.95) 100%);
+            padding: 30px 50px;
+            border: 3px solid #0ff;
+            border-radius: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 6;
+            box-shadow: 0 0 50px #0ff;
+            animation: powerupBounce 0.5s ease-out;
+        }
+
+        @keyframes powerupBounce {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            60% {
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Game over screen */
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(50, 0, 0, 0.95) 0%, rgba(20, 0, 0, 0.95) 100%);
+            border: 3px solid #f00;
+            border-radius: 20px;
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            padding: 40px;
+            z-index: 6;
+            box-shadow: 0 0 60px #f00;
+            animation: gameOverZoom 0.5s ease-out;
+        }
+
+        @keyframes gameOverZoom {
+            from {
+                transform: translate(-50%, -50%) scale(2);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        #gameOverScreen.victory {
+            background: linear-gradient(135deg, rgba(0, 50, 0, 0.95) 0%, rgba(0, 25, 0, 0.95) 100%);
+            border-color: #0f0;
+            box-shadow: 0 0 60px #0f0;
+        }
+
+        #gameOverScreen h2 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 30px currentColor;
+        }
+
+        /* Achievement notifications */
+        #achievementNotification {
+            position: absolute;
+            top: 50%;
+            right: -400px;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.9) 0%, rgba(255, 140, 0, 0.9) 100%);
+            padding: 20px 30px;
+            border-radius: 10px;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            transition: right 0.5s ease-out;
+            z-index: 10;
+        }
+
+        #achievementNotification.show {
+            right: 20px;
+        }
+
+        /* Damage numbers */
+        .damage-number {
+            position: absolute;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 16px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: damageFloat 1s ease-out forwards;
+        }
+
+        @keyframes damageFloat {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-50px) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* Warning indicator */
+        #warningIndicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: #f00;
+            font-weight: bold;
+            text-shadow: 0 0 20px #f00;
+            opacity: 0;
+            pointer-events: none;
+            animation: warningPulse 1s ease-out;
+        }
+
+        @keyframes warningPulse {
+            0%, 100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.5);
+            }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .hud-element {
+                font-size: 12px;
+                padding: 8px 15px;
+            }
+            
+            .control-button {
+                padding: 8px 12px;
+                font-size: 10px;
+            }
+            
+            #pauseBtn { right: 110px; }
+            #soundBtn { right: 190px; }
+            #helpBtn { display: none; }
+            
+            #healthBarContainer {
+                width: 150px;
+                height: 25px;
+            }
+            
+            #comboContainer {
+                font-size: 14px;
+            }
+            
+            #introScreen h1 {
+                font-size: 24px;
+            }
+        }
+
+        /* Loading animation */
+        .loading-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .loading-text {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 24px;
+            color: #0ff;
+            animation: loadingBlink 1s ease-in-out infinite;
+        }
+
+        @keyframes loadingBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <div id="loadingContainer" class="loading-container">
+        <div class="loading-text">LOADING...</div>
+    </div>
+
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- HUD Elements -->
+        <div id="score" class="hud-element">Score: 0</div>
+        <div id="powerups" class="hud-element">Power-ups: None</div>
+        <div id="wave" class="hud-element">Wave: 1 | Questions: 0</div>
+        <div id="comboContainer">
+            <span id="comboText">COMBO</span> x<span id="comboValue">0</span>
+        </div>
+        <div id="multiplierDisplay">Multiplier: x<span id="multiplierValue">1.0</span></div>
+        
+        <!-- Control buttons -->
+        <button id="pauseBtn" class="control-button">⏸️ Pause</button>
+        <button id="soundBtn" class="control-button">🔊 Sound</button>
+        <button id="helpBtn" class="control-button">❓ Help</button>
+        
+        <!-- Health and shield -->
+        <div id="healthBarContainer">
+            <div id="healthBar"></div>
+            <div id="healthText">100/100</div>
+        </div>
+        <div id="shieldIndicator">
+            <div id="shieldBar"></div>
+        </div>
+        <div id="streakDisplay">STREAK: <span id="streakValue">0</span></div>
+
+        <!-- Achievement notification -->
+        <div id="achievementNotification"></div>
+
+        <!-- Warning indicator -->
+        <div id="warningIndicator">⚠️ DANGER ⚠️</div>
+
+        <!-- Intro Screen -->
+        <div id="introScreen">
+            <h1>ULTRA PRO<br>SPACE INVADERS</h1>
+            <div class="subtitle">PREMIUM EDUCATIONAL EDITION</div>
+            <p style="font-size: 16px; line-height: 1.8; color: #fff; margin-bottom: 30px;">
+                Welcome to the ultimate educational space adventure!<br><br>
+                <strong style="color: #0ff;">LEARN WHILE YOU PLAY:</strong><br>
+                ✦ Answer questions to gain powerful abilities<br>
+                ✦ Build knowledge streaks for bonus rewards<br>
+                ✦ Every wave ends with a mini-boss challenge<br>
+                ✦ Questions appear frequently but naturally<br>
+                ✦ Wrong answers help you learn, not punish<br>
+                ✦ Earn grades and track learning progress<br><br>
+                <strong style="color: #ff0;">Destroy enemies, answer questions, save Earth!</strong>
+            </p>
+            <button id="introStartBtn" class="game-button">LAUNCH MISSION</button>
+        </div>
+
+        <!-- Settings Screen -->
+        <div id="settingsScreen">
+            <h2 style="font-family: 'Press Start 2P', cursive; font-size: 28px; color: #0ff; text-shadow: 0 0 20px #0ff; margin-bottom: 30px;">MISSION CONFIGURATION</h2>
+            
+            <div class="difficulty-selector" style="margin: 25px 0; display: flex; justify-content: center; gap: 20px;">
+                <button data-difficulty="easy" class="active" style="padding: 12px 25px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s;">CADET</button>
+                <button data-difficulty="medium" style="padding: 12px 25px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s;">PILOT</button>
+                <button data-difficulty="hard" style="padding: 12px 25px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s;">ACE</button>
+            </div>
+
+            <div class="upload-section">
+                <button id="downloadExcelTemplateBtn" class="action-button">
+                    <span class="button-icon">📄</span>
+                    <span class="button-text">Download Template</span>
+                    <span class="button-subtitle">Get question format</span>
+                </button>
+                <button id="importExcelBtn" class="action-button">
+                    <span class="button-icon">📂</span>
+                    <span class="button-text">Import Questions</span>
+                    <span class="button-subtitle">Load your questions</span>
+                </button>
+                <button id="addQuestionSetBtn" class="action-button">
+                    <span class="button-icon">➕</span>
+                    <span class="button-text">Add Manually</span>
+                    <span class="button-subtitle">Create new question</span>
+                </button>
+                <button id="resetToDefaultBtn" class="action-button danger">
+                    <span class="button-icon">🔄</span>
+                    <span class="button-text">Reset to Default</span>
+                    <span class="button-subtitle">Use built-in questions</span>
+                </button>
+                <p style="margin-top: 15px; font-size: 13px; color: #aaa;">
+                    Customize your learning experience with your own questions
+                </p>
+            </div>
+            
+            <div id="questionList" style="height: 200px; margin: 20px auto; background: rgba(0,20,40,0.8); border: 2px solid #0aa; border-radius: 10px; overflow-y: auto; padding: 15px; width: 90%; color: #0ff;"></div>
+            
+            <div class="category-selector" id="categorySelector" style="margin: 20px 0;">
+                <!-- Categories will be added here dynamically -->
+            </div>
+            
+            <button id="startGameBtn" class="game-button">BEGIN MISSION</button>
+        </div>
+
+        <!-- Add Question Form -->
+        <div id="questionForm" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, rgba(0,30,80,0.95) 0%, rgba(0,15,40,0.95) 100%); padding: 40px; border: 3px solid #0ff; border-radius: 20px; text-align: center; z-index: 6; width: 80%; max-width: 500px; box-shadow: 0 0 50px #0ff;">
+            <h3 style="font-size: 24px; margin-bottom: 25px; color: #0ff;">Add New Question</h3>
+            <textarea id="newQuestionText" placeholder="Enter your question" rows="3" style="width: 90%; margin: 10px; padding: 12px; background: rgba(0,20,40,0.8); border: 2px solid #0ff; color: #fff; border-radius: 10px; font-family: inherit; font-size: 14px;"></textarea>
+            <div id="newOptions">
+                <input type="text" placeholder="Option A" class="option-input" style="width: 90%; margin: 8px; padding: 12px; background: rgba(0,20,40,0.8); border: 2px solid #0ff; color: #fff; border-radius: 10px; font-family: inherit;"><br>
+                <input type="text" placeholder="Option B" class="option-input" style="width: 90%; margin: 8px; padding: 12px; background: rgba(0,20,40,0.8); border: 2px solid #0ff; color: #fff; border-radius: 10px; font-family: inherit;"><br>
+                <input type="text" placeholder="Option C" class="option-input" style="width: 90%; margin: 8px; padding: 12px; background: rgba(0,20,40,0.8); border: 2px solid #0ff; color: #fff; border-radius: 10px; font-family: inherit;"><br>
+                <input type="text" placeholder="Option D" class="option-input" style="width: 90%; margin: 8px; padding: 12px; background: rgba(0,20,40,0.8); border: 2px solid #0ff; color: #fff; border-radius: 10px; font-family: inherit;"><br>
+            </div>
+            <select id="correctAnswer" style="margin: 10px; width: 95%; padding: 12px; background: rgba(0,20,40,0.8); border: 2px solid #0ff; color: #fff; border-radius: 10px; font-family: inherit;">
+                <option value="0">Option A is correct</option>
+                <option value="1">Option B is correct</option>
+                <option value="2">Option C is correct</option>
+                <option value="3">Option D is correct</option>
+            </select>
+            <input type="text" id="questionCategory" placeholder="Category (optional)" style="width: 90%; margin: 8px; padding: 12px; background: rgba(0,20,40,0.8); border: 2px solid #0ff; color: #fff; border-radius: 10px; font-family: inherit;">
+            <div style="margin-top: 25px;">
+                <button id="saveNewQuestionBtn" class="game-button" style="display: inline-block; margin: 0 10px;">SAVE</button>
+                <button id="cancelNewQuestionBtn" class="quiz-option" style="display: inline-block; padding: 15px 30px; background: rgba(50,0,0,0.8); border: 2px solid #f00; color: #f00;">CANCEL</button>
+            </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div class="quiz-container" id="quizContainer">
+            <h2 id="questionText" style="font-size: 20px; margin-bottom: 20px; color: #fff;"></h2>
+            <div id="quizTimerContainer">
+                <svg class="timer-circle" viewBox="0 0 100 100">
+                    <circle class="timer-circle-bg" cx="50" cy="50" r="45"></circle>
+                    <circle class="timer-circle-progress" cx="50" cy="50" r="45" 
+                            stroke-dasharray="283" stroke-dashoffset="0"></circle>
+                </svg>
+                <div id="quizTimerText">30</div>
+            </div>
+            <div id="quizCategory" style="margin-bottom: 15px; font-size: 14px; color: #ff0;"></div>
+            <div id="options"></div>
+        </div>
+
+        <!-- Power-up Message -->
+        <div id="powerupMessage"></div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen">
+            <h2>GAME OVER!</h2>
+            <div id="gameStats" style="font-size: 16px; margin-bottom: 30px; text-align: left; display: inline-block; background: rgba(0,0,0,0.5); padding: 25px; border-radius: 15px; border: 2px solid currentColor;">
+                <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Final Score: <span id="finalScore" style="color: #0ff; font-weight: bold;">0</span></div>
+                <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Waves Completed: <span id="wavesCompleted" style="color: #0ff; font-weight: bold;">0</span></div>
+                <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Enemies Destroyed: <span id="enemiesDestroyed" style="color: #0ff; font-weight: bold;">0</span></div>
+                <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Questions Answered: <span id="correctAnswers" style="color: #0ff; font-weight: bold;">0</span>/<span id="totalQuestions" style="color: #0ff; font-weight: bold;">0</span></div>
+                <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Learning Score: <span id="educationalScoreDisplay" style="color: #0f0; font-weight: bold;">0</span></div>
+                <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Best Combo: <span id="bestCombo" style="color: #0ff; font-weight: bold;">0</span></div>
+                <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Accuracy Rate: <span id="accuracy" style="color: #0ff; font-weight: bold;">0</span>%</div>
+                <div id="gradeDisplay" style="margin: 15px 0; font-size: 20px; text-align: center; font-weight: bold;"></div>
+            </div>
+            <div>
+                <button id="restartButton" class="game-button">RETRY MISSION</button>
+                <button id="backToMenuButton" class="game-button" style="background: linear-gradient(45deg, #cc0000, #990000);">MAIN MENU</button>
+            </div>
+        </div>
+
+        <!-- Pause Screen -->
+        <div id="pauseScreen" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, rgba(0,30,80,0.95) 0%, rgba(0,15,40,0.95) 100%); padding: 40px; border: 3px solid #0ff; border-radius: 20px; text-align: center; z-index: 7; width: 60%; max-width: 500px; box-shadow: 0 0 50px #0ff;">
+            <h2 style="font-family: 'Press Start 2P', cursive; font-size: 28px; margin-bottom: 30px; color: #0ff; text-shadow: 0 0 20px #0ff;">GAME PAUSED</h2>
+            <div style="text-align: left; font-size: 14px; margin: 25px 0; padding: 20px; background: rgba(0,0,40,0.8); border-radius: 15px; border: 1px solid #0aa; color: #fff;">
+                <p style="font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #0ff;">CONTROLS:</p>
+                <p style="margin: 8px 0;">← → Arrow Keys / Mouse: Move Ship</p>
+                <p style="margin: 8px 0;">SPACE / Click: Fire Weapons</p>
+                <p style="margin: 8px 0;">P: Pause/Resume</p>
+                <p style="margin: 8px 0;">M: Toggle Sound</p>
+                <p style="margin: 8px 0;">H: Show Help</p>
+            </div>
+            <button id="resumeButton" class="game-button">RESUME</button>
+            <button id="quitButton" class="game-button" style="background: linear-gradient(45deg, #cc0000, #990000);">QUIT TO MENU</button>
+        </div>
+
+        <!-- Help Screen -->
+        <div id="helpScreen" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, rgba(0,30,80,0.95) 0%, rgba(0,15,40,0.95) 100%); padding: 40px; border: 3px solid #0ff; border-radius: 20px; text-align: left; z-index: 7; width: 70%; max-width: 700px; max-height: 80%; overflow-y: auto; box-shadow: 0 0 50px #0ff;">
+            <h2 style="text-align: center; font-family: 'Press Start 2P', cursive; font-size: 26px; margin-bottom: 30px; color: #0ff; text-shadow: 0 0 20px #0ff;">MISSION BRIEFING</h2>
+            
+            <h3 style="color: #ff0; margin: 20px 0 15px 0; font-size: 18px;">🎮 CONTROLS</h3>
+            <ul style="list-style: none; margin-bottom: 25px; line-height: 2; color: #fff;">
+                <li>• Arrow keys or mouse to move your ship</li>
+                <li>• Space bar, click, or tap to shoot</li>
+                <li>• P key to pause/resume</li>
+                <li>• M key to toggle sound</li>
+                <li>• H key to show this help</li>
+            </ul>
+            
+            <h3 style="color: #ff0; margin: 20px 0 15px 0; font-size: 18px;">🎯 OBJECTIVES</h3>
+            <ul style="list-style: none; margin-bottom: 25px; line-height: 2; color: #fff;">
+                <li>• Destroy enemy ships to score points</li>
+                <li>• Avoid asteroids and enemy fire</li>
+                <li>• Collect power-ups for temporary abilities</li>
+                <li>• Answer quiz questions correctly for bonuses</li>
+                <li>• Build combos for score multipliers</li>
+                <li>• Complete all waves to achieve victory</li>
+            </ul>
+            
+            <h3 style="color: #ff0; margin: 20px 0 15px 0; font-size: 18px;">💎 POWER-UPS</h3>
+            <ul style="list-style: none; margin-bottom: 25px; line-height: 2; color: #fff;">
+                <li>• <span style="color: #ffff00;">Rapid Fire:</span> Triple your fire rate (15s)</li>
+                <li>• <span style="color: #00ffff;">Shield:</span> Complete invincibility (10s)</li>
+                <li>• <span style="color: #ff00ff;">Double Damage:</span> 2x damage output (15s)</li>
+            </ul>
+            
+            <h3 style="color: #ff0; margin: 20px 0 15px 0; font-size: 18px;">📚 EDUCATIONAL SYSTEM</h3>
+            <p style="line-height: 1.8; margin-bottom: 25px; color: #fff;">
+                This game is designed for learning! Questions appear frequently to test and improve your knowledge:
+            </p>
+            <ul style="list-style: none; margin-bottom: 25px; line-height: 2; color: #fff;">
+                <li>• Questions appear after every 5 normal enemies</li>
+                <li>• Special enemies always trigger questions</li>
+                <li>• Every wave ends with a mini-boss and quiz</li>
+                <li>• Correct answers give powerful rewards</li>
+                <li>• Wrong answers are learning opportunities</li>
+                <li>• Build streaks for massive bonuses</li>
+                <li>• Earn grades based on accuracy</li>
+                <li>• Educational score tracks learning progress</li>
+            </ul>
+            
+            <h3 style="color: #ff0; margin: 20px 0 15px 0; font-size: 18px;">⭐ TIPS FOR SUCCESS</h3>
+            <ul style="list-style: none; margin-bottom: 25px; line-height: 2; color: #fff;">
+                <li>• Focus on accuracy over speed in quizzes</li>
+                <li>• Use the generous timer to think carefully</li>
+                <li>• Consecutive correct answers multiply rewards</li>
+                <li>• Power-ups last longer as learning rewards</li>
+                <li>• Mini-bosses appear at the end of each wave</li>
+                <li>• Import custom questions for personalized learning</li>
+            </ul>
+            
+            <h3 style="color: #ff0; margin: 20px 0 15px 0; font-size: 18px;">🏆 SCORING & GRADES</h3>
+            <ul style="list-style: none; margin-bottom: 25px; line-height: 2; color: #fff;">
+                <li>• Basic enemies: 10-30 points</li>
+                <li>• Elite enemies: 100 points</li>
+                <li>• Mini-bosses: 200+ points</li>
+                <li>• Quiz correct: 100 points + streak bonus</li>
+                <li>• Educational score: Separate learning tracker</li>
+                <li>• Grades: A+ (90%+), A (80%+), B (70%+), C (60%+)</li>
+            </ul>
+            
+            <button id="closeHelpBtn" class="game-button" style="display: block; margin: 0 auto;">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="shootSound" src="shoot.mp3" preload="auto"></audio>
+    <audio id="explosionSound" src="explosion.mp3" preload="auto"></audio>
+    <audio id="powerupSound" src="powerup.mp3" preload="auto"></audio>
+    <audio id="quizSound" src="quiz.mp3" preload="auto"></audio>
+    <audio id="gameOverSound" src="gameover.mp3" preload="auto"></audio>
+    <audio id="backgroundMusic" src="background.mp3" preload="auto" loop></audio>
+    <audio id="correctSound" src="correct.mp3" preload="auto"></audio>
+    <audio id="wrongSound" src="wrong.mp3" preload="auto"></audio>
+    <audio id="levelUpSound" src="powerup.mp3" preload="auto"></audio>
+
+    <script>
+// Game Canvas and Context
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// UI Elements
+const loadingContainer = document.getElementById('loadingContainer');
+const introScreen = document.getElementById('introScreen');
+const introStartBtn = document.getElementById('introStartBtn');
+const settingsScreen = document.getElementById('settingsScreen');
+const startGameBtn = document.getElementById('startGameBtn');
+const downloadExcelTemplateBtn = document.getElementById('downloadExcelTemplateBtn');
+const importExcelBtn = document.getElementById('importExcelBtn');
+const addQuestionSetBtn = document.getElementById('addQuestionSetBtn');
+const resetToDefaultBtn = document.getElementById('resetToDefaultBtn');
+const questionList = document.getElementById('questionList');
+const questionForm = document.getElementById('questionForm');
+const newQuestionText = document.getElementById('newQuestionText');
+const newOptions = document.querySelectorAll('.option-input');
+const correctAnswer = document.getElementById('correctAnswer');
+const questionCategory = document.getElementById('questionCategory');
+const saveNewQuestionBtn = document.getElementById('saveNewQuestionBtn');
+const cancelNewQuestionBtn = document.getElementById('cancelNewQuestionBtn');
+const quizContainer = document.getElementById('quizContainer');
+const questionText = document.getElementById('questionText');
+const optionsContainer = document.getElementById('options');
+const quizTimerText = document.getElementById('quizTimerText');
+const quizCategory = document.getElementById('quizCategory');
+const scoreDisplay = document.getElementById('score');
+const powerupsDisplay = document.getElementById('powerups');
+const waveDisplay = document.getElementById('wave');
+const healthBar = document.getElementById('healthBar');
+const healthText = document.getElementById('healthText');
+const shieldIndicator = document.getElementById('shieldIndicator');
+const shieldBar = document.getElementById('shieldBar');
+const powerupMessage = document.getElementById('powerupMessage');
+const gameOverScreen = document.getElementById('gameOverScreen');
+const finalScoreDisplay = document.getElementById('finalScore');
+const wavesCompletedDisplay = document.getElementById('wavesCompleted');
+const enemiesDestroyedDisplay = document.getElementById('enemiesDestroyed');
+const correctAnswersDisplay = document.getElementById('correctAnswers');
+const totalQuestionsDisplay = document.getElementById('totalQuestions');
+const restartButton = document.getElementById('restartButton');
+const backToMenuButton = document.getElementById('backToMenuButton');
+const pauseBtn = document.getElementById('pauseBtn');
+const soundBtn = document.getElementById('soundBtn');
+const helpBtn = document.getElementById('helpBtn');
+const pauseScreen = document.getElementById('pauseScreen');
+const resumeButton = document.getElementById('resumeButton');
+const quitButton = document.getElementById('quitButton');
+const helpScreen = document.getElementById('helpScreen');
+const closeHelpBtn = document.getElementById('closeHelpBtn');
+const difficultyButtons = document.querySelectorAll('.difficulty-selector button');
+const categorySelector = document.getElementById('categorySelector');
+const comboContainer = document.getElementById('comboContainer');
+const comboValue = document.getElementById('comboValue');
+const multiplierDisplay = document.getElementById('multiplierDisplay');
+const multiplierValue = document.getElementById('multiplierValue');
+const streakDisplay = document.getElementById('streakDisplay');
+const streakValue = document.getElementById('streakValue');
+const bestComboDisplay = document.getElementById('bestCombo');
+const accuracyDisplay = document.getElementById('accuracy');
+const educationalScoreDisplay = document.getElementById('educationalScoreDisplay');
+const gradeDisplay = document.getElementById('gradeDisplay');
+const achievementNotification = document.getElementById('achievementNotification');
+const warningIndicator = document.getElementById('warningIndicator');
+
+// Audio Elements
+const shootSound = document.getElementById('shootSound');
+const explosionSound = document.getElementById('explosionSound');
+const powerupSound = document.getElementById('powerupSound');
+const quizSound = document.getElementById('quizSound');
+const gameOverSound = document.getElementById('gameOverSound');
+const backgroundMusic = document.getElementById('backgroundMusic');
+const correctSound = document.getElementById('correctSound');
+const wrongSound = document.getElementById('wrongSound');
+const levelUpSound = document.getElementById('levelUpSound');
+
+// Game state variables
+let score = 0;
+let gameRunning = false; 
+let gameActive = false;
+let gamePaused = false;
+let soundEnabled = true;
+let activePowerups = [];
+let currentWave = 1;
+let lastFrameTime = performance.now();
+let quizSession = [];
+let quizQuestionIndex = 0;
+let destroyedNormalEnemies = 0;
+let totalEnemiesDestroyed = 0;
+let totalCorrectAnswers = 0;
+let totalQuestionsAsked = 0;
+let gameDifficulty = 'easy';
+let quizTimerValue = 0;
+let quizTimerInterval = null;
+let activeCategories = new Set();
+let particles = [];
+let combo = 0;
+let bestCombo = 0;
+let answerStreak = 0;
+let scoreMultiplier = 1.0;
+let lastQuizTime = 0;
+let minQuizInterval = 15000; // Reduced to 15 seconds for more frequent education
+let specialEnemiesKilled = 0;
+let powerupsCollected = 0;
+let damageNumbers = [];
+let achievements = [];
+let bossActive = false;
+let bossEnemy = null;
+let waveStartTime = 0;
+let educationalScore = 0; // Track learning progress separately
+let consecutiveWrongAnswers = 0;
+
+// Default questions with categories
+const defaultQuestions = [
+    { question: "What is 2+2?", options: ["3","4","5","6"], correct: 1, category: "Math" },
+    { question: "Capital of France?", options: ["Paris","Rome","Berlin","Madrid"], correct: 0, category: "Geography" },
+    { question: "H2O is?", options: ["Fire","Earth","Water","Air"], correct: 2, category: "Science" },
+    { question: "Sun rises in?", options: ["North","East","South","West"], correct: 1, category: "General" },
+    { question: "Which is prime?", options: ["6","9","11","15"], correct: 2, category: "Math" },
+    { question: "Symbol for Iron?", options: ["Fe","Ir","In","I"], correct: 0, category: "Science" },
+    { question: "Author of Hamlet?", options: ["Dickens","Shakespeare","Tolstoy","Austen"], correct: 1, category: "Literature" },
+    { question: "Largest planet?", options: ["Earth","Mars","Jupiter","Saturn"], correct: 2, category: "Science" },
+    { question: "7 x 8 = ?", options: ["54","56","58","60"], correct: 1, category: "Math" },
+    { question: "Capital of Japan?", options: ["Seoul","Beijing","Tokyo","Bangkok"], correct: 2, category: "Geography" },
+    { question: "Speed of light?", options: ["299,792 km/s","199,792 km/s","399,792 km/s","499,792 km/s"], correct: 0, category: "Science" },
+    { question: "Who painted Mona Lisa?", options: ["Michelangelo","Da Vinci","Picasso","Van Gogh"], correct: 1, category: "Art" },
+    { question: "Largest ocean?", options: ["Atlantic","Indian","Arctic","Pacific"], correct: 3, category: "Geography" },
+    { question: "Square root of 144?", options: ["10","11","12","13"], correct: 2, category: "Math" },
+    { question: "Year Columbus reached America?", options: ["1490","1491","1492","1493"], correct: 2, category: "History" },
+    { question: "How many continents?", options: ["5","6","7","8"], correct: 2, category: "Geography" },
+    { question: "Smallest prime number?", options: ["0","1","2","3"], correct: 2, category: "Math" },
+    { question: "Chemical symbol for Gold?", options: ["Go","Au","Gd","Ag"], correct: 1, category: "Science" },
+    { question: "Who wrote '1984'?", options: ["Orwell","Huxley","Bradbury","Asimov"], correct: 0, category: "Literature" },
+    { question: "Freezing point of water?", options: ["0°C","32°C","100°C","212°C"], correct: 0, category: "Science" }
+];
+
+let questions = [];
+let usedQuestions = [];
+
+// Game assets
+const playerShipImage = new Image();
+const enemyShipImage = new Image();
+const specialEnemyShipImage = new Image();
+const powerupImage = new Image();
+const asteroidImage = new Image();
+const explosionImage = new Image();
+const shootingStarImage = new Image();
+const shieldImage = new Image();
+const miniBossImage = new Image();
+
+// Asset loading tracker
+let imagesToLoad = 0;
+let imagesLoaded = 0;
+let assetsLoaded = false;
+
+function imageLoaded() {
+    imagesLoaded++;
+    if (imagesLoaded === imagesToLoad) {
+        assetsLoaded = true;
+        loadingContainer.style.display = 'none';
+        showIntroScreen();
+    }
+}
+
+function loadGameImages() {
+    const loadImage = (img, src, fallbackColor) => {
+        imagesToLoad++;
+        img.src = src;
+        img.onload = imageLoaded;
+        img.onerror = () => { 
+            console.warn(`Failed to load image: ${src} - Using fallback`);
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = 50;
+            tempCanvas.height = 50;
+            
+            // Create better fallback graphics
+            if (src.includes('playerShip')) {
+                // Draw triangle ship
+                tempCtx.fillStyle = fallbackColor;
+                tempCtx.beginPath();
+                tempCtx.moveTo(25, 5);
+                tempCtx.lineTo(5, 45);
+                tempCtx.lineTo(45, 45);
+                tempCtx.closePath();
+                tempCtx.fill();
+            } else if (src.includes('asteroid')) {
+                // Draw circular asteroid
+                tempCtx.fillStyle = fallbackColor;
+                tempCtx.beginPath();
+                tempCtx.arc(25, 25, 20, 0, Math.PI * 2);
+                tempCtx.fill();
+            } else if (src.includes('miniBoss')) {
+                // Draw cooler mini-boss shape
+                tempCtx.fillStyle = fallbackColor;
+                tempCtx.beginPath();
+                tempCtx.moveTo(25, 5);
+                tempCtx.lineTo(5, 20);
+                tempCtx.lineTo(5, 35);
+                tempCtx.lineTo(15, 45);
+                tempCtx.lineTo(35, 45);
+                tempCtx.lineTo(45, 35);
+                tempCtx.lineTo(45, 20);
+                tempCtx.closePath();
+                tempCtx.fill();
+                // Add details
+                tempCtx.fillStyle = '#000';
+                tempCtx.fillRect(15, 20, 5, 5);
+                tempCtx.fillRect(30, 20, 5, 5);
+            } else {
+                // Default square
+                tempCtx.fillStyle = fallbackColor;
+                tempCtx.fillRect(0, 0, 50, 50);
+            }
+            
+            img.src = tempCanvas.toDataURL();
+            imageLoaded();
+        };
+    };
+
+    // Load all game images with fallbacks
+    loadImage(playerShipImage, 'playerShip.png', '#0f0');
+    loadImage(enemyShipImage, 'enemyShip.png', '#f00');
+    loadImage(specialEnemyShipImage, 'specialEnemyShip.png', '#ff0');
+    loadImage(powerupImage, 'powerup.png', '#0ff');
+    loadImage(asteroidImage, 'asteroid.png', '#888');
+    loadImage(explosionImage, 'explosion.png', '#f80');
+    loadImage(shootingStarImage, 'shootingStar.png', '#fff');
+    loadImage(shieldImage, 'shield.png', '#00f');
+    loadImage(miniBossImage, 'miniBoss.png', '#f0f');
+}
+
+// Initialize assets
+loadGameImages();
+
+// Sound handling with error fallbacks
+function playSound(sound) {
+    if (!soundEnabled) return;
+    if (sound && sound.readyState >= 2) {
+        try {
+            sound.currentTime = 0;
+            sound.volume = 0.5;
+            sound.play().catch(err => {
+                console.warn(`Error playing sound: ${err.message}`);
+            });
+        } catch (e) {
+            console.warn(`Sound error: ${e}`);
+        }
+    }
+}
+
+// Show intro screen
+function showIntroScreen() {
+    introScreen.style.display = 'block';
+    gameActive = false;
+    clearCanvas();
+}
+
+// Canvas functions
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+function clearCanvas() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+// Initialize canvas
+resizeCanvas();
+window.addEventListener('resize', () => {
+    resizeCanvas();
+    if (player) {
+        player.x = Math.min(player.x, canvas.width - player.width);
+        player.y = canvas.height - 100;
+    }
+});
+
+// Player object
+const player = {
+    x: 0,
+    y: 0,
+    width: 50,
+    height: 50,
+    speed: 7,
+    bullets: [],
+    powerups: {
+        rapidFire: false,
+        shield: false,
+        doubleDamage: false
+    },
+    health: 100,
+    maxHealth: 100,
+    shootCooldown: 0,
+    shootInterval: 300,
+    invulnerable: false,
+    invulnerableTimer: 0
+};
+
+// Game objects
+let enemies = [];
+let enemyBullets = [];
+let powerUpItems = [];
+let stars = [];
+let asteroids = [];
+let shootingStars = [];
+let explosions = [];
+
+// Enemy types
+const enemyTypes = [
+    { points: 10, name: 'Scout', isSpecial: false, color: '#f00', health: 1 },
+    { points: 20, name: 'Fighter', isSpecial: false, color: '#f80', health: 2 },
+    { points: 30, name: 'Bomber', isSpecial: false, color: '#ff0', health: 3 },
+    { points: 100, name: 'Elite', isSpecial: true, color: '#f0f', health: 5 }
+];
+
+// Boss enemy type
+const bossType = {
+    points: 1000,
+    name: 'Boss',
+    isSpecial: true,
+    color: '#f00',
+    health: 50,
+    width: 120,
+    height: 80
+};
+
+// Enemy timing variables
+let enemyShootInterval = 5000;
+let enemySpeedMultiplier = 1.0;
+
+// Event listeners
+introStartBtn.addEventListener('click', () => {
+    introScreen.style.display = 'none';
+    showSettingsScreen();
+});
+
+function showSettingsScreen() {
+    if (questions.length === 0) {
+        questions = JSON.parse(JSON.stringify(defaultQuestions));
+    }
+    displayQuestionList();
+    updateCategorySelector();
+    settingsScreen.style.display = 'block';
+    gameActive = false;
+    clearCanvas();
+}
+
+// Difficulty selector
+difficultyButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        difficultyButtons.forEach(btn => {
+            btn.classList.remove('active');
+            btn.style.background = 'rgba(0,50,100,0.8)';
+            btn.style.borderColor = '#0ff';
+            btn.style.color = '#0ff';
+        });
+        button.classList.add('active');
+        button.style.background = '#0ff';
+        button.style.borderColor = '#0ff';
+        button.style.color = '#000';
+        button.style.boxShadow = '0 0 20px #0ff';
+        gameDifficulty = button.getAttribute('data-difficulty');
+        applyDifficultySettings();
+    });
+});
+
+function applyDifficultySettings() {
+    switch(gameDifficulty) {
+        case 'easy':
+            player.maxHealth = 150; // More forgiving for learning
+            player.health = player.maxHealth;
+            enemySpeedMultiplier = 0.7;
+            enemyShootInterval = 7000;
+            minQuizInterval = 20000; // Quiz every 20 seconds minimum
+            break;
+        case 'medium':
+            player.maxHealth = 120;
+            player.health = player.maxHealth;
+            enemySpeedMultiplier = 0.9;
+            enemyShootInterval = 5500;
+            minQuizInterval = 15000; // Quiz every 15 seconds minimum
+            break;
+        case 'hard':
+            player.maxHealth = 100;
+            player.health = player.maxHealth;
+            enemySpeedMultiplier = 1.1;
+            enemyShootInterval = 4500;
+            minQuizInterval = 12000; // Quiz every 12 seconds minimum
+            break;
+    }
+    updateHealthBar();
+}
+
+// Reset to default questions
+resetToDefaultBtn.addEventListener('click', () => {
+    questions = JSON.parse(JSON.stringify(defaultQuestions));
+    usedQuestions = [];
+    displayQuestionList();
+    updateCategorySelector();
+});
+
+// Start the game
+startGameBtn.addEventListener('click', () => {
+    if (questions.length < 3) {
+        alert('Please add or import at least 3 questions to start the game.');
+        return;
+    }
+    
+    settingsScreen.style.display = 'none';
+    
+    // Reset game state
+    resetGameState();
+    
+    // Initialize and start the game
+    initializeGameState();
+    initEnemies();
+    
+    try {
+        backgroundMusic.currentTime = 0;
+        backgroundMusic.volume = 0.3;
+        if (soundEnabled) {
+            backgroundMusic.play().catch(err => {
+                console.warn('Could not play background music:', err);
+            });
+        }
+    } catch (e) {
+        console.warn('Error playing background music:', e);
+    }
+    
+    gameActive = true;
+    gameRunning = true;
+    
+    // Show educational tip at start
+    setTimeout(() => {
+        showPowerupMessage("TIP: Answer questions correctly to gain power!");
+    }, 3000);
+    
+    gameLoop();
+});
+
+function resetGameState() {
+    // Reset counters
+    currentWave = 1;
+    destroyedNormalEnemies = 0;
+    totalEnemiesDestroyed = 0;
+    totalCorrectAnswers = 0;
+    totalQuestionsAsked = 0;
+    score = 0;
+    combo = 0;
+    bestCombo = 0;
+    answerStreak = 0;
+    scoreMultiplier = 1.0;
+    specialEnemiesKilled = 0;
+    powerupsCollected = 0;
+    lastQuizTime = 0;
+    bossActive = false;
+    bossEnemy = null;
+    educationalScore = 0;
+    consecutiveWrongAnswers = 0;
+    
+    // Reset player
+    player.x = canvas.width / 2 - 25;
+    player.y = canvas.height - 100;
+    player.health = player.maxHealth;
+    player.bullets = [];
+    player.powerups.rapidFire = false;
+    player.powerups.shield = false;
+    player.powerups.doubleDamage = false;
+    player.invulnerable = false;
+    player.invulnerableTimer = 0;
+    player.shootCooldown = 0;
+    
+    // Clear game objects
+    enemies = [];
+    enemyBullets = [];
+    powerUpItems = [];
+    activePowerups = [];
+    particles = [];
+    damageNumbers = [];
+    achievements = [];
+    
+    // Reset questions
+    usedQuestions = [];
+    
+    // Update UI
+    updateHealthBar();
+    updatePowerupsDisplay();
+    updateComboDisplay();
+    updateMultiplierDisplay();
+    updateStreakDisplay();
+    waveDisplay.textContent = `Wave: ${currentWave} | Questions: ${totalQuestionsAsked}`;
+    scoreDisplay.textContent = `Score: ${score}`;
+}
+
+// Excel template download
+downloadExcelTemplateBtn.addEventListener('click', downloadTextTemplate);
+
+function downloadTextTemplate() {
+    const template = 
+`Question: What is 2+2?
+A: 3
+B: 4
+C: 5
+D: 6
+Correct: B
+Category: Math
+
+Question: Capital of France?
+A: Paris
+B: Rome
+C: Berlin
+D: Madrid
+Correct: A
+Category: Geography
+
+# Add more questions following the format above
+# Each question must start with "Question:" and have options A-D
+# Specify the correct answer with "Correct: " followed by A, B, C, or D
+# Category is optional but recommended
+`;
+
+    const blob = new Blob([template], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'question_template.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+// Excel import handling
+importExcelBtn.addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.txt,.text';
+    input.onchange = handleTextImport;
+    input.click();
+});
+
+function handleTextImport(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        try {
+            const text = e.target.result;
+            const questionBlocks = text.split(/\n\s*\n/);
+            
+            const newQuestions = [];
+            
+            for (const block of questionBlocks) {
+                if (!block.trim()) continue;
+                
+                const lines = block.trim().split('\n');
+                let question = '';
+                let options = [];
+                let correct = -1;
+                let category = 'General';
+                
+                for (const line of lines) {
+                    if (line.trim().startsWith('#')) continue;
+                    
+                    if (line.trim().startsWith('Question:')) {
+                        question = line.substring(line.indexOf(':') + 1).trim();
+                    } else if (line.trim().startsWith('A:')) {
+                        options[0] = line.substring(line.indexOf(':') + 1).trim();
+                    } else if (line.trim().startsWith('B:')) {
+                        options[1] = line.substring(line.indexOf(':') + 1).trim();
+                    } else if (line.trim().startsWith('C:')) {
+                        options[2] = line.substring(line.indexOf(':') + 1).trim();
+                    } else if (line.trim().startsWith('D:')) {
+                        options[3] = line.substring(line.indexOf(':') + 1).trim();
+                    } else if (line.trim().startsWith('Correct:')) {
+                        const correctLetter = line.substring(line.indexOf(':') + 1).trim();
+                        if (correctLetter === 'A') correct = 0;
+                        else if (correctLetter === 'B') correct = 1;
+                        else if (correctLetter === 'C') correct = 2;
+                        else if (correctLetter === 'D') correct = 3;
+                    } else if (line.trim().startsWith('Category:')) {
+                        category = line.substring(line.indexOf(':') + 1).trim();
+                    }
+                }
+                
+                if (question && options.length === 4 && correct >= 0) {
+                    newQuestions.push({
+                        question,
+                        options,
+                        correct,
+                        category
+                    });
+                }
+            }
+
+            if (newQuestions.length > 0) {
+                questions.push(...newQuestions);
+                usedQuestions = [];
+                displayQuestionList();
+                updateCategorySelector();
+                alert(`Successfully imported ${newQuestions.length} questions.`);
+            } else {
+                alert('No valid questions found in the file. Please check the format.');
+            }
+        } catch (err) {
+            console.error('Error parsing text file:', err);
+            alert('Error importing questions. Please check the file format.');
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+// Style quiz options
+const styleQuizOption = `
+    margin: 10px auto;
+    padding: 15px 25px;
+    background: rgba(0,50,100,0.8);
+    border: 2px solid #0ff;
+    color: #0ff;
+    cursor: pointer;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 400px;
+    transition: all 0.3s;
+    font-size: 14px;
+    display: block;
+    font-weight: 600;
+`;
+
+// Add question manually
+addQuestionSetBtn.addEventListener('click', () => {
+    questionForm.style.display = 'block';
+    settingsScreen.style.display = 'none';
+});
+
+cancelNewQuestionBtn.addEventListener('click', () => {
+    questionForm.style.display = 'none';
+    settingsScreen.style.display = 'block';
+});
+
+saveNewQuestionBtn.addEventListener('click', () => {
+    const question = newQuestionText.value.trim();
+    const opts = Array.from(newOptions).map(i => i.value.trim());
+    const correct = parseInt(correctAnswer.value);
+    const category = questionCategory.value.trim() || 'General';
+
+    if (question && opts.every(o => o) && !isNaN(correct)) {
+        questions.push({ question, options: opts, correct, category });
+        
+        // Clear the form
+        newQuestionText.value = '';
+        newOptions.forEach(i => i.value = '');
+        correctAnswer.value = '0';
+        questionCategory.value = '';
+
+        questionForm.style.display = 'none';
+        settingsScreen.style.display = 'block';
+        displayQuestionList();
+        updateCategorySelector();
+    } else {
+        alert('Please fill all fields correctly.');
+    }
+});
+
+// Display the list of questions
+function displayQuestionList() {
+    questionList.innerHTML = '';
+    if (questions.length === 0) {
+        questionList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No questions loaded yet.</p>';
+        return;
+    }
+    
+    const categorizedQuestions = {};
+    questions.forEach(q => {
+        const category = q.category || 'General';
+        if (!categorizedQuestions[category]) {
+            categorizedQuestions[category] = [];
+        }
+        categorizedQuestions[category].push(q);
+    });
+    
+    for (const category in categorizedQuestions) {
+        const categoryHeader = document.createElement('div');
+        categoryHeader.innerHTML = `<strong style="color: #ff0; font-size: 14px;">${category}</strong> (${categorizedQuestions[category].length} questions)`;
+        categoryHeader.style.marginTop = '15px';
+        categoryHeader.style.marginBottom = '10px';
+        questionList.appendChild(categoryHeader);
+        
+        categorizedQuestions[category].forEach((q, i) => {
+            const div = document.createElement('div');
+            div.innerHTML = `${i+1}. ${q.question}`;
+            div.style.marginLeft = '20px';
+            div.style.marginBottom = '5px';
+            div.style.fontSize = '12px';
+            div.style.opacity = '0.8';
+            questionList.appendChild(div);
+        });
+    }
+}
+
+// Update category selector
+function updateCategorySelector() {
+    const categories = new Set();
+    questions.forEach(q => {
+        if (q.category) categories.add(q.category);
+        else categories.add('General');
+    });
+    
+    categorySelector.innerHTML = '<div style="font-weight: bold; margin-bottom: 15px; color: #ff0; font-size: 16px;">Filter by Categories:</div>';
+    
+    if (categories.size === 0) {
+        categorySelector.innerHTML += '<div style="opacity: 0.7;">No categories available</div>';
+        return;
+    }
+    
+    // Add "Select All" checkbox
+    const allCategoriesDiv = document.createElement('div');
+    allCategoriesDiv.style.margin = '8px 0';
+    
+    const allCheckbox = document.createElement('input');
+    allCheckbox.type = 'checkbox';
+    allCheckbox.id = 'all-categories';
+    allCheckbox.checked = activeCategories.size === 0;
+    allCheckbox.style.marginRight = '10px';
+    allCheckbox.addEventListener('change', (e) => {
+        const categoryCheckboxes = document.querySelectorAll('.category-checkbox input:not(#all-categories)');
+        if (e.target.checked) {
+            activeCategories.clear();
+            categoryCheckboxes.forEach(cb => {
+                cb.checked = false;
+            });
+        }
+    });
+    
+    const allLabel = document.createElement('label');
+    allLabel.htmlFor = 'all-categories';
+    allLabel.textContent = 'All Categories';
+    allLabel.style.cursor = 'pointer';
+    allLabel.style.fontSize = '14px';
+    
+    allCategoriesDiv.appendChild(allCheckbox);
+    allCategoriesDiv.appendChild(allLabel);
+    categorySelector.appendChild(allCategoriesDiv);
+    
+    // Add individual category checkboxes
+    categories.forEach(category => {
+        const div = document.createElement('div');
+        div.className = 'category-checkbox';
+        div.style.margin = '8px 0';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `category-${category}`;
+        checkbox.checked = activeCategories.has(category);
+        checkbox.style.marginRight = '10px';
+        checkbox.addEventListener('change', (e) => {
+            const allCategoriesCheckbox = document.getElementById('all-categories');
+            if (e.target.checked) {
+                activeCategories.add(category);
+                allCategoriesCheckbox.checked = false;
+            } else {
+                activeCategories.delete(category);
+                if (activeCategories.size === 0) {
+                    allCategoriesCheckbox.checked = true;
+                }
+            }
+        });
+        
+        const label = document.createElement('label');
+        label.htmlFor = `category-${category}`;
+        label.textContent = category;
+        label.style.cursor = 'pointer';
+        label.style.fontSize = '14px';
+        
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        categorySelector.appendChild(div);
+    });
+}
+
+// Get a random question
+function getRandomQuestion() {
+    let availableQuestions = questions.filter(q => !usedQuestions.includes(q));
+    
+    if (activeCategories.size > 0) {
+        availableQuestions = availableQuestions.filter(q => 
+            !q.category || activeCategories.has(q.category));
+    }
+    
+    if (availableQuestions.length === 0) {
+        return null;
+    }
+    
+    const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+    const question = availableQuestions[randomIndex];
+    usedQuestions.push(question);
+    return question;
+}
+
+// Show quiz for events
+function showQuizForEvent(eventType = 'none') {
+    // For educational focus, reduce time restrictions
+    if (Date.now() - lastQuizTime < minQuizInterval && eventType !== 'boss' && eventType !== 'wave') {
+        return;
+    }
+    
+    let availableQuestions = questions.filter(q => !usedQuestions.includes(q));
+    
+    if (activeCategories.size > 0) {
+        availableQuestions = availableQuestions.filter(q => 
+            !q.category || activeCategories.has(q.category));
+    }
+    
+    if (availableQuestions.length === 0) {
+        handleGameOver("WIN");
+        return;
+    }
+
+    gameRunning = false;
+    lastQuizTime = Date.now();
+    quizSession = [];
+    quizQuestionIndex = 0;
+
+    // For educational focus, sometimes give 2 questions in a row
+    let numQuestions = 1;
+    if (eventType === 'wave' || eventType === 'boss') {
+        numQuestions = 2; // More questions for major events
+    } else if (Math.random() < 0.3 && availableQuestions.length >= 2) {
+        numQuestions = 2; // 30% chance for bonus question
+    }
+    
+    for (let i = 0; i < numQuestions && i < availableQuestions.length; i++) {
+        let question = getRandomQuestion();
+        if (question) quizSession.push(question);
+    }
+
+    let eventMessage;
+    switch(eventType) {
+        case 'destroySpecial':
+            eventMessage = "Elite Enemy Defeated! Knowledge Check!";
+            break;
+        case 'destroyNormal':
+            eventMessage = "Combat Milestone! Quick Quiz!";
+            break;
+        case 'collectPowerup':
+            eventMessage = "Power-up Collected! Bonus Question!";
+            break;
+        case 'wave':
+            eventMessage = `Wave ${currentWave - 1} Boss Defeated!`;
+            break;
+        case 'boss':
+            eventMessage = "Mini-Boss Conquered!";
+            break;
+        case 'educational':
+            eventMessage = "Learning Checkpoint!";
+            break;
+        default:
+            eventMessage = "Knowledge Test!";
+    }
+    
+    showPowerupMessage(eventMessage, function() {
+        setTimeout(() => {
+            displayQuizQuestion(eventType);
+            playSound(quizSound);
+        }, 500);
+    });
+}
+
+// Display quiz question with timer
+function displayQuizQuestion(eventType = 'none') {
+    if (quizQuestionIndex >= quizSession.length) {
+        clearQuizTimer();
+        quizContainer.style.display = 'none';
+        
+        gameRunning = true;
+        
+        if (!enemies.some(e => e.alive)) {
+            initEnemies();
+        }
+        return;
+    }
+
+    const q = quizSession[quizQuestionIndex];
+    quizContainer.style.display = 'block';
+    questionText.textContent = q.question;
+    
+    if (q.category) {
+        quizCategory.textContent = `Category: ${q.category}`;
+        quizCategory.style.display = 'block';
+    } else {
+        quizCategory.style.display = 'none';
+    }
+    
+    optionsContainer.innerHTML = '';
+
+    q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.style.cssText = styleQuizOption;
+        btn.textContent = opt;
+        btn.onmouseover = () => {
+            btn.style.background = 'rgba(0,100,200,0.9)';
+            btn.style.boxShadow = '0 0 20px #0ff';
+            btn.style.transform = 'translateX(10px)';
+        };
+        btn.onmouseout = () => {
+            btn.style.background = 'rgba(0,50,100,0.8)';
+            btn.style.boxShadow = 'none';
+            btn.style.transform = 'translateX(0)';
+        };
+        btn.onclick = () => handleQuizAnswer(idx === q.correct, eventType);
+        optionsContainer.appendChild(btn);
+    });
+    
+    startQuizTimer(getDifficultyQuizTime());
+}
+
+// Get quiz time based on difficulty
+function getDifficultyQuizTime() {
+    switch(gameDifficulty) {
+        case 'easy': return 45; // More time to think and learn
+        case 'medium': return 35; // Moderate pressure
+        case 'hard': return 25; // Still reasonable for education
+        default: return 45;
+    }
+}
+
+// Start the quiz timer with circular progress
+function startQuizTimer(seconds) {
+    clearQuizTimer();
+    
+    quizTimerValue = seconds;
+    const maxTime = seconds;
+    updateQuizTimerDisplay();
+    
+    // Set up circular progress
+    const progressCircle = document.querySelector('.timer-circle-progress');
+    const circumference = 2 * Math.PI * 45; // radius = 45
+    progressCircle.style.strokeDasharray = circumference;
+    progressCircle.style.strokeDashoffset = 0;
+    
+    quizTimerInterval = setInterval(() => {
+        quizTimerValue--;
+        updateQuizTimerDisplay();
+        
+        // Update circular progress
+        const progress = (maxTime - quizTimerValue) / maxTime;
+        progressCircle.style.strokeDashoffset = circumference * progress;
+        
+        // Change color based on time
+        if (quizTimerValue <= 5) {
+            progressCircle.classList.add('danger');
+            progressCircle.classList.remove('warning');
+        } else if (quizTimerValue <= 10) {
+            progressCircle.classList.add('warning');
+            progressCircle.classList.remove('danger');
+        }
+        
+        if (quizTimerValue <= 0) {
+            clearQuizTimer();
+            handleQuizAnswer(false, 'timeout');
+        }
+    }, 1000);
+}
+
+// Update quiz timer display
+function updateQuizTimerDisplay() {
+    quizTimerText.textContent = quizTimerValue;
+    
+    if (quizTimerValue <= 5) {
+        quizTimerText.style.color = '#f00';
+    } else if (quizTimerValue <= 10) {
+        quizTimerText.style.color = '#ff0';
+    } else {
+        quizTimerText.style.color = '#0ff';
+    }
+}
+
+// Clear the quiz timer
+function clearQuizTimer() {
+    if (quizTimerInterval) {
+        clearInterval(quizTimerInterval);
+        quizTimerInterval = null;
+    }
+    const progressCircle = document.querySelector('.timer-circle-progress');
+    if (progressCircle) {
+        progressCircle.classList.remove('warning', 'danger');
+    }
+}
+
+// Handle quiz answer
+function handleQuizAnswer(isCorrect, eventType) {
+    clearQuizTimer();
+    totalQuestionsAsked++;
+    
+    if (isCorrect) {
+        totalCorrectAnswers++;
+        answerStreak++;
+        consecutiveWrongAnswers = 0;
+        updateStreakDisplay();
+        playSound(correctSound);
+        
+        // Educational scoring system
+        const basePoints = 100;
+        const streakBonus = answerStreak * 50; // Higher streak bonus for education
+        const educationalBonus = 50; // Bonus for learning
+        const totalPoints = basePoints + streakBonus + educationalBonus;
+        score += totalPoints;
+        educationalScore += 100; // Track educational progress
+        
+        // Show detailed feedback
+        createDamageNumber(canvas.width / 2, canvas.height / 2, `+${totalPoints}`, '#0f0');
+        if (answerStreak >= 3) {
+            createDamageNumber(canvas.width / 2, canvas.height / 2 + 30, `Streak x${answerStreak}!`, '#ff0');
+        }
+        
+        // Educational rewards - better power-ups for learning
+        let powerupType;
+        if (answerStreak >= 5) {
+            // All power-ups for excellent performance
+            activatePowerup('shield');
+            activatePowerup('rapidFire');
+            activatePowerup('doubleDamage');
+            showAchievement('Perfect Scholar! All Power-ups!');
+        } else if (answerStreak >= 3) {
+            // Two power-ups for good performance
+            activatePowerup('shield');
+            powerupType = ['rapidFire', 'doubleDamage'][Math.floor(Math.random() * 2)];
+            activatePowerup(powerupType);
+        } else {
+            // One power-up
+            powerupType = ['shield', 'rapidFire', 'doubleDamage'][Math.floor(Math.random() * 3)];
+            activatePowerup(powerupType);
+        }
+        
+        // Health bonus scaled with streak
+        const healthBonus = 15 + (answerStreak * 10);
+        player.health = Math.min(player.health + healthBonus, player.maxHealth);
+        updateHealthBar();
+        
+        // Update score
+        scoreDisplay.textContent = `Score: ${score}`;
+        animateScoreUpdate();
+        
+        // Check for achievements
+        checkAchievements();
+        
+        // Adaptive difficulty - make game easier after correct answers
+        if (answerStreak >= 3) {
+            enemySpeedMultiplier *= 0.95; // Slightly slow enemies
+            enemyShootInterval *= 1.1; // Enemies shoot less frequently
+        }
+    } else {
+        answerStreak = 0;
+        consecutiveWrongAnswers++;
+        updateStreakDisplay();
+        playSound(wrongSound);
+        
+        // Educational approach - less punishment, more encouragement
+        let healthPenalty = 0;
+        switch(gameDifficulty) {
+            case 'easy': healthPenalty = 5; break; // Very forgiving
+            case 'medium': healthPenalty = 10; break;
+            case 'hard': healthPenalty = 15; break;
+        }
+        
+        // Reduce penalty if player is struggling
+        if (consecutiveWrongAnswers >= 3) {
+            healthPenalty = Math.floor(healthPenalty / 2);
+            showPowerupMessage("Don't give up! You've got this!");
+        }
+        
+        player.health = Math.max(player.health - healthPenalty, 20); // Never go below 20 HP
+        updateHealthBar();
+        
+        // Show encouraging message
+        createDamageNumber(player.x + player.width/2, player.y, `-${healthPenalty}`, '#f00');
+        if (consecutiveWrongAnswers >= 2) {
+            createDamageNumber(canvas.width / 2, canvas.height / 2 + 50, "Keep trying!", '#ff0');
+        }
+        
+        // Adaptive difficulty - make game easier if struggling
+        if (consecutiveWrongAnswers >= 2) {
+            enemySpeedMultiplier *= 0.95; // Slow down enemies
+            enemyShootInterval *= 1.1; // Enemies shoot less frequently
+            // Give a mercy power-up
+            if (consecutiveWrongAnswers >= 3) {
+                activatePowerup('shield');
+                showAchievement('Persistence Shield!');
+            }
+        }
+        
+        // Create damage effect
+        createExplosionParticles(player.x + player.width/2, player.y + player.height/2, 10, '#f00');
+        
+        // Extended invulnerability for learning
+        player.invulnerable = true;
+        player.invulnerableTimer = 3000; // 3 seconds to recover
+        
+        if (player.health <= 0) {
+            // Give one more chance if they've been answering questions
+            if (totalQuestionsAsked >= 5 && totalCorrectAnswers / totalQuestionsAsked >= 0.5) {
+                player.health = 30;
+                showPowerupMessage("Second Chance! Keep learning!");
+                activatePowerup('shield');
+            } else {
+                handleGameOver();
+            }
+            return;
+        }
+    }
+
+    quizQuestionIndex++;
+    if (quizQuestionIndex < quizSession.length) {
+        setTimeout(() => {
+            displayQuizQuestion(eventType);
+        }, 1500); // Slightly longer pause between questions
+    } else {
+        quizContainer.style.display = 'none';
+        
+        let availableQuestions = questions.filter(q => !usedQuestions.includes(q));
+        
+        if (activeCategories.size > 0) {
+            availableQuestions = availableQuestions.filter(q => 
+                !q.category || activeCategories.has(q.category));
+        }
+        
+        if (availableQuestions.length === 0) {
+            // Educational victory!
+            handleGameOver("EDUCATIONAL_WIN");
+        } else {
+            gameRunning = true;
+            
+            if (!enemies.some(e => e.alive)) {
+                initEnemies();
+            }
+        }
+    }
+}
+
+// Power-up activation
+function activatePowerup(type) {
+    player.powerups[type] = true;
+    
+    const existingIndex = activePowerups.findIndex(p => p.type === type);
+    // Educational game: Longer power-up durations as rewards
+    const duration = type === 'shield' ? 15000 : 20000; // 15s shield, 20s others
+    
+    if (existingIndex >= 0) {
+        activePowerups[existingIndex].remainingTime = duration;
+    } else {
+        activePowerups.push({ 
+            type, 
+            remainingTime: duration
+        });
+    }
+    
+    updatePowerupsDisplay();
+    
+    let msg = '';
+    if (type === 'rapidFire') msg = 'RAPID FIRE ACTIVATED!';
+    else if (type === 'shield') msg = 'SHIELD ACTIVATED!';
+    else if (type === 'doubleDamage') msg = 'DOUBLE DAMAGE ACTIVATED!';
+    
+    showPowerupMessage(msg);
+    playSound(powerupSound);
+}
+
+// Update displays
+function updatePowerupsDisplay() {
+    if (activePowerups.length === 0) {
+        powerupsDisplay.textContent = 'Power-ups: None';
+        shieldIndicator.classList.remove('active');
+        return;
+    }
+    
+    const activeNames = activePowerups.map(p => {
+        let name = p.type.replace(/([A-Z])/g, ' $1').trim();
+        name = name.charAt(0).toUpperCase() + name.slice(1);
+        const seconds = Math.ceil(p.remainingTime / 1000);
+        return `${name} (${seconds}s)`;
+    });
+    
+    powerupsDisplay.textContent = `Power-ups: ${activeNames.join(', ')}`;
+    
+    // Update shield indicator
+    const shieldPowerup = activePowerups.find(p => p.type === 'shield');
+    if (shieldPowerup) {
+        shieldIndicator.classList.add('active');
+        const progress = shieldPowerup.remainingTime / 10000;
+        shieldBar.style.width = (progress * 100) + '%';
+    } else {
+        shieldIndicator.classList.remove('active');
+    }
+}
+
+function updateHealthBar() {
+    const hp = (player.health / player.maxHealth) * 100;
+    healthBar.style.width = hp + '%';
+    healthText.textContent = `${Math.ceil(player.health)}/${player.maxHealth}`;
+    
+    if (hp > 60) {
+        healthBar.style.background = 'linear-gradient(90deg, #00ff00 0%, #00ffaa 50%, #00ff00 100%)';
+    } else if (hp > 30) {
+        healthBar.style.background = 'linear-gradient(90deg, #ffff00 0%, #ffaa00 50%, #ffff00 100%)';
+    } else {
+        healthBar.style.background = 'linear-gradient(90deg, #ff0000 0%, #ff0088 50%, #ff0000 100%)';
+    }
+    
+    // Show warning if health is low
+    if (hp <= 20 && gameRunning) {
+        showWarning();
+    }
+}
+
+function updateComboDisplay() {
+    if (combo > 1) {
+        comboContainer.classList.add('active');
+        comboValue.textContent = combo;
+        
+        if (combo >= 20) {
+            comboContainer.classList.add('super');
+        } else {
+            comboContainer.classList.remove('super');
+        }
+    } else {
+        comboContainer.classList.remove('active', 'super');
+    }
+}
+
+function updateMultiplierDisplay() {
+    scoreMultiplier = 1.0 + (Math.floor(combo / 10) * 0.5);
+    scoreMultiplier = Math.min(scoreMultiplier, 5.0); // Max 5x multiplier
+    
+    if (scoreMultiplier > 1.0) {
+        multiplierDisplay.classList.add('active');
+        multiplierValue.textContent = scoreMultiplier.toFixed(1);
+    } else {
+        multiplierDisplay.classList.remove('active');
+    }
+}
+
+function updateStreakDisplay() {
+    if (answerStreak > 0) {
+        streakDisplay.classList.add('active');
+        streakValue.textContent = answerStreak;
+    } else {
+        streakDisplay.classList.remove('active');
+    }
+}
+
+// Show powerup message
+function showPowerupMessage(message, callback) {
+    powerupMessage.textContent = message;
+    powerupMessage.style.display = 'block';
+    
+    gameRunning = false;
+    
+    setTimeout(() => {
+        powerupMessage.style.display = 'none';
+        
+        if (callback) {
+            callback();
+        } else {
+            let availableQuestions = questions.filter(q => !usedQuestions.includes(q));
+            
+            if (activeCategories.size > 0) {
+                availableQuestions = availableQuestions.filter(q => 
+                    !q.category || activeCategories.has(q.category));
+            }
+            
+            if (availableQuestions.length === 0) {
+                handleGameOver("WIN");
+            } else {
+                gameRunning = true;
+                
+                if (!enemies.some(e => e.alive)) {
+                    initEnemies();
+                }
+            }
+        }
+    }, 2000);
+}
+
+// Show warning
+function showWarning() {
+    warningIndicator.style.animation = 'warningPulse 1s ease-out';
+    setTimeout(() => {
+        warningIndicator.style.animation = '';
+    }, 1000);
+}
+
+// Show achievement
+function showAchievement(text) {
+    achievementNotification.textContent = `🏆 ${text}`;
+    achievementNotification.classList.add('show');
+    
+    setTimeout(() => {
+        achievementNotification.classList.remove('show');
+    }, 3000);
+}
+
+// Check achievements
+function checkAchievements() {
+    // Educational achievements
+    if (answerStreak === 3 && !achievements.includes('streak3')) {
+        achievements.push('streak3');
+        showAchievement('Knowledge Streak!');
+        score += 300;
+        educationalScore += 50;
+    }
+    
+    if (answerStreak === 5 && !achievements.includes('perfectStreak')) {
+        achievements.push('perfectStreak');
+        showAchievement('Perfect Scholar!');
+        score += 1000;
+        educationalScore += 100;
+    }
+    
+    if (answerStreak === 10 && !achievements.includes('masterStreak')) {
+        achievements.push('masterStreak');
+        showAchievement('Master of Knowledge!');
+        score += 2000;
+        educationalScore += 200;
+    }
+    
+    // Combo achievements
+    if (combo === 10 && !achievements.includes('firstCombo')) {
+        achievements.push('firstCombo');
+        showAchievement('Combo Master!');
+        score += 500;
+    }
+    
+    if (combo === 20 && !achievements.includes('superCombo')) {
+        achievements.push('superCombo');
+        showAchievement('Super Combo!');
+        score += 1000;
+    }
+    
+    // Wave achievements
+    if (currentWave === 5 && !achievements.includes('wave5')) {
+        achievements.push('wave5');
+        showAchievement('Wave 5 Warrior!');
+        score += 500;
+    }
+    
+    if (currentWave === 10 && !achievements.includes('wave10')) {
+        achievements.push('wave10');
+        showAchievement('Wave Master!');
+        score += 1000;
+    }
+    
+    // Educational milestones
+    if (totalCorrectAnswers === 10 && !achievements.includes('student10')) {
+        achievements.push('student10');
+        showAchievement('10 Correct Answers!');
+        score += 500;
+        educationalScore += 100;
+    }
+    
+    if (totalCorrectAnswers === 25 && !achievements.includes('student25')) {
+        achievements.push('student25');
+        showAchievement('25 Correct Answers!');
+        score += 1000;
+        educationalScore += 200;
+    }
+    
+    // Accuracy achievements
+    if (totalQuestionsAsked >= 10) {
+        const currentAccuracy = (totalCorrectAnswers / totalQuestionsAsked) * 100;
+        
+        if (currentAccuracy >= 90 && !achievements.includes('accuracy90')) {
+            achievements.push('accuracy90');
+            showAchievement('90% Accuracy!');
+            score += 1500;
+            educationalScore += 150;
+        } else if (currentAccuracy >= 80 && !achievements.includes('accuracy80')) {
+            achievements.push('accuracy80');
+            showAchievement('80% Accuracy!');
+            score += 1000;
+            educationalScore += 100;
+        }
+    }
+}
+
+// Animate score update
+function animateScoreUpdate() {
+    scoreDisplay.classList.add('pulse');
+    setTimeout(() => {
+        scoreDisplay.classList.remove('pulse');
+    }, 500);
+}
+
+// Create damage number
+function createDamageNumber(x, y, text, color) {
+    const div = document.createElement('div');
+    div.className = 'damage-number';
+    div.textContent = text;
+    div.style.left = x + 'px';
+    div.style.top = y + 'px';
+    div.style.color = color;
+    document.getElementById('gameContainer').appendChild(div);
+    
+    setTimeout(() => {
+        div.remove();
+    }, 1000);
+}
+
+// Handle game over
+function handleGameOver(outcome = "LOSE") {
+    gameRunning = false;
+    gameActive = false;
+    gamePaused = false;
+    clearQuizTimer();
+    
+    // Update stats
+    finalScoreDisplay.textContent = score;
+    wavesCompletedDisplay.textContent = currentWave - 1;
+    enemiesDestroyedDisplay.textContent = totalEnemiesDestroyed;
+    correctAnswersDisplay.textContent = totalCorrectAnswers;
+    totalQuestionsDisplay.textContent = totalQuestionsAsked;
+    bestComboDisplay.textContent = bestCombo;
+    educationalScoreDisplay.textContent = educationalScore;
+    
+    const accuracy = totalQuestionsAsked > 0 
+        ? Math.round((totalCorrectAnswers / totalQuestionsAsked) * 100) 
+        : 0;
+    accuracyDisplay.textContent = accuracy;
+    
+    // Calculate and display grade
+    let grade = '';
+    let gradeColor = '';
+    if (accuracy >= 90) {
+        grade = 'A+ - Master Scholar!';
+        gradeColor = '#0f0';
+    } else if (accuracy >= 80) {
+        grade = 'A - Excellent Student!';
+        gradeColor = '#0f0';
+    } else if (accuracy >= 70) {
+        grade = 'B - Good Progress!';
+        gradeColor = '#ff0';
+    } else if (accuracy >= 60) {
+        grade = 'C - Keep Learning!';
+        gradeColor = '#f80';
+    } else {
+        grade = 'Practice Makes Perfect!';
+        gradeColor = '#f00';
+    }
+    
+    gradeDisplay.textContent = `Grade: ${grade}`;
+    gradeDisplay.style.color = gradeColor;
+    
+    const gameOverTitle = document.querySelector('#gameOverScreen h2');
+    if (outcome === "EDUCATIONAL_WIN" && player.health > 0) {
+        gameOverTitle.textContent = "EDUCATIONAL VICTORY!";
+        gameOverTitle.style.color = "#0f0";
+        gameOverScreen.classList.add('victory');
+        gradeDisplay.textContent = `Perfect Score! ${grade}`;
+        playSound(powerupSound);
+    } else if (outcome === "WIN" && player.health > 0) {
+        gameOverTitle.textContent = "VICTORY!";
+        gameOverTitle.style.color = "#0f0";
+        gameOverScreen.classList.add('victory');
+        playSound(powerupSound);
+    } else {
+        gameOverTitle.textContent = "GAME OVER!";
+        gameOverTitle.style.color = "#f00";
+        gameOverScreen.classList.remove('victory');
+        
+        // Encouraging message for educational game
+        if (accuracy >= 50) {
+            gradeDisplay.innerHTML += '<br><span style="font-size: 14px; color: #0ff;">Great effort! Try again to improve!</span>';
+        }
+        
+        playSound(gameOverSound);
+    }
+    
+    gameOverScreen.style.display = 'block';
+    
+    try {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+    } catch (e) {
+        console.warn('Error stopping background music:', e);
+    }
+}
+
+// Game restart handling
+restartButton.addEventListener('click', () => {
+    gameOverScreen.style.display = 'none';
+    resetGameState();
+    initializeGameState();
+    initEnemies();
+    
+    try {
+        if (soundEnabled) {
+            backgroundMusic.currentTime = 0;
+            backgroundMusic.play().catch(e => console.warn('Error playing music:', e));
+        }
+    } catch (e) {
+        console.warn('Error playing background music:', e);
+    }
+    
+    gameActive = true;
+    gameRunning = true;
+    gameLoop();
+});
+
+// Back to menu
+backToMenuButton.addEventListener('click', () => {
+    gameOverScreen.style.display = 'none';
+    gameRunning = false;
+    gameActive = false;
+    gamePaused = false;
+    
+    quizContainer.style.display = 'none';
+    clearQuizTimer();
+    powerupMessage.style.display = 'none';
+    
+    try {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+    } catch (e) {
+        console.warn('Error stopping music:', e);
+    }
+    
+    showIntroScreen();
+});
+
+// Pause button handler
+pauseBtn.addEventListener('click', () => {
+    if (gameActive && quizContainer.style.display === 'none') {
+        togglePause();
+    }
+});
+
+// Help button
+helpBtn.addEventListener('click', () => {
+    helpScreen.style.display = 'block';
+    if (gameRunning && !gamePaused) {
+        togglePause();
+    }
+});
+
+closeHelpBtn.addEventListener('click', () => {
+    helpScreen.style.display = 'none';
+});
+
+// Sound toggle
+soundBtn.addEventListener('click', () => {
+    toggleSound();
+});
+
+// Resume and quit buttons
+resumeButton.addEventListener('click', () => {
+    togglePause();
+});
+
+quitButton.addEventListener('click', () => {
+    pauseScreen.style.display = 'none';
+    gamePaused = false;
+    gameRunning = false;
+    gameActive = false;
+    
+    try {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+    } catch (e) {
+        console.warn('Error stopping music:', e);
+    }
+    
+    showIntroScreen();
+});
+
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    soundBtn.textContent = soundEnabled ? '🔊 Sound' : '🔇 Muted';
+    
+    try {
+        if (soundEnabled && gameActive) {
+            backgroundMusic.play().catch(e => {
+                console.warn('Error playing music:', e);
+            });
+        } else {
+            backgroundMusic.pause();
+        }
+    } catch (e) {
+        console.warn('Error toggling sound:', e);
+    }
+}
+
+function togglePause() {
+    gamePaused = !gamePaused;
+    
+    if (gamePaused) {
+        pauseScreen.style.display = 'block';
+        gameRunning = false;
+        try {
+            backgroundMusic.pause();
+        } catch (e) {
+            console.warn('Error pausing music:', e);
+        }
+    } else {
+        pauseScreen.style.display = 'none';
+        
+        if (quizContainer.style.display !== 'block' && powerupMessage.style.display !== 'block') {
+            gameRunning = true;
+        }
+        
+        try {
+            if (soundEnabled && gameActive) {
+                backgroundMusic.play().catch(e => console.warn('Error resuming music:', e));
+            }
+        } catch (e) {
+            console.warn('Error resuming music:', e);
+        }
+    }
+}
+
+// Keyboard event handlers
+const keys = { left: false, right: false, space: false };
+
+window.addEventListener('keydown', e => {
+    if (e.key === 'p' || e.key === 'P') {
+        if (gameActive && quizContainer.style.display === 'none') {
+            togglePause();
+        }
+    } else if (e.key === 'm' || e.key === 'M') {
+        toggleSound();
+    } else if (e.key === 'h' || e.key === 'H') {
+        if (gameActive) {
+            helpScreen.style.display = 'block';
+            if (gameRunning) {
+                togglePause();
+            }
+        }
+    }
+
+    if (!gameRunning || gamePaused) return;
+
+    if (e.key === 'ArrowLeft') keys.left = true;
+    if (e.key === 'ArrowRight') keys.right = true;
+    if (e.key === ' ') {
+        e.preventDefault();
+        keys.space = true;
+    }
+});
+
+document.addEventListener('keyup', e => {
+    if (e.key === 'ArrowLeft') keys.left = false;
+    if (e.key === 'ArrowRight') keys.right = false;
+    if (e.key === ' ') keys.space = false;
+});
+
+// Mouse events
+let isMousePressed = false;
+let mouseX = 0;
+
+canvas.addEventListener('mousedown', (e) => {
+    if (!gameRunning || gamePaused) return;
+    isMousePressed = true;
+});
+
+canvas.addEventListener('mouseup', () => {
+    isMousePressed = false;
+});
+
+canvas.addEventListener('mouseleave', () => {
+    isMousePressed = false;
+});
+
+canvas.addEventListener('mousemove', e => {
+    if (!gameRunning || gamePaused) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+});
+
+// Touch events
+let touchX = 0;
+let isTouching = false;
+
+canvas.addEventListener('touchstart', e => {
+    if (!gameRunning || gamePaused) return;
+    
+    e.preventDefault();
+    if (e.touches.length === 1) {
+        isTouching = true;
+        touchX = e.touches[0].clientX;
+    }
+}, {passive: false});
+
+canvas.addEventListener('touchmove', e => {
+    if (!gameRunning || gamePaused) return;
+    
+    e.preventDefault();
+    if (isTouching && e.touches.length === 1) {
+        const rect = canvas.getBoundingClientRect();
+        touchX = e.touches[0].clientX - rect.left;
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+    e.preventDefault();
+    isTouching = false;
+}, {passive: false});
+
+// Particle effects
+function createExplosionParticles(x, y, count, color) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x: x,
+            y: y,
+            size: 1 + Math.random() * 4,
+            speed: 1 + Math.random() * 5,
+            angle: Math.random() * Math.PI * 2,
+            color: color || '#f80',
+            alpha: 1,
+            life: 30 + Math.random() * 30,
+            gravity: 0.1
+        });
+    }
+}
+
+function updateParticles(deltaTime) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += Math.cos(p.angle) * p.speed * (deltaTime / 16.67);
+        p.y += Math.sin(p.angle) * p.speed * (deltaTime / 16.67) + p.gravity;
+        p.alpha -= 0.02 * (deltaTime / 16.67);
+        p.life -= 1 * (deltaTime / 16.67);
+        p.gravity += 0.05;
+        
+        if (p.alpha <= 0 || p.life <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+}
+
+function drawParticles() {
+    for (let i = 0; i < particles.length; i++) {
+        let p = particles[i];
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+}
+
+// Initialize stars
+function initStars() {
+    stars = [];
+    for (let i = 0; i < 150; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2.5 + 0.5,
+            speed: Math.random() * 0.5 + 0.5,
+            brightness: Math.random()
+        });
+    }
+}
+
+// Initialize asteroids
+function initAsteroids() {
+    asteroids = [];
+    const asteroidCount = 3 + Math.floor(currentWave / 3);
+    
+    for (let i = 0; i < asteroidCount; i++) {
+        asteroids.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: 30 + Math.random() * 30,
+            speed: 0.5 + Math.random() * 1.5,
+            direction: Math.random() * Math.PI * 2,
+            rotation: 0,
+            rotationSpeed: (Math.random() - 0.5) * 0.05,
+            health: 3,
+            maxHealth: 3
+        });
+    }
+}
+
+// Initialize shooting stars
+function initShootingStars() {
+    shootingStars = [];
+}
+
+// Update stars
+function updateStars(deltaTime) {
+    const speedFactor = (gamePaused || !gameRunning) ? 0.1 : 1.0;
+    
+    for (let i = 0; i < stars.length; i++) {
+        let star = stars[i];
+        
+        star.y += star.speed * speedFactor * (deltaTime / 16.67);
+        
+        // Twinkle effect
+        if (Math.random() < 0.001) {
+            star.brightness = Math.random();
+        }
+        
+        if (star.y > canvas.height) {
+            star.y = 0;
+            star.x = Math.random() * canvas.width;
+            star.size = Math.random() * 2.5 + 0.5;
+            star.speed = Math.random() * 0.5 + 0.5;
+        }
+    }
+    
+    // Add shooting stars
+    if (Math.random() < 0.005 && shootingStars.length < 3 && !gamePaused && gameRunning) {
+        shootingStars.push({
+            x: Math.random() * canvas.width,
+            y: -50,
+            length: 40 + Math.random() * 40,
+            speed: 5 + Math.random() * 5,
+            angle: Math.PI / 4 + (Math.random() * Math.PI / 4),
+            trail: []
+        });
+    }
+}
+
+// Update asteroids
+function updateAsteroids(deltaTime) {
+    if (gamePaused || !gameRunning) return;
+    
+    for (let i = asteroids.length - 1; i >= 0; i--) {
+        let asteroid = asteroids[i];
+        
+        // Update position
+        asteroid.x += Math.cos(asteroid.direction) * asteroid.speed * (deltaTime / 16.67);
+        asteroid.y += Math.sin(asteroid.direction) * asteroid.speed * (deltaTime / 16.67);
+        
+        // Update rotation
+        asteroid.rotation += asteroid.rotationSpeed * (deltaTime / 16.67);
+        
+        // Wrap around screen
+        const margin = asteroid.size;
+        if (asteroid.x < -margin) asteroid.x = canvas.width + margin;
+        if (asteroid.x > canvas.width + margin) asteroid.x = -margin;
+        if (asteroid.y < -margin) asteroid.y = canvas.height + margin;
+        if (asteroid.y > canvas.height + margin) asteroid.y = -margin;
+        
+        // Check collision with player
+        if (!player.invulnerable && !player.powerups.shield) {
+            const dx = asteroid.x - (player.x + player.width/2);
+            const dy = asteroid.y - (player.y + player.height/2);
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < asteroid.size/2 + player.width/2) {
+                // Damage player
+                player.health -= 15;
+                updateHealthBar();
+                
+                // Effects
+                createExplosionParticles(player.x + player.width/2, player.y + player.height/2, 20, '#f00');
+                createDamageNumber(player.x + player.width/2, player.y, '-15', '#f00');
+                playSound(explosionSound);
+                
+                // Make player invulnerable
+                player.invulnerable = true;
+                player.invulnerableTimer = 1500;
+                
+                // Destroy asteroid
+                asteroid.health = 0;
+                
+                if (player.health <= 0) {
+                    handleGameOver();
+                }
+            }
+        }
+        
+        // Remove destroyed asteroids
+        if (asteroid.health <= 0) {
+            createExplosionParticles(asteroid.x, asteroid.y, 30, '#888');
+            score += 5;
+            scoreDisplay.textContent = `Score: ${score}`;
+            asteroids.splice(i, 1);
+        }
+    }
+}
+
+// Update shooting stars
+function updateShootingStars(deltaTime) {
+    if (gamePaused || !gameRunning) return;
+    
+    for (let i = shootingStars.length - 1; i >= 0; i--) {
+        let star = shootingStars[i];
+        
+        // Update position
+        const speedX = Math.cos(star.angle) * star.speed;
+        const speedY = Math.sin(star.angle) * star.speed;
+        
+        star.x += speedX * (deltaTime / 16.67);
+        star.y += speedY * (deltaTime / 16.67);
+        
+        // Add to trail
+        star.trail.push({ x: star.x, y: star.y, alpha: 1 });
+        
+        // Update trail
+        for (let j = star.trail.length - 1; j >= 0; j--) {
+            star.trail[j].alpha -= 0.05;
+            if (star.trail[j].alpha <= 0) {
+                star.trail.splice(j, 1);
+            }
+        }
+        
+        // Create particles
+        if (Math.random() < 0.3) {
+            particles.push({
+                x: star.x,
+                y: star.y,
+                size: 1 + Math.random() * 2,
+                speed: 0.5,
+                angle: Math.random() * Math.PI * 2,
+                color: '#fff',
+                alpha: 0.8,
+                life: 40,
+                gravity: 0
+            });
+        }
+        
+        // Remove if off screen
+        if (star.x > canvas.width + 100 || star.y > canvas.height + 100) {
+            shootingStars.splice(i, 1);
+        }
+    }
+}
+
+// Draw functions
+function drawStars() {
+    for (let i = 0; i < stars.length; i++) {
+        let star = stars[i];
+        
+        const opacity = 0.5 + star.brightness * 0.5;
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function drawAsteroids() {
+    for (let i = 0; i < asteroids.length; i++) {
+        let asteroid = asteroids[i];
+        
+        ctx.save();
+        ctx.translate(asteroid.x, asteroid.y);
+        ctx.rotate(asteroid.rotation);
+        
+        // Draw asteroid with damage indication
+        const damageRatio = asteroid.health / asteroid.maxHealth;
+        ctx.globalAlpha = 0.7 + damageRatio * 0.3;
+        
+        ctx.drawImage(
+            asteroidImage,
+            -asteroid.size/2,
+            -asteroid.size/2,
+            asteroid.size,
+            asteroid.size
+        );
+        
+        ctx.restore();
+    }
+}
+
+function drawShootingStars() {
+    for (let i = 0; i < shootingStars.length; i++) {
+        let star = shootingStars[i];
+        
+        // Draw trail
+        ctx.beginPath();
+        for (let j = 0; j < star.trail.length; j++) {
+            const point = star.trail[j];
+            ctx.globalAlpha = point.alpha * 0.5;
+            ctx.lineTo(point.x, point.y);
+        }
+        
+        // Create gradient for trail
+        const gradient = ctx.createLinearGradient(
+            star.x - Math.cos(star.angle) * star.length,
+            star.y - Math.sin(star.angle) * star.length,
+            star.x,
+            star.y
+        );
+        gradient.addColorStop(0, 'rgba(100, 255, 255, 0)');
+        gradient.addColorStop(0.5, 'rgba(100, 255, 255, 0.3)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0.8)');
+        
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Draw head
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#fff';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#fff';
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.shadowBlur = 0;
+    }
+    ctx.globalAlpha = 1;
+}
+
+// Initialize enemies
+function initEnemies() {
+    enemies = [];
+    enemyBullets = [];
+    waveStartTime = Date.now();
+    
+    // EDUCATIONAL DESIGN: Smaller waves for more frequent quizzes
+    // Each wave has fewer enemies but always ends with a mini-boss
+    
+    // Calculate wave size - starts small, grows gradually
+    let baseEnemies = 8; // Start with just 8 enemies
+    let additionalEnemies = Math.min(currentWave * 2, 20); // Add 2 per wave, max 20 additional
+    let totalRegularEnemies = baseEnemies + additionalEnemies;
+    
+    // Arrange enemies in a more compact formation
+    let rows = Math.min(3 + Math.floor(currentWave / 4), 5); // Max 5 rows
+    let cols = Math.ceil(totalRegularEnemies / rows);
+    
+    const startX = (canvas.width - (cols * 50)) / 2;
+    const rowSpacing = 45;
+    
+    let baseSpeed = 0.8 + (currentWave * 0.1);
+    let enemySpeed = baseSpeed * enemySpeedMultiplier;
+    
+    // Special enemy chance increases with education progress
+    let specialEnemyChance = 0.15 + (totalCorrectAnswers * 0.01);
+    if (specialEnemyChance > 0.4) specialEnemyChance = 0.4;
+    
+    // Create regular enemies
+    let enemiesCreated = 0;
+    for (let i = 0; i < rows && enemiesCreated < totalRegularEnemies; i++) {
+        for (let j = 0; j < cols && enemiesCreated < totalRegularEnemies; j++) {
+            let isSpecial = Math.random() < specialEnemyChance;
+            const enemyType = isSpecial ? enemyTypes[3] : enemyTypes[Math.floor(Math.random() * 3)];
+            
+            enemies.push({
+                x: startX + j * 50,
+                y: 50 + i * rowSpacing,
+                width: 40,
+                height: 40,
+                type: enemyType,
+                alive: true,
+                health: enemyType.health + Math.floor(currentWave / 5),
+                maxHealth: enemyType.health + Math.floor(currentWave / 5),
+                dx: enemySpeed * (Math.random() > 0.5 ? 1 : -1),
+                dy: 0,
+                shootTimer: Math.random() * enemyShootInterval,
+                flashTimer: 0,
+                waveSine: Math.random() * Math.PI * 2,
+                waveAmplitude: isSpecial ? 0.3 + Math.random() * 0.3 : 0
+            });
+            enemiesCreated++;
+        }
+    }
+    
+    // ALWAYS create a mini-boss at the end of each wave
+    const miniBossHealth = 20 + (currentWave * 10);
+    const miniBoss = {
+        x: canvas.width / 2 - 60,
+        y: -100, // Start off screen
+        width: 80,
+        height: 60,
+        type: {
+            points: 200 + (currentWave * 50),
+            name: 'Mini-Boss',
+            isSpecial: true,
+            color: '#f0f'
+        },
+        alive: true,
+        health: miniBossHealth,
+        maxHealth: miniBossHealth,
+        dx: 2,
+        dy: 0.5, // Slowly descend
+        shootTimer: 2000,
+        pattern: 0,
+        patternTimer: 0,
+        isMiniBoss: true,
+        entrancePhase: true
+    };
+    
+    bossActive = true;
+    bossEnemy = miniBoss;
+    enemies.push(miniBoss);
+    
+    waveDisplay.textContent = `Wave: ${currentWave}`;
+    
+    // Show wave start message
+    if (currentWave === 1) {
+        showPowerupMessage("Wave 1 - Let's Learn and Play!");
+    } else {
+        playSound(levelUpSound);
+        showPowerupMessage(`Wave ${currentWave} - Knowledge is Power!`);
+    }
+    
+    // Educational checkpoint - automatic quiz every 3 waves
+    if (currentWave % 3 === 0) {
+        setTimeout(() => {
+            if (gameRunning) {
+                showQuizForEvent('educational');
+            }
+        }, 5000); // 5 seconds into the wave
+    }
+}
+
+function initializeGameState() {
+    updateHealthBar();
+    updatePowerupsDisplay();
+    updateComboDisplay();
+    updateMultiplierDisplay();
+    updateStreakDisplay();
+    initStars();
+    initAsteroids();
+    initShootingStars();
+    clearCanvas();
+}
+
+// Player update and draw
+function updatePlayer(deltaTime) {
+    // Handle keyboard input
+    if (keys.left) {
+        player.x -= player.speed * (deltaTime / 16.67);
+    }
+    if (keys.right) {
+        player.x += player.speed * (deltaTime / 16.67);
+    }
+    
+    // Handle mouse/touch input
+    if (isMousePressed || isTouching) {
+        const targetX = isTouching ? touchX : mouseX;
+        const diff = targetX - (player.x + player.width / 2);
+        player.x += diff * 0.15; // Smooth movement
+    }
+    
+    // Keep player in bounds
+    player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+    
+    // Handle invulnerability
+    if (player.invulnerable) {
+        player.invulnerableTimer -= deltaTime;
+        if (player.invulnerableTimer <= 0) {
+            player.invulnerable = false;
+        }
+    }
+    
+    // Handle shooting
+    if (player.shootCooldown > 0) {
+        player.shootCooldown -= deltaTime;
+    }
+    
+    const currentShootInterval = player.powerups.rapidFire ? player.shootInterval / 3 : player.shootInterval;
+    
+    if ((keys.space || isMousePressed || isTouching) && player.shootCooldown <= 0) {
+        let bulletWidth = 4;
+        let bulletHeight = 20;
+        
+        // Create bullets
+        if (player.powerups.doubleDamage) {
+            // Double shot
+            player.bullets.push({
+                x: player.x + player.width / 3 - bulletWidth / 2,
+                y: player.y - bulletHeight,
+                width: bulletWidth,
+                height: bulletHeight,
+                speed: 12,
+                damage: 2
+            });
+            player.bullets.push({
+                x: player.x + (player.width * 2 / 3) - bulletWidth / 2,
+                y: player.y - bulletHeight,
+                width: bulletWidth,
+                height: bulletHeight,
+                speed: 12,
+                damage: 2
+            });
+        } else {
+            // Single shot
+            player.bullets.push({
+                x: player.x + player.width / 2 - bulletWidth / 2,
+                y: player.y - bulletHeight,
+                width: bulletWidth,
+                height: bulletHeight,
+                speed: 12,
+                damage: 1
+            });
+        }
+        
+        player.shootCooldown = currentShootInterval;
+        playSound(shootSound);
+    }
+    
+    drawPlayer();
+}
+
+function drawPlayer() {
+    // Flash when invulnerable
+    if (player.invulnerable && Math.floor(Date.now() / 100) % 2 === 0) {
+        return;
+    }
+    
+    // Draw shield effect
+    if (player.powerups.shield) {
+        ctx.save();
+        const pulseSize = 1 + Math.sin(Date.now() * 0.005) * 0.1;
+        ctx.beginPath();
+        ctx.arc(
+            player.x + player.width/2, 
+            player.y + player.height/2, 
+            player.width * 0.85 * pulseSize, 
+            0, 
+            Math.PI * 2
+        );
+        ctx.strokeStyle = '#0ff';
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#0ff';
+        ctx.stroke();
+        ctx.restore();
+    }
+    
+    // Draw player ship
+    ctx.drawImage(
+        playerShipImage, 
+        player.x, 
+        player.y, 
+        player.width, 
+        player.height
+    );
+    
+    // Engine flame effect
+    ctx.save();
+    const flameHeight = 20 + Math.sin(Date.now() * 0.01) * 10;
+    const flameWidth = 12 + Math.sin(Date.now() * 0.02) * 4;
+    
+    // Create flame gradient
+    const gradient = ctx.createLinearGradient(
+        player.x + player.width/2, 
+        player.y + player.height,
+        player.x + player.width/2, 
+        player.y + player.height + flameHeight
+    );
+    
+    if (player.powerups.rapidFire) {
+        gradient.addColorStop(0, '#0ff');
+        gradient.addColorStop(0.5, '#00f');
+        gradient.addColorStop(1, 'rgba(0, 0, 255, 0)');
+    } else {
+        gradient.addColorStop(0, '#f80');
+        gradient.addColorStop(0.5, '#f00');
+        gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+    }
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.moveTo(player.x + player.width/2, player.y + player.height);
+    ctx.lineTo(player.x + player.width/2 - flameWidth/2, player.y + player.height + flameHeight);
+    ctx.lineTo(player.x + player.width/2 + flameWidth/2, player.y + player.height + flameHeight);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
+// Enemy updates
+function updateEnemies(deltaTime) {
+    let allEnemiesMoveDown = false;
+    let enemiesAtEdge = false;
+    
+    // Check boundaries
+    for (let i = 0; i < enemies.length; i++) {
+        const enemy = enemies[i];
+        if (!enemy.alive) continue;
+        
+        if (!enemy.isBoss && ((enemy.x <= 10 && enemy.dx < 0) || 
+            (enemy.x >= canvas.width - enemy.width - 10 && enemy.dx > 0))) {
+            enemiesAtEdge = true;
+            break;
+        }
+    }
+    
+    if (enemiesAtEdge) {
+        allEnemiesMoveDown = true;
+        for (let i = 0; i < enemies.length; i++) {
+            if (enemies[i].alive && !enemies[i].isBoss) {
+                enemies[i].dx *= -1;
+            }
+        }
+    }
+    
+    // Update each enemy
+    for (let i = 0; i < enemies.length; i++) {
+        let enemy = enemies[i];
+        if (!enemy.alive) continue;
+        
+        if (enemy.isBoss || enemy.isMiniBoss) {
+            // Boss movement pattern
+            updateBoss(enemy, deltaTime);
+        } else {
+            // Normal enemy movement
+            enemy.x += enemy.dx * (deltaTime / 16.67);
+            
+            if (allEnemiesMoveDown) {
+                enemy.y += 20;
+            }
+            
+            // Wave motion for special enemies
+            if (enemy.waveAmplitude > 0) {
+                enemy.waveSine += 0.05 * (deltaTime / 16.67);
+                enemy.y += Math.sin(enemy.waveSine) * enemy.waveAmplitude;
+            }
+        }
+        
+        // Shooting
+        enemy.shootTimer -= deltaTime;
+        if (enemy.shootTimer <= 0) {
+            if (enemy.y > 0 && enemy.y < canvas.height - 200) {
+                if (enemy.isMiniBoss) {
+                    // Mini-boss shooting pattern - less aggressive for education
+                    for (let j = 0; j < 2; j++) {
+                        enemyBullets.push({
+                            x: enemy.x + (enemy.width / 3) * (j + 1) - 5,
+                            y: enemy.y + enemy.height,
+                            width: 8,
+                            height: 8,
+                            speed: 3,
+                            special: true,
+                            damage: 15,
+                            angle: (j - 0.5) * 0.15
+                        });
+                    }
+                } else if (enemy.isBoss) {
+                    // Full boss shooting pattern
+                    for (let j = 0; j < 3; j++) {
+                        enemyBullets.push({
+                            x: enemy.x + (enemy.width / 4) * (j + 1) - 5,
+                            y: enemy.y + enemy.height,
+                            width: 10,
+                            height: 10,
+                            speed: 4,
+                            special: true,
+                            damage: 25,
+                            angle: (j - 1) * 0.2
+                        });
+                    }
+                } else {
+                    // Normal enemy shooting
+                    const bulletWidth = enemy.type.isSpecial ? 10 : 5;
+                    enemyBullets.push({
+                        x: enemy.x + enemy.width/2 - bulletWidth/2,
+                        y: enemy.y + enemy.height,
+                        width: bulletWidth,
+                        height: 10,
+                        speed: enemy.type.isSpecial ? 4 : 3,
+                        special: enemy.type.isSpecial,
+                        damage: enemy.type.isSpecial ? 15 : 8, // Reduced damage for education
+                        angle: 0
+                    });
+                }
+            }
+            
+            // Reset shoot timer
+            if (enemy.isMiniBoss) {
+                enemy.shootTimer = 2500; // Mini-boss shoots less frequently
+            } else if (enemy.isBoss) {
+                enemy.shootTimer = 1500;
+            } else {
+                const baseInterval = enemyShootInterval * (enemy.type.isSpecial ? 0.8 : 1);
+                enemy.shootTimer = baseInterval * (0.8 + Math.random() * 0.4);
+            }
+        }
+        
+        // Update flash timer
+        if (enemy.flashTimer > 0) {
+            enemy.flashTimer -= deltaTime;
+        }
+        
+        drawEnemy(enemy);
+    }
+}
+
+// Boss update function
+function updateBoss(boss, deltaTime) {
+    // Mini-boss entrance
+    if (boss.entrancePhase) {
+        boss.y += 1;
+        if (boss.y >= 80) {
+            boss.entrancePhase = false;
+            showPowerupMessage("Mini-Boss Arrived! Defeat for Knowledge!");
+        }
+        return;
+    }
+    
+    // Pattern-based movement for mini-boss
+    boss.patternTimer += deltaTime;
+    
+    if (boss.isMiniBoss) {
+        // Simpler patterns for mini-boss
+        switch(boss.pattern) {
+            case 0: // Gentle side to side
+                boss.x += boss.dx * (deltaTime / 16.67);
+                if (boss.x <= 30 || boss.x >= canvas.width - boss.width - 30) {
+                    boss.dx *= -1;
+                    boss.pattern = 1;
+                    boss.patternTimer = 0;
+                }
+                break;
+            case 1: // Slow sine wave
+                const t = boss.patternTimer / 4000;
+                boss.x = canvas.width/2 + Math.sin(t * Math.PI * 2) * 150 - boss.width/2;
+                if (boss.patternTimer > 4000) {
+                    boss.pattern = 0;
+                    boss.patternTimer = 0;
+                }
+                break;
+        }
+    } else {
+        // Full boss patterns (for major bosses if you add them)
+        switch(boss.pattern) {
+            case 0: // Side to side
+                boss.x += boss.dx * (deltaTime / 16.67);
+                if (boss.x <= 50 || boss.x >= canvas.width - boss.width - 50) {
+                    boss.dx *= -1;
+                    boss.pattern = 1;
+                    boss.patternTimer = 0;
+                }
+                break;
+            case 1: // Figure 8
+                const t = boss.patternTimer / 3000;
+                boss.x = canvas.width/2 + Math.sin(t * Math.PI * 2) * 200 - boss.width/2;
+                boss.y = 100 + Math.sin(t * Math.PI * 4) * 50;
+                if (boss.patternTimer > 3000) {
+                    boss.pattern = 0;
+                    boss.patternTimer = 0;
+                }
+                break;
+        }
+    }
+}
+
+function drawEnemy(enemy) {
+    // Flash effect when hit
+    if (enemy.flashTimer > 0 && Math.floor(Date.now() / 50) % 2 === 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        ctx.restore();
+        return;
+    }
+    
+    if (enemy.isBoss || enemy.isMiniBoss) {
+        // Draw boss/mini-boss with special effects
+        ctx.save();
+        const pulseIntensity = (Math.sin(Date.now() * 0.003) + 1) * 0.5;
+        ctx.shadowBlur = 15 + pulseIntensity * 15;
+        ctx.shadowColor = enemy.isMiniBoss ? '#f0f' : '#f00';
+        
+        if (enemy.isMiniBoss) {
+            // Draw mini-boss image
+            ctx.drawImage(
+                miniBossImage,
+                enemy.x,
+                enemy.y,
+                enemy.width,
+                enemy.height
+            );
+        } else {
+            // Draw regular boss (keep existing design)
+            const baseColor = '#800';
+            const borderColor = '#f00';
+            
+            ctx.fillStyle = baseColor;
+            ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            
+            // Boss details
+            ctx.fillStyle = borderColor;
+            ctx.fillRect(enemy.x + 10, enemy.y + 10, 10, 10);
+            ctx.fillRect(enemy.x + enemy.width - 20, enemy.y + 10, 10, 10);
+            ctx.fillRect(enemy.x + enemy.width/2 - 5, enemy.y + enemy.height - 20, 10, 10);
+        }
+        
+        ctx.restore();
+        
+        // Draw boss health bar
+        const barY = enemy.isMiniBoss ? enemy.y - 20 : enemy.y - 15;
+        const barHeight = enemy.isMiniBoss ? 10 : 8;
+        
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(enemy.x, barY, enemy.width, barHeight);
+        
+        const healthPercent = enemy.health / enemy.maxHealth;
+        ctx.fillStyle = healthPercent > 0.5 ? '#0f0' : healthPercent > 0.25 ? '#ff0' : '#f00';
+        ctx.fillRect(enemy.x, barY, enemy.width * healthPercent, barHeight);
+        
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(enemy.x, barY, enemy.width, barHeight);
+        
+        // Boss name
+        if (enemy.isMiniBoss) {
+            ctx.fillStyle = '#fff';
+            ctx.font = '10px "Press Start 2P", cursive';
+            ctx.textAlign = 'center';
+            ctx.fillText('MINI-BOSS', enemy.x + enemy.width/2, barY - 5);
+            ctx.textAlign = 'left'; // Reset text align
+        }
+    } else if (enemy.type.isSpecial) {
+        // Special enemy with glow
+        ctx.save();
+        const pulseIntensity = (Math.sin(Date.now() * 0.01) + 1) * 0.5;
+        ctx.shadowBlur = 10 + pulseIntensity * 15;
+        ctx.shadowColor = enemy.type.color;
+        
+        ctx.drawImage(
+            specialEnemyShipImage,
+            enemy.x,
+            enemy.y,
+            enemy.width,
+            enemy.height
+        );
+        
+        ctx.restore();
+    } else {
+        // Regular enemy
+        ctx.drawImage(
+            enemyShipImage,
+            enemy.x,
+            enemy.y,
+            enemy.width,
+            enemy.height
+        );
+    }
+    
+    // Draw health bar for damaged enemies
+    if (!enemy.isBoss && enemy.health < enemy.maxHealth) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(enemy.x, enemy.y - 8, enemy.width, 4);
+        
+        const healthPercent = enemy.health / enemy.maxHealth;
+        ctx.fillStyle = healthPercent > 0.5 ? '#0f0' : healthPercent > 0.25 ? '#ff0' : '#f00';
+        ctx.fillRect(enemy.x, enemy.y - 8, enemy.width * healthPercent, 4);
+    }
+}
+
+// Update enemy bullets
+function updateEnemyBullets(deltaTime) {
+    for (let i = enemyBullets.length - 1; i >= 0; i--) {
+        let bullet = enemyBullets[i];
+        
+        // Update position
+        bullet.y += bullet.speed * (deltaTime / 16.67);
+        if (bullet.angle) {
+            bullet.x += bullet.angle * bullet.speed * (deltaTime / 16.67);
+        }
+        
+        // Draw bullet
+        if (bullet.special) {
+            ctx.save();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#f0f';
+            
+            // Animated bullet
+            const pulse = Math.sin(Date.now() * 0.01) * 0.3 + 1;
+            ctx.fillStyle = '#f0f';
+            ctx.beginPath();
+            ctx.arc(bullet.x + bullet.width/2, bullet.y + bullet.height/2, bullet.width/2 * pulse, 0, Math.PI*2);
+            ctx.fill();
+            ctx.restore();
+            
+            // Trail particles
+            if (Math.random() < 0.5) {
+                particles.push({
+                    x: bullet.x + bullet.width/2,
+                    y: bullet.y,
+                    size: 1 + Math.random() * 2,
+                    speed: 0.5,
+                    angle: Math.random() * Math.PI * 2,
+                    color: '#f0f',
+                    alpha: 0.7,
+                    life: 20,
+                    gravity: 0
+                });
+            }
+        } else {
+            ctx.fillStyle = '#f00';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        }
+
+        // Check collision with player
+        if (
+            bullet.x < player.x + player.width && 
+            bullet.x + bullet.width > player.x &&
+            bullet.y < player.y + player.height && 
+            bullet.y + bullet.height > player.y
+        ) {
+            if (!player.powerups.shield && !player.invulnerable) {
+                // Damage player
+                player.health -= bullet.damage || 10;
+                updateHealthBar();
+                
+                // Reset combo
+                combo = 0;
+                updateComboDisplay();
+                updateMultiplierDisplay();
+                
+                // Effects
+                createExplosionParticles(bullet.x, bullet.y, 10, bullet.special ? '#f0f' : '#f00');
+                createDamageNumber(player.x + player.width/2, player.y, `-${bullet.damage}`, '#f00');
+                playSound(explosionSound);
+                
+                // Invulnerability
+                player.invulnerable = true;
+                player.invulnerableTimer = 1000;
+                
+                if (player.health <= 0) {
+                    handleGameOver();
+                }
+            } else if (player.powerups.shield) {
+                // Shield blocks
+                createExplosionParticles(bullet.x, bullet.y, 5, '#0ff');
+            }
+            
+            enemyBullets.splice(i, 1);
+            continue;
+        }
+
+        // Remove if off screen
+        if (bullet.y > canvas.height + 20 || bullet.x < -20 || bullet.x > canvas.width + 20) {
+            enemyBullets.splice(i, 1);
+        }
+    }
+}
+
+// Update player bullets
+function updatePlayerBullets(deltaTime) {
+    for (let i = player.bullets.length - 1; i >= 0; i--) {
+        let bullet = player.bullets[i];
+        bullet.y -= bullet.speed * (deltaTime / 16.67);
+        
+        // Draw bullet with effects
+        let bulletColor = '#fff';
+        if (player.powerups.doubleDamage && player.powerups.rapidFire) {
+            bulletColor = '#f0f';
+        } else if (player.powerups.doubleDamage) {
+            bulletColor = '#f88';
+        } else if (player.powerups.rapidFire) {
+            bulletColor = '#0ff';
+        }
+        
+        ctx.save();
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = bulletColor;
+        ctx.fillStyle = bulletColor;
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        ctx.restore();
+
+        let bulletHit = false;
+
+        // Check collision with enemies
+        for (let j = enemies.length - 1; j >= 0; j--) {
+            let enemy = enemies[j];
+            if (enemy.alive && 
+                bullet.x < enemy.x + enemy.width &&
+                bullet.x + bullet.width > enemy.x &&
+                bullet.y < enemy.y + enemy.height &&
+                bullet.y + bullet.height > enemy.y) {
+                
+                // Damage enemy
+                let dmg = bullet.damage || 1;
+                enemy.health -= dmg;
+                enemy.flashTimer = 200;
+                
+                // Show damage number
+                createDamageNumber(enemy.x + enemy.width/2, enemy.y, `-${dmg}`, '#ff0');
+                
+                // Hit particles
+                createExplosionParticles(
+                    bullet.x + bullet.width/2, 
+                    bullet.y, 
+                    5, 
+                    enemy.type.isSpecial ? '#ff0' : '#f88'
+                );
+                
+                if (enemy.health <= 0) {
+                    enemy.alive = false;
+                    
+                    // Calculate score with multiplier
+                    const baseScore = enemy.type.points;
+                    const finalScore = Math.floor(baseScore * scoreMultiplier);
+                    score += finalScore;
+                    
+                    // Update combo
+                    combo++;
+                    if (combo > bestCombo) bestCombo = combo;
+                    updateComboDisplay();
+                    updateMultiplierDisplay();
+                    
+                    scoreDisplay.textContent = `Score: ${score}`;
+                    animateScoreUpdate();
+                    totalEnemiesDestroyed++;
+                    
+                    // Big explosion
+                    createExplosionParticles(
+                        enemy.x + enemy.width/2,
+                        enemy.y + enemy.height/2,
+                        enemy.isBoss ? 50 : (enemy.type.isSpecial ? 30 : 20),
+                        enemy.isBoss ? '#f00' : (enemy.type.isSpecial ? '#ff0' : '#f80')
+                    );
+                    playSound(explosionSound);
+                    
+                    // Show score popup
+                    createDamageNumber(
+                        enemy.x + enemy.width/2, 
+                        enemy.y + enemy.height/2, 
+                        `+${finalScore}`, 
+                        '#0f0'
+                    );
+                    
+                    // Handle special events
+                    if (enemy.isMiniBoss) {
+                        bossActive = false;
+                        bossEnemy = null;
+                        showQuizForEvent('boss'); // Always quiz after mini-boss
+                        showAchievement('Mini-Boss Defeated!');
+                        score += 200;
+                    } else if (enemy.isBoss) {
+                        bossActive = false;
+                        bossEnemy = null;
+                        showQuizForEvent('boss');
+                        showAchievement('Boss Slayer!');
+                        score += 500;
+                    } else if (enemy.type.isSpecial) {
+                        specialEnemiesKilled++;
+                        // Educational: Quiz after EVERY special enemy
+                        showQuizForEvent('destroySpecial');
+                    } else {
+                        destroyedNormalEnemies++;
+                        // Educational: Quiz more frequently - every 5 normal enemies
+                        if (destroyedNormalEnemies >= 5) {
+                            destroyedNormalEnemies = 0;
+                            showQuizForEvent('destroyNormal');
+                        }
+                        
+                        // Power-up drops more frequently for engagement
+                        if (Math.random() < 0.2) { // 20% chance
+                            powerUpItems.push({
+                                x: enemy.x + enemy.width/2 - 15,
+                                y: enemy.y + enemy.height,
+                                width: 30,
+                                height: 30,
+                                type: 'random',
+                                dy: 2,
+                                rotation: 0,
+                                rotationSpeed: 0.05
+                            });
+                        }
+                    }
+                }
+                
+                player.bullets.splice(i, 1);
+                bulletHit = true;
+                break;
+            }
+        }
+
+        if (bulletHit) continue;
+
+        // Check collision with asteroids
+        for (let a = asteroids.length - 1; a >= 0; a--) {
+            let asteroid = asteroids[a];
+            const dx = (bullet.x + bullet.width/2) - asteroid.x;
+            const dy = (bullet.y + bullet.height/2) - asteroid.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < asteroid.size/2) {
+                asteroid.health -= bullet.damage || 1;
+                
+                createExplosionParticles(
+                    bullet.x + bullet.width/2,
+                    bullet.y + bullet.height/2,
+                    5,
+                    '#888'
+                );
+                
+                if (asteroid.health <= 0) {
+                    asteroid.health = 0;
+                }
+                
+                player.bullets.splice(i, 1);
+                bulletHit = true;
+                break;
+            }
+        }
+
+        // Remove if off screen
+        if (!bulletHit && bullet.y < -20) {
+            player.bullets.splice(i, 1);
+        }
+    }
+}
+
+// Update power-up items
+function updatePowerUpItems(deltaTime) {
+    for (let i = powerUpItems.length - 1; i >= 0; i--) {
+        let item = powerUpItems[i];
+        
+        // Fall down
+        item.y += item.dy * (deltaTime / 16.67);
+        
+        // Rotate
+        if (item.rotation !== undefined) {
+            item.rotation += item.rotationSpeed * (deltaTime / 16.67);
+        }
+        
+        // Draw powerup
+        ctx.save();
+        ctx.translate(item.x + item.width/2, item.y + item.height/2);
+        if (item.rotation !== undefined) {
+            ctx.rotate(item.rotation);
+        }
+        
+        // Glow effect
+        const glow = Math.sin(Date.now() * 0.005) * 0.5 + 0.5;
+        ctx.shadowBlur = 15 + glow * 15;
+        ctx.shadowColor = '#0ff';
+        
+        ctx.drawImage(
+            powerupImage, 
+            -item.width/2, 
+            -item.height/2, 
+            item.width, 
+            item.height
+        );
+        ctx.restore();
+        
+        // Sparkle particles
+        if (Math.random() < 0.1) {
+            particles.push({
+                x: item.x + Math.random() * item.width,
+                y: item.y + Math.random() * item.height,
+                size: 1 + Math.random() * 2,
+                speed: 0.5,
+                angle: Math.random() * Math.PI * 2,
+                color: '#0ff',
+                alpha: 0.8,
+                life: 30,
+                gravity: 0
+            });
+        }
+
+        // Check collision with player
+        if (
+            item.x < player.x + player.width && 
+            item.x + item.width > player.x &&
+            item.y < player.y + player.height && 
+            item.y + item.height > player.y
+        ) {
+            powerUpItems.splice(i, 1);
+            powerupsCollected++;
+            
+            createExplosionParticles(
+                item.x + item.width/2, 
+                item.y + item.height/2, 
+                20, 
+                '#0ff'
+            );
+            
+            // Educational: Quiz after every 2 powerups instead of 3
+            if (powerupsCollected % 2 === 0) {
+                showQuizForEvent('collectPowerup');
+            } else {
+                // Immediate powerup with encouraging message
+                const powerupType = ['rapidFire', 'shield', 'doubleDamage'][Math.floor(Math.random() * 3)];
+                activatePowerup(powerupType);
+                showAchievement('Power-up Bonus!');
+            }
+            
+            playSound(powerupSound);
+            continue;
+        }
+
+        // Remove if off screen
+        if (item.y > canvas.height + 20) {
+            powerUpItems.splice(i, 1);
+        }
+    }
+}
+
+// Update active powerups
+function updateActivePowerups(deltaTime) {
+    for (let i = activePowerups.length - 1; i >= 0; i--) {
+        let powerup = activePowerups[i];
+        
+        // Countdown
+        powerup.remainingTime -= deltaTime;
+        
+        // Warning particles when about to expire
+        if (powerup.remainingTime < 2000 && Math.floor(Date.now() / 200) % 2 === 0) {
+            const colors = {
+                'shield': '#0ff',
+                'rapidFire': '#ff0',
+                'doubleDamage': '#f88'
+            };
+            
+            if (Math.random() < 0.3) {
+                particles.push({
+                    x: player.x + Math.random() * player.width,
+                    y: player.y + Math.random() * player.height,
+                    size: 1 + Math.random() * 2,
+                    speed: 1,
+                    angle: Math.random() * Math.PI * 2,
+                    color: colors[powerup.type] || '#fff',
+                    alpha: 0.7,
+                    life: 20,
+                    gravity: 0
+                });
+            }
+        }
+
+        // Remove expired
+        if (powerup.remainingTime <= 0) {
+            player.powerups[powerup.type] = false;
+            activePowerups.splice(i, 1);
+            updatePowerupsDisplay();
+            
+            // Expiration effect
+            createExplosionParticles(
+                player.x + player.width/2, 
+                player.y + player.height/2, 
+                10, 
+                '#888'
+            );
+        }
+    }
+}
+
+// Check wave completion
+function checkWaveCompletion() {
+    if (!enemies.some(e => e.alive)) {
+        currentWave++;
+        initAsteroids();
+        
+        // Make player invulnerable during transition
+        player.invulnerable = true;
+        player.invulnerableTimer = 3000;
+        
+        // Educational design: Always show educational progress
+        const waveTime = Date.now() - waveStartTime;
+        const waveMinutes = Math.floor(waveTime / 60000);
+        const waveSeconds = Math.floor((waveTime % 60000) / 1000);
+        
+        // Show wave summary
+        showPowerupMessage(`Wave ${currentWave - 1} Complete! Time: ${waveMinutes}:${waveSeconds.toString().padStart(2, '0')}`, function() {
+            // Always continue to next wave after message
+            setTimeout(() => {
+                initEnemies();
+            }, 500);
+        });
+        
+        // Bonus health for wave completion
+        const healthReward = 20 + (answerStreak * 5);
+        player.health = Math.min(player.health + healthReward, player.maxHealth);
+        updateHealthBar();
+        
+        // Educational bonus
+        educationalScore += 50;
+    }
+}
+
+// Main game loop
+function gameLoop() {
+    if (!gameActive) return;
+    
+    const currentTime = performance.now();
+    const deltaTime = Math.min(currentTime - lastFrameTime, 100);
+    lastFrameTime = currentTime;
+    
+    // Update all elements
+    updateStars(deltaTime);
+    updateAsteroids(deltaTime);
+    updateShootingStars(deltaTime);
+    updateParticles(deltaTime);
+    
+    // Clear canvas with trail effect
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw background elements
+    drawStars();
+    drawAsteroids();
+    drawShootingStars();
+    drawParticles();
+    
+    if (gameRunning && !gamePaused) {
+        // Update game logic
+        updatePlayer(deltaTime);
+        updateEnemies(deltaTime);
+        updatePlayerBullets(deltaTime);
+        updateEnemyBullets(deltaTime);
+        updatePowerUpItems(deltaTime);
+        updateActivePowerups(deltaTime);
+        checkWaveCompletion();
+    } else if (gamePaused || !gameRunning) {
+        // Still draw game state when paused
+        drawPlayer();
+        enemies.forEach(enemy => {
+            if (enemy.alive) drawEnemy(enemy);
+        });
+        
+        // Draw bullets
+        player.bullets.forEach(bullet => {
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        });
+        
+        enemyBullets.forEach(bullet => {
+            if (bullet.special) {
+                ctx.fillStyle = '#f0f';
+                ctx.beginPath();
+                ctx.arc(bullet.x + bullet.width/2, bullet.y + bullet.height/2, bullet.width/2, 0, Math.PI*2);
+                ctx.fill();
+            } else {
+                ctx.fillStyle = '#f00';
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            }
+        });
+        
+        // Draw powerups
+        powerUpItems.forEach(item => {
+            ctx.drawImage(
+                powerupImage,
+                item.x,
+                item.y,
+                item.width,
+                item.height
+            );
+        });
+    }
+    
+    requestAnimationFrame(gameLoop);
+}
+    </script>
+</body>
+</html>
