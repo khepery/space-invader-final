@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Ultra Pro Space Invaders - Premium Educational Edition</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -849,8 +850,8 @@
         
         <!-- HUD Top-left pill -->
         <div id="hudTopLeft" class="hud-element">
-            <span id="scoreDisplay" aria-label="Score: 0">⭐ 0</span>
-            <span id="waveDisplay" aria-label="Wave: 1">🌊 1</span>
+            <span id="scoreDisplay" aria-live="polite">⭐ 0</span>
+            <span id="waveDisplay" aria-live="polite">🌊 1</span>
         </div>
         <div id="hudPowerups">Power-ups: None</div>
 
@@ -867,9 +868,9 @@
 
         <!-- Control buttons (bottom-left) -->
         <div id="controlButtons">
-            <button id="pauseBtn" class="control-button" title="Pause (P)" aria-label="Pause">⏸</button>
-            <button id="soundBtn" class="control-button" title="Sound (M)" aria-label="Sound">🔊</button>
-            <button id="helpBtn" class="control-button" title="Help" aria-label="Help">❓</button>
+            <button id="pauseBtn" class="control-button" title="Pause (P)" aria-label="Pause game">⏸</button>
+            <button id="soundBtn" class="control-button" title="Sound (M)" aria-label="Toggle sound">🔊</button>
+            <button id="helpBtn" class="control-button" title="Help" aria-label="Show help">❓</button>
         </div>
 
         <!-- HUD Bottom-right -->
@@ -1696,8 +1697,8 @@ function resetGameState() {
     updateComboDisplay();
     updateMultiplierDisplay();
     updateStreakDisplay();
-    waveDisplay.textContent = `Wave: ${currentWave} | Questions: ${totalQuestionsAsked}`;
-    scoreDisplay.textContent = `Score: ${score}`;
+    waveDisplay.textContent = `🌊 ${currentWave}`;
+    scoreDisplay.textContent = `⭐ ${score}`;
     // Re-apply difficulty settings to ensure all multipliers are correct
     applyDifficultySettings();
 }
@@ -1900,7 +1901,7 @@ addQuestionSetBtn.addEventListener('click', () => {
 
 cancelNewQuestionBtn.addEventListener('click', () => {
     questionForm.style.display = 'none';
-    settingsScreen.style.display = 'block';
+    settingsScreen.style.display = 'flex';
 });
 
 saveNewQuestionBtn.addEventListener('click', () => {
@@ -2333,7 +2334,7 @@ function handleQuizAnswer(isCorrect, eventType) {
         updateHealthBar();
         
         // Update score
-        scoreDisplay.textContent = `Score: ${score}`;
+        scoreDisplay.textContent = `⭐ ${score}`;
         animateScoreUpdate();
         
         // Check for achievements
@@ -3223,7 +3224,7 @@ function updateAsteroids(deltaTime) {
         if (asteroid.health <= 0) {
             createExplosionParticles(asteroid.x, asteroid.y, 30, '#888');
             score += 5;
-            scoreDisplay.textContent = `Score: ${score}`;
+            scoreDisplay.textContent = `⭐ ${score}`;
             asteroids.splice(i, 1);
         }
     }
@@ -3441,7 +3442,7 @@ function initEnemies() {
     bossEnemy = miniBoss;
     enemies.push(miniBoss);
     
-    waveDisplay.textContent = `Wave: ${currentWave}`;
+    waveDisplay.textContent = `🌊 ${currentWave}`;
     
     // Show wave start message
     if (currentWave === 1) {
@@ -4075,7 +4076,7 @@ function updatePlayerBullets(deltaTime) {
                     updateComboDisplay();
                     updateMultiplierDisplay();
                     
-                    scoreDisplay.textContent = `Score: ${score}`;
+                    scoreDisplay.textContent = `⭐ ${score}`;
                     animateScoreUpdate();
                     totalEnemiesDestroyed++;
                     waveEnemiesDestroyed++;
