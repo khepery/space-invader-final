@@ -382,6 +382,7 @@
         /* Settings screen */
         #settingsScreen {
             display: none;
+            flex-direction: column;
             position: absolute;
             top: 50%;
             left: 50%;
@@ -394,8 +395,7 @@
             z-index: 5;
             width: 85%;
             max-width: 800px;
-            max-height: 85vh;
-            overflow-y: auto;
+            max-height: 90vh;
             box-shadow: 0 0 50px #0ff, inset 0 0 30px rgba(0, 255, 255, 0.1);
         }
 
@@ -849,47 +849,60 @@
 
         <!-- Settings Screen -->
         <div id="settingsScreen">
-            <h2 style="font-family: 'Press Start 2P', cursive; font-size: 28px; color: #0ff; text-shadow: 0 0 20px #0ff; margin-bottom: 30px;">MISSION CONFIGURATION</h2>
-            
-            <div class="difficulty-selector" style="margin: 25px 0; display: flex; justify-content: center; gap: 20px;">
-                <button data-difficulty="easy" class="active" style="padding: 12px 25px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s;">CADET</button>
-                <button data-difficulty="medium" style="padding: 12px 25px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s;">PILOT</button>
-                <button data-difficulty="hard" style="padding: 12px 25px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s;">ACE</button>
+            <h2 style="font-family: 'Press Start 2P', cursive; font-size: 22px; color: #0ff; text-shadow: 0 0 20px #0ff; margin-bottom: 10px;">⚙️ MISSION CONFIGURATION</h2>
+
+            <div id="missionConfigGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; text-align: left;">
+
+                <!-- LEFT: Questions -->
+                <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: 20px;">
+                    <div style="font-size: 14px; color: #ff0; margin-bottom: 15px; font-weight: bold;">📚 QUESTIONS</div>
+                    <div id="questionStatusBadge" style="margin-bottom: 15px; padding: 10px; background: rgba(0,50,0,0.5); border: 1px solid #0f0; border-radius: 8px; font-size: 12px; color: #0f0;">
+                        <!-- Populated by JS -->
+                    </div>
+                    <button id="importExcelBtn" class="action-button" style="width: 100%; margin: 5px 0; min-width: unset;">
+                        <span class="button-icon">📂</span>
+                        <span class="button-text">Load My Questions</span>
+                        <span class="button-subtitle">Import .txt file</span>
+                    </button>
+                    <button id="addQuestionSetBtn" class="action-button" style="width: 100%; margin: 5px 0; min-width: unset;">
+                        <span class="button-icon">➕</span>
+                        <span class="button-text">Add Manually</span>
+                        <span class="button-subtitle">Type a question</span>
+                    </button>
+                    <button id="resetToDefaultBtn" class="action-button danger" style="width: 100%; margin: 5px 0; min-width: unset;">
+                        <span class="button-icon">🔄</span>
+                        <span class="button-text">Use Default Questions</span>
+                        <span class="button-subtitle">Reset to built-in set</span>
+                    </button>
+                    <div style="margin-top: 10px; font-size: 10px; color: #666;">
+                        <a href="#" id="downloadExcelTemplateBtn" style="color: #0aa; text-decoration: none;">⬇ Download question template</a>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Difficulty + Categories -->
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+
+                    <!-- Difficulty -->
+                    <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: 20px;">
+                        <div style="font-size: 14px; color: #ff0; margin-bottom: 15px; font-weight: bold;">🎯 DIFFICULTY</div>
+                        <div class="difficulty-selector" style="display: flex; gap: 10px; justify-content: center;">
+                            <button data-difficulty="easy" class="active" style="flex: 1; padding: 10px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: 12px;">CADET</button>
+                            <button data-difficulty="medium" style="flex: 1; padding: 10px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: 12px;">PILOT</button>
+                            <button data-difficulty="hard" style="flex: 1; padding: 10px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: 12px;">ACE</button>
+                        </div>
+                    </div>
+
+                    <!-- Categories -->
+                    <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: 20px; flex: 1;">
+                        <div style="font-size: 14px; color: #ff0; margin-bottom: 15px; font-weight: bold;">🗂 CATEGORIES</div>
+                        <div class="category-selector" id="categorySelector" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="upload-section">
-                <button id="downloadExcelTemplateBtn" class="action-button">
-                    <span class="button-icon">📄</span>
-                    <span class="button-text">Download Template</span>
-                    <span class="button-subtitle">Get question format</span>
-                </button>
-                <button id="importExcelBtn" class="action-button">
-                    <span class="button-icon">📂</span>
-                    <span class="button-text">Import Questions</span>
-                    <span class="button-subtitle">Load your questions</span>
-                </button>
-                <button id="addQuestionSetBtn" class="action-button">
-                    <span class="button-icon">➕</span>
-                    <span class="button-text">Add Manually</span>
-                    <span class="button-subtitle">Create new question</span>
-                </button>
-                <button id="resetToDefaultBtn" class="action-button danger">
-                    <span class="button-icon">🔄</span>
-                    <span class="button-text">Reset to Default</span>
-                    <span class="button-subtitle">Use built-in questions</span>
-                </button>
-                <p style="margin-top: 15px; font-size: 13px; color: #aaa;">
-                    Customize your learning experience with your own questions
-                </p>
-            </div>
-            
-            <div id="questionList" style="height: 200px; margin: 20px auto; background: rgba(0,20,40,0.8); border: 2px solid #0aa; border-radius: 10px; overflow-y: auto; padding: 15px; width: 90%; color: #0ff;"></div>
-            
-            <div class="category-selector" id="categorySelector" style="margin: 20px 0;">
-                <!-- Categories will be added here dynamically -->
-            </div>
-            
-            <button id="startGameBtn" class="game-button">BEGIN MISSION</button>
+            <button id="startGameBtn" class="game-button" style="display: block; width: 100%; max-width: 400px; margin: 0 auto;">▶ BEGIN MISSION</button>
         </div>
 
         <!-- Add Question Form -->
@@ -1187,6 +1200,7 @@ const defaultQuestions = [
 
 let questions = [];
 let usedQuestions = [];
+let usingCustomQuestions = false;
 
 // Game assets
 const playerShipImage = new Image();
@@ -1388,12 +1402,13 @@ introStartBtn.addEventListener('click', () => {
 });
 
 function showSettingsScreen() {
-    if (questions.length === 0) {
+    if (questions.length === 0 && !usingCustomQuestions) {
         questions = JSON.parse(JSON.stringify(defaultQuestions));
     }
+    updateQuestionStatusBadge();
     displayQuestionList();
     updateCategorySelector();
-    settingsScreen.style.display = 'block';
+    settingsScreen.style.display = 'flex';
     gameActive = false;
     clearCanvas();
 }
@@ -1447,7 +1462,9 @@ function applyDifficultySettings() {
 // Reset to default questions
 resetToDefaultBtn.addEventListener('click', () => {
     questions = JSON.parse(JSON.stringify(defaultQuestions));
+    usingCustomQuestions = false;
     usedQuestions = [];
+    updateQuestionStatusBadge();
     displayQuestionList();
     updateCategorySelector();
 });
@@ -1645,11 +1662,13 @@ function handleTextImport(e) {
             }
 
             if (newQuestions.length > 0) {
-                questions.push(...newQuestions);
+                questions = newQuestions;
+                usingCustomQuestions = true;
                 usedQuestions = [];
+                updateQuestionStatusBadge();
                 displayQuestionList();
                 updateCategorySelector();
-                alert(`Successfully imported ${newQuestions.length} questions.`);
+                alert(`✅ Loaded ${newQuestions.length} custom questions. Default questions replaced.`);
             } else {
                 alert('No valid questions found in the file. Please check the format.');
             }
@@ -1687,7 +1706,7 @@ addQuestionSetBtn.addEventListener('click', () => {
 
 cancelNewQuestionBtn.addEventListener('click', () => {
     questionForm.style.display = 'none';
-    settingsScreen.style.display = 'block';
+    settingsScreen.style.display = 'flex';
 });
 
 saveNewQuestionBtn.addEventListener('click', () => {
@@ -1697,6 +1716,10 @@ saveNewQuestionBtn.addEventListener('click', () => {
     const category = questionCategory.value.trim() || 'General';
 
     if (question && opts.every(o => o) && !isNaN(correct)) {
+        if (!usingCustomQuestions) {
+            questions = [];
+            usingCustomQuestions = true;
+        }
         questions.push({ question, options: opts, correct, category });
         
         // Clear the form
@@ -1706,7 +1729,8 @@ saveNewQuestionBtn.addEventListener('click', () => {
         questionCategory.value = '';
 
         questionForm.style.display = 'none';
-        settingsScreen.style.display = 'block';
+        settingsScreen.style.display = 'flex';
+        updateQuestionStatusBadge();
         displayQuestionList();
         updateCategorySelector();
     } else {
@@ -1716,6 +1740,7 @@ saveNewQuestionBtn.addEventListener('click', () => {
 
 // Display the list of questions
 function displayQuestionList() {
+    if (!questionList) return;
     questionList.innerHTML = '';
     if (questions.length === 0) {
         questionList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No questions loaded yet.</p>';
@@ -1750,6 +1775,22 @@ function displayQuestionList() {
     }
 }
 
+function updateQuestionStatusBadge() {
+    const badge = document.getElementById('questionStatusBadge');
+    if (!badge) return;
+    if (usingCustomQuestions) {
+        badge.style.borderColor = '#0f0';
+        badge.style.background = 'rgba(0,50,0,0.5)';
+        badge.style.color = '#0f0';
+        badge.innerHTML = `✅ ${questions.length} custom question${questions.length !== 1 ? 's' : ''} loaded`;
+    } else {
+        badge.style.borderColor = '#0aa';
+        badge.style.background = 'rgba(0,30,50,0.5)';
+        badge.style.color = '#0aa';
+        badge.innerHTML = `📚 ${questions.length} default questions`;
+    }
+}
+
 // Update category selector
 function updateCategorySelector() {
     const categories = new Set();
@@ -1758,22 +1799,22 @@ function updateCategorySelector() {
         else categories.add('General');
     });
     
-    categorySelector.innerHTML = '<div style="font-weight: bold; margin-bottom: 15px; color: #ff0; font-size: 16px;">Filter by Categories:</div>';
+    categorySelector.innerHTML = '';
     
     if (categories.size === 0) {
-        categorySelector.innerHTML += '<div style="opacity: 0.7;">No categories available</div>';
+        categorySelector.innerHTML = '<div style="opacity: 0.7; font-size: 12px;">No categories available</div>';
         return;
     }
     
-    // Add "Select All" checkbox
+    // Add "Select All" checkbox as pill badge
     const allCategoriesDiv = document.createElement('div');
-    allCategoriesDiv.style.margin = '8px 0';
+    allCategoriesDiv.style.cssText = 'display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; background: rgba(0,30,60,0.8); border: 1px solid #0aa; border-radius: 20px; cursor: pointer;';
     
     const allCheckbox = document.createElement('input');
     allCheckbox.type = 'checkbox';
     allCheckbox.id = 'all-categories';
     allCheckbox.checked = activeCategories.size === 0;
-    allCheckbox.style.marginRight = '10px';
+    allCheckbox.style.marginRight = '3px';
     allCheckbox.addEventListener('change', (e) => {
         const categoryCheckboxes = document.querySelectorAll('.category-checkbox input:not(#all-categories)');
         if (e.target.checked) {
@@ -1786,25 +1827,25 @@ function updateCategorySelector() {
     
     const allLabel = document.createElement('label');
     allLabel.htmlFor = 'all-categories';
-    allLabel.textContent = 'All Categories';
+    allLabel.textContent = 'All';
     allLabel.style.cursor = 'pointer';
-    allLabel.style.fontSize = '14px';
+    allLabel.style.fontSize = '11px';
     
     allCategoriesDiv.appendChild(allCheckbox);
     allCategoriesDiv.appendChild(allLabel);
     categorySelector.appendChild(allCategoriesDiv);
     
-    // Add individual category checkboxes
+    // Add individual category checkboxes as pill badges
     categories.forEach(category => {
         const div = document.createElement('div');
         div.className = 'category-checkbox';
-        div.style.margin = '8px 0';
+        div.style.cssText = 'display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; background: rgba(0,30,60,0.8); border: 1px solid #0aa; border-radius: 20px; cursor: pointer;';
         
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.id = `category-${category}`;
         checkbox.checked = activeCategories.has(category);
-        checkbox.style.marginRight = '10px';
+        checkbox.style.marginRight = '3px';
         checkbox.addEventListener('change', (e) => {
             const allCategoriesCheckbox = document.getElementById('all-categories');
             if (e.target.checked) {
@@ -1822,7 +1863,7 @@ function updateCategorySelector() {
         label.htmlFor = `category-${category}`;
         label.textContent = category;
         label.style.cursor = 'pointer';
-        label.style.fontSize = '14px';
+        label.style.fontSize = '11px';
         
         div.appendChild(checkbox);
         div.appendChild(label);
