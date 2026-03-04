@@ -856,9 +856,9 @@
 
         <!-- Control buttons (bottom-left) -->
         <div id="controlButtons">
-            <button id="pauseBtn" class="control-button" title="Pause (P)">⏸</button>
-            <button id="soundBtn" class="control-button" title="Sound (M)">🔊</button>
-            <button id="helpBtn" class="control-button" title="Help">❓</button>
+            <button id="pauseBtn" class="control-button" title="Pause (P)" aria-label="Pause">⏸</button>
+            <button id="soundBtn" class="control-button" title="Sound (M)" aria-label="Sound">🔊</button>
+            <button id="helpBtn" class="control-button" title="Help" aria-label="Help">❓</button>
         </div>
 
         <!-- HUD Bottom-right -->
@@ -2981,6 +2981,11 @@ function updateAsteroids(deltaTime) {
             score += 5;
             scoreDisplay.textContent = `⭐ ${score}`;
             asteroids.splice(i, 1);
+        }
+    }
+}
+
+// Update shooting stars
 function updateShootingStars(deltaTime) {
     if (gamePaused || !gameRunning) return;
     
