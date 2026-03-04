@@ -48,9 +48,9 @@ async function build() {
       console.warn(`  ⚠ Could not download xlsx.full.min.js (${err.message}). CDN reference kept.`);
     }
   }
-  if (fs.existsSync(XLSX_PATH)) {
+ if (fs.existsSync(XLSX_PATH)) {
     let xlsxSrc = fs.readFileSync(XLSX_PATH, 'utf8');
-    xlsxSrc = xlsxSrc.replace(/<\/(script)/gi, '<\\/$1');
+    xlsxSrc = xlsxSrc.replace(/<\/script>/gi, '<\\/script>');
     html = html.replace(
       '<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>',
       `<script>${xlsxSrc}</script>`
