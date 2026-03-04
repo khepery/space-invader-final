@@ -154,10 +154,19 @@
             opacity: 1;
         }
 
-        /* Enhanced control buttons */
-        .control-button {
+        /* Control buttons container */
+        #controlButtons {
             position: absolute;
             top: 20px;
+            right: 230px;
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .control-button {
+            position: static;
             background: linear-gradient(135deg, rgba(0, 30, 60, 0.9) 0%, rgba(0, 10, 30, 0.9) 100%);
             border: 2px solid #0ff;
             color: #0ff;
@@ -181,10 +190,6 @@
         .control-button:active {
             transform: translateY(0);
         }
-
-        #pauseBtn { right: 220px; }
-        #soundBtn { right: 320px; }
-        #helpBtn { right: 420px; }
 
         /* Premium health bar */
         #healthBarContainer {
@@ -759,8 +764,11 @@
                 font-size: 10px;
             }
             
-            #pauseBtn { right: 110px; }
-            #soundBtn { right: 190px; }
+            #controlButtons {
+                right: 165px;
+                gap: 5px;
+            }
+
             #helpBtn { display: none; }
             
             #healthBarContainer {
@@ -822,9 +830,11 @@
         <div id="multiplierDisplay">Multiplier: x<span id="multiplierValue">1.0</span></div>
         
         <!-- Control buttons -->
-        <button id="pauseBtn" class="control-button">⏸️ Pause</button>
-        <button id="soundBtn" class="control-button">🔊 Sound</button>
-        <button id="helpBtn" class="control-button">❓ Help</button>
+        <div id="controlButtons">
+            <button id="pauseBtn" class="control-button">⏸️ Pause</button>
+            <button id="soundBtn" class="control-button">🔊 Sound</button>
+            <button id="helpBtn" class="control-button">❓ Help</button>
+        </div>
         
         <!-- Health and shield -->
         <div id="healthBarContainer">
@@ -887,9 +897,11 @@
                         <span class="button-text">Use Default Questions</span>
                         <span class="button-subtitle">Reset to built-in set</span>
                     </button>
-                    <div style="margin-top: clamp(5px,0.8vh,10px); font-size: 10px; color: #666;">
-                        <a href="#" id="downloadExcelTemplateBtn" style="color: #0aa; text-decoration: none;">⬇ Download question template</a>
-                    </div>
+                    <button id="downloadExcelTemplateBtn" class="action-button" style="width: 100%; margin: clamp(3px,0.5vh,5px) 0; min-width: unset; background: linear-gradient(135deg, rgba(0,60,80,0.9) 0%, rgba(0,30,40,0.9) 100%); border-color: #0aa;">
+                        <span class="button-icon" style="font-size: clamp(14px,2vh,22px);">⬇</span>
+                        <span class="button-text" style="color: #0cf;">Download Template</span>
+                        <span class="button-subtitle" style="color: #08a;">.txt question file</span>
+                    </button>
                 </div>
 
                 <!-- RIGHT: Difficulty + Categories -->
@@ -898,10 +910,10 @@
                     <!-- Difficulty -->
                     <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: clamp(8px,1.2vh,18px);">
                         <div style="font-size: clamp(11px,1.5vh,14px); color: #ff0; margin-bottom: clamp(6px,1vh,15px); font-weight: bold;">🎯 DIFFICULTY</div>
-                        <div class="difficulty-selector" style="display: flex; gap: 10px; justify-content: center;">
-                            <button data-difficulty="easy" class="active" style="flex: 1; padding: clamp(5px,0.8vh,10px); background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: clamp(9px,1.2vh,12px);">CADET</button>
-                            <button data-difficulty="medium" style="flex: 1; padding: clamp(5px,0.8vh,10px); background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: clamp(9px,1.2vh,12px);">PILOT</button>
-                            <button data-difficulty="hard" style="flex: 1; padding: clamp(5px,0.8vh,10px); background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: clamp(9px,1.2vh,12px);">ACE</button>
+                        <div class="difficulty-selector" style="display: flex; gap: clamp(6px,1vw,12px); justify-content: center;">
+                            <button data-difficulty="easy" class="active" style="flex: 1; padding: clamp(8px,1.2vh,14px) 4px; background: linear-gradient(135deg, rgba(0,80,30,0.85) 0%, rgba(0,50,15,0.9) 100%); border: 2px solid #0f8; color: #0f8; border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: clamp(10px,1.4vh,14px); text-shadow: 0 0 8px #0f8; box-shadow: 0 0 10px rgba(0,255,136,0.3); letter-spacing: 1px;">🛸 CADET</button>
+                            <button data-difficulty="medium" style="flex: 1; padding: clamp(8px,1.2vh,14px) 4px; background: linear-gradient(135deg, rgba(80,60,0,0.85) 0%, rgba(50,35,0,0.9) 100%); border: 2px solid #ff0; color: #ff0; border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: clamp(10px,1.4vh,14px); text-shadow: 0 0 8px #ff0; box-shadow: 0 0 10px rgba(255,255,0,0.3); letter-spacing: 1px;">✈️ PILOT</button>
+                            <button data-difficulty="hard" style="flex: 1; padding: clamp(8px,1.2vh,14px) 4px; background: linear-gradient(135deg, rgba(80,10,10,0.85) 0%, rgba(50,5,5,0.9) 100%); border: 2px solid #f44; color: #f44; border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: clamp(10px,1.4vh,14px); text-shadow: 0 0 8px #f44; box-shadow: 0 0 10px rgba(255,68,68,0.3); letter-spacing: 1px;">🔥 ACE</button>
                         </div>
                     </div>
 
@@ -1427,19 +1439,29 @@ function showSettingsScreen() {
 }
 
 // Difficulty selector
+const difficultyColors = {
+    easy:   { bg: 'linear-gradient(135deg, rgba(0,80,30,0.85) 0%, rgba(0,50,15,0.9) 100%)', border: '#0f8', color: '#0f8', shadow: '0 0 10px rgba(0,255,136,0.3)', activeBg: 'rgba(0,200,80,0.9)', activeColor: '#000', activeShadow: '0 0 20px #0f8' },
+    medium: { bg: 'linear-gradient(135deg, rgba(80,60,0,0.85) 0%, rgba(50,35,0,0.9) 100%)',  border: '#ff0', color: '#ff0', shadow: '0 0 10px rgba(255,255,0,0.3)',   activeBg: 'rgba(220,200,0,0.9)',  activeColor: '#000', activeShadow: '0 0 20px #ff0' },
+    hard:   { bg: 'linear-gradient(135deg, rgba(80,10,10,0.85) 0%, rgba(50,5,5,0.9) 100%)',  border: '#f44', color: '#f44', shadow: '0 0 10px rgba(255,68,68,0.3)',    activeBg: 'rgba(220,50,50,0.9)',  activeColor: '#000', activeShadow: '0 0 20px #f44' }
+};
 difficultyButtons.forEach(button => {
     button.addEventListener('click', () => {
         difficultyButtons.forEach(btn => {
             btn.classList.remove('active');
-            btn.style.background = 'rgba(0,50,100,0.8)';
-            btn.style.borderColor = '#0ff';
-            btn.style.color = '#0ff';
+            const d = difficultyColors[btn.getAttribute('data-difficulty')];
+            btn.style.background = d.bg;
+            btn.style.borderColor = d.border;
+            btn.style.color = d.color;
+            btn.style.boxShadow = d.shadow;
+            btn.style.textShadow = '0 0 8px ' + d.color;
         });
         button.classList.add('active');
-        button.style.background = '#0ff';
-        button.style.borderColor = '#0ff';
-        button.style.color = '#000';
-        button.style.boxShadow = '0 0 20px #0ff';
+        const dc = difficultyColors[button.getAttribute('data-difficulty')];
+        button.style.background = dc.activeBg;
+        button.style.borderColor = dc.border;
+        button.style.color = dc.activeColor;
+        button.style.boxShadow = dc.activeShadow;
+        button.style.textShadow = 'none';
         gameDifficulty = button.getAttribute('data-difficulty');
         applyDifficultySettings();
     });
