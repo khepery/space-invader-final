@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ultra Pro Space Invaders — Access Required</title>
+  <!-- Access code config — edit config.js to change the code -->
+  <script src="./config.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -141,23 +143,6 @@
       color: #0ff7;
       line-height: 1.7;
     }
-
-    /* Spinner */
-    .spinner {
-      display: inline-block;
-      width: 0.7rem;
-      height: 0.7rem;
-      border: 2px solid #0ff4;
-      border-top-color: #0ff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      vertical-align: middle;
-      margin-right: 0.4rem;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
   </style>
 </head>
 <body>
@@ -292,16 +277,18 @@
 
     /* ── Access-code logic ──────────────────────────────────────────── */
     (function () {
-      var STORAGE_KEY  = 'siAccessGranted';
-      var CONFIG_URL   = './config.json';
-      var GAME_URL     = './index.html';
-      /* Fallback code used when config.json cannot be fetched
-         (e.g. opening the file directly from disk via file:// protocol).
-         Update this whenever you change config.json. */
-      var FALLBACK_CODE = 'GALAXY2026';
+      var STORAGE_KEY = 'siAccessGranted';
+      var GAME_URL    = './index.html';
 
-      var input   = document.getElementById('codeInput');
-      var btn     = document.getElementById('launchBtn');
+      /* Code is defined in config.js (loaded via <script src> above).
+         Edit config.js to change the access code — no other file needs updating. */
+      var cfg  = (window.SITE_CONFIG && typeof window.SITE_CONFIG.code === 'string')
+                   ? window.SITE_CONFIG
+                   : null;
+      var CODE = cfg ? cfg.code.toUpperCase() : '';
+
+      var input    = document.getElementById('codeInput');
+      var btn      = document.getElementById('launchBtn');
       var statusEl = document.getElementById('status');
 
       function setStatus(msg, type) {
@@ -316,25 +303,9 @@
       /* On load: check for a previously validated code */
       (function checkSaved() {
         var saved = localStorage.getItem(STORAGE_KEY);
-        if (!saved) return;
-        /* Validate saved code against live config */
-        fetch(CONFIG_URL + '?_=' + Date.now())
-          .then(function (r) { return r.json(); })
-          .then(function (cfg) {
-            if (cfg && typeof cfg.code === 'string' &&
-                saved.toUpperCase() === cfg.code.toUpperCase()) {
-              redirectToGame();
-            }
-            /* else: saved code no longer valid — show login screen */
-          })
-          .catch(function () {
-            /* fetch unavailable (e.g. file:// protocol) —
-               trust the saved code only if it matches the embedded fallback */
-            if (saved.toUpperCase() === FALLBACK_CODE.toUpperCase()) {
-              redirectToGame();
-            }
-            /* else: saved code cannot be verified — show login screen */
-          });
+        if (saved && CODE && saved.toUpperCase() === CODE) {
+          redirectToGame();
+        }
       })();
 
       function launch() {
@@ -345,43 +316,19 @@
           return;
         }
 
-        btn.disabled = true;
-        input.disabled = true;
-        setStatus('<span class="spinner"></span>VERIFYING&hellip;', 'info');
+        if (!CODE) {
+          setStatus('<span aria-hidden="true">&#9888;&#65039;</span> Configuration error: access code not defined in config.js.', 'warning');
+          return;
+        }
 
-        fetch(CONFIG_URL + '?_=' + Date.now())
-          .then(function (r) {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.json();
-          })
-          .then(function (cfg) {
-            if (cfg && typeof cfg.code === 'string' &&
-                entered.toUpperCase() === cfg.code.toUpperCase()) {
-              localStorage.setItem(STORAGE_KEY, entered.toUpperCase());
-              setStatus('&#10003; Access granted! Loading game&hellip;', 'info');
-              setTimeout(redirectToGame, 600);
-            } else {
-              setStatus('<span aria-hidden="true">&#10060;</span> Invalid code. Please check your TPT purchase notes.', 'error');
-              btn.disabled = false;
-              input.disabled = false;
-              input.focus();
-            }
-          })
-          .catch(function () {
-            /* fetch unavailable (e.g. file:// protocol or no network) —
-               fall back to the embedded code */
-            var normalizedCode = entered.toUpperCase();
-            if (normalizedCode === FALLBACK_CODE.toUpperCase()) {
-              localStorage.setItem(STORAGE_KEY, normalizedCode);
-              setStatus('&#10003; Access granted! Loading game&hellip;', 'info');
-              setTimeout(redirectToGame, 600);
-            } else {
-              setStatus('<span aria-hidden="true">&#10060;</span> Invalid code. Please check your TPT purchase notes.', 'error');
-              btn.disabled = false;
-              input.disabled = false;
-              input.focus();
-            }
-          });
+        if (entered.toUpperCase() === CODE) {
+          localStorage.setItem(STORAGE_KEY, entered.toUpperCase());
+          setStatus('&#10003; Access granted! Loading game&hellip;', 'info');
+          setTimeout(redirectToGame, 600);
+        } else {
+          setStatus('<span aria-hidden="true">&#10060;</span> Invalid code. Please check your TPT purchase notes.', 'error');
+          input.focus();
+        }
       }
 
       btn.addEventListener('click', launch);
