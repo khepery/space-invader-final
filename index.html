@@ -918,8 +918,8 @@
 
         <!-- Mobile Controls -->
         <div id="mobileControls" style="display:none; position:absolute; bottom:20px; width:100%; pointer-events:none; z-index:3;">
-            <button id="leftBtn" style="position:absolute; left:20px; bottom:0; width:80px; height:80px; background:rgba(0,255,255,0.2); border:2px solid #0ff; border-radius:50%; color:#0ff; font-size:30px; pointer-events:all; user-select:none;">◀</button>
-            <button id="rightBtn" style="position:absolute; right:20px; bottom:0; width:80px; height:80px; background:rgba(0,255,255,0.2); border:2px solid #0ff; border-radius:50%; color:#0ff; font-size:30px; pointer-events:all; user-select:none;">▶</button>
+            <button id="leftBtn" style="position:absolute; left:20px; bottom:0; width:80px; height:80px; background:rgba(0,255,255,0.2); border:2px solid #0ff; border-radius:50%; color:#0ff; font-size:30px; pointer-events:all; user-select:none;" aria-label="Move left">◀</button>
+            <button id="rightBtn" style="position:absolute; right:20px; bottom:0; width:80px; height:80px; background:rgba(0,255,255,0.2); border:2px solid #0ff; border-radius:50%; color:#0ff; font-size:30px; pointer-events:all; user-select:none;" aria-label="Move right">▶</button>
         </div>
 
         <!-- Boss Health Bar HUD -->
@@ -1187,7 +1187,7 @@ function safeLocalStorageSet(key, value) {
     try { localStorage.setItem(key, value); } catch(e) { /* silent fail */ }
 }
 
-let highScore = parseInt(safeLocalStorageGet('spaceInvadersHighScore', '0'));
+let highScore = parseInt(safeLocalStorageGet('spaceInvadersHighScore', '0'), 10);
 
 // Default questions with categories
 const defaultQuestions = [
@@ -1860,6 +1860,7 @@ function displayQuestionList() {
             const deleteBtn = document.createElement('button');
             deleteBtn.textContent = '✕';
             deleteBtn.style.cssText = 'margin-left:10px; padding:2px 6px; background:rgba(150,0,0,0.8); border:1px solid #f00; color:#f00; border-radius:4px; cursor:pointer; font-size:10px; flex-shrink:0;';
+            deleteBtn.setAttribute('aria-label', 'Delete question');
             deleteBtn.onclick = () => {
                 questions.splice(questions.indexOf(q), 1);
                 displayQuestionList();
@@ -2924,7 +2925,8 @@ canvas.addEventListener('touchend', e => {
 
 // Mobile on-screen controls
 window.addEventListener('touchstart', () => {
-    document.getElementById('mobileControls').style.display = 'block';
+    const mobileControls = document.getElementById('mobileControls');
+    if (mobileControls) mobileControls.style.display = 'block';
 }, { once: true });
 
 const leftBtn = document.getElementById('leftBtn');
