@@ -1307,85 +1307,178 @@ function imageLoaded() {
 }
 
 function loadGameImages() {
-    const loadImage = (img, src, fallbackColor) => {
-        imagesToLoad++;
-        img.src = src;
-        img.onload = imageLoaded;
-        img.onerror = () => { 
-            console.warn(`Failed to load image: ${src} - Using fallback`);
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = 50;
-            tempCanvas.height = 50;
-            
-            // Create better fallback graphics
-            if (src.includes('playerShip')) {
-                // Draw triangle ship
-                tempCtx.fillStyle = fallbackColor;
-                tempCtx.beginPath();
-                tempCtx.moveTo(25, 5);
-                tempCtx.lineTo(5, 45);
-                tempCtx.lineTo(45, 45);
-                tempCtx.closePath();
-                tempCtx.fill();
-            } else if (src.includes('asteroid')) {
-                // Draw circular asteroid
-                tempCtx.fillStyle = fallbackColor;
-                tempCtx.beginPath();
-                tempCtx.arc(25, 25, 20, 0, Math.PI * 2);
-                tempCtx.fill();
-            } else if (src.includes('miniBoss')) {
-                // Draw cooler mini-boss shape
-                tempCtx.fillStyle = fallbackColor;
-                tempCtx.beginPath();
-                tempCtx.moveTo(25, 5);
-                tempCtx.lineTo(5, 20);
-                tempCtx.lineTo(5, 35);
-                tempCtx.lineTo(15, 45);
-                tempCtx.lineTo(35, 45);
-                tempCtx.lineTo(45, 35);
-                tempCtx.lineTo(45, 20);
-                tempCtx.closePath();
-                tempCtx.fill();
-                // Add details
-                tempCtx.fillStyle = '#000';
-                tempCtx.fillRect(15, 20, 5, 5);
-                tempCtx.fillRect(30, 20, 5, 5);
-            } else if (src.includes('shield')) {
-                // Draw cyan shield bubble (circle outline with fill)
-                const gradient = tempCtx.createRadialGradient(25, 25, 5, 25, 25, 22);
-                gradient.addColorStop(0, 'rgba(0,255,255,0.3)');
-                gradient.addColorStop(1, 'rgba(0,100,255,0.6)');
-                tempCtx.fillStyle = gradient;
-                tempCtx.beginPath();
-                tempCtx.arc(25, 25, 22, 0, Math.PI * 2);
-                tempCtx.fill();
-                tempCtx.strokeStyle = '#0ff';
-                tempCtx.lineWidth = 3;
-                tempCtx.shadowColor = '#0ff';
-                tempCtx.shadowBlur = 10;
-                tempCtx.stroke();
-            } else {
-                // Default square
-                tempCtx.fillStyle = fallbackColor;
-                tempCtx.fillRect(0, 0, 50, 50);
-            }
-            
-            img.src = tempCanvas.toDataURL();
-            imageLoaded();
-        };
-    };
+    // Player ship: green triangle pointing upward with blue engine glow
+    const playerCanvas = document.createElement('canvas');
+    playerCanvas.width = 50; playerCanvas.height = 50;
+    (function(ctx) {
+        const glow = ctx.createRadialGradient(25, 42, 2, 25, 42, 12);
+        glow.addColorStop(0, 'rgba(0,100,255,0.9)');
+        glow.addColorStop(1, 'rgba(0,100,255,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(25, 42, 12, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#0f0';
+        ctx.beginPath();
+        ctx.moveTo(25, 4); ctx.lineTo(8, 44); ctx.lineTo(25, 36); ctx.lineTo(42, 44);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#0af';
+        ctx.beginPath();
+        ctx.moveTo(25, 10); ctx.lineTo(19, 28); ctx.lineTo(25, 24); ctx.lineTo(31, 28);
+        ctx.closePath(); ctx.fill();
+    })(playerCanvas.getContext('2d'));
+    playerShipImage.src = playerCanvas.toDataURL();
 
-    // Load all game images with fallbacks
-    loadImage(playerShipImage, 'playerShip.png', '#0f0');
-    loadImage(enemyShipImage, 'enemyShip.png', '#f00');
-    loadImage(specialEnemyShipImage, 'specialEnemyShip.png', '#ff0');
-    loadImage(powerupImage, 'powerup.png', '#0ff');
-    loadImage(asteroidImage, 'asteroid.png', '#888');
-    loadImage(explosionImage, 'explosion.png', '#f80');
-    loadImage(shootingStarImage, 'shootingStar.png', '#fff');
-    loadImage(shieldImage, 'shield.png', '#00f');
-    loadImage(miniBossImage, 'miniBoss.png', '#f0f');
+    // Enemy ship: red alien/bug shape
+    const enemyCanvas = document.createElement('canvas');
+    enemyCanvas.width = 50; enemyCanvas.height = 50;
+    (function(ctx) {
+        ctx.fillStyle = '#f00';
+        ctx.beginPath();
+        ctx.moveTo(25, 6); ctx.lineTo(42, 18); ctx.lineTo(38, 40);
+        ctx.lineTo(25, 44); ctx.lineTo(12, 40); ctx.lineTo(8, 18);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#ff0';
+        ctx.beginPath(); ctx.arc(17, 22, 4, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(33, 22, 4, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#800'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(8, 18); ctx.lineTo(2, 10); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(42, 18); ctx.lineTo(48, 10); ctx.stroke();
+    })(enemyCanvas.getContext('2d'));
+    enemyShipImage.src = enemyCanvas.toDataURL();
+
+    // Special enemy: gold/yellow diamond with glow
+    const specialCanvas = document.createElement('canvas');
+    specialCanvas.width = 50; specialCanvas.height = 50;
+    (function(ctx) {
+        ctx.shadowColor = '#ff0'; ctx.shadowBlur = 8;
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.moveTo(25, 4); ctx.lineTo(46, 25); ctx.lineTo(25, 46); ctx.lineTo(4, 25);
+        ctx.closePath(); ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#fff8';
+        ctx.beginPath();
+        ctx.moveTo(25, 8); ctx.lineTo(38, 25); ctx.lineTo(25, 38); ctx.lineTo(12, 25);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#ff8c00';
+        ctx.beginPath(); ctx.arc(25, 25, 6, 0, Math.PI*2); ctx.fill();
+    })(specialCanvas.getContext('2d'));
+    specialEnemyShipImage.src = specialCanvas.toDataURL();
+
+    // Power-up: cyan star
+    const powerupCanvas = document.createElement('canvas');
+    powerupCanvas.width = 50; powerupCanvas.height = 50;
+    (function(ctx) {
+        ctx.shadowColor = '#0ff'; ctx.shadowBlur = 10;
+        ctx.fillStyle = '#0ff';
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
+            const a2 = a + Math.PI / 6;
+            ctx.lineTo(25 + Math.cos(a) * 22, 25 + Math.sin(a) * 22);
+            ctx.lineTo(25 + Math.cos(a2) * 10, 25 + Math.sin(a2) * 10);
+        }
+        ctx.closePath(); ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(25, 25, 5, 0, Math.PI*2); ctx.fill();
+    })(powerupCanvas.getContext('2d'));
+    powerupImage.src = powerupCanvas.toDataURL();
+
+    // Asteroid: gray irregular polygon
+    const asteroidCanvas = document.createElement('canvas');
+    asteroidCanvas.width = 50; asteroidCanvas.height = 50;
+    (function(ctx) {
+        ctx.fillStyle = '#888';
+        ctx.beginPath();
+        [[25,3],[38,8],[46,20],[44,35],[32,46],[16,46],[4,32],[6,16],[15,5]].forEach(([x,y],i) =>
+            i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y));
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#aaa';
+        ctx.beginPath(); ctx.arc(18, 16, 5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#666';
+        ctx.beginPath(); ctx.arc(30, 32, 4, 0, Math.PI*2); ctx.fill();
+    })(asteroidCanvas.getContext('2d'));
+    asteroidImage.src = asteroidCanvas.toDataURL();
+
+    // Explosion: orange burst shape
+    const explosionCanvas = document.createElement('canvas');
+    explosionCanvas.width = 50; explosionCanvas.height = 50;
+    (function(ctx) {
+        ctx.fillStyle = '#f80';
+        for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2, a2 = a + Math.PI / 8;
+            ctx.beginPath();
+            ctx.moveTo(25, 25);
+            ctx.lineTo(25 + Math.cos(a) * 24, 25 + Math.sin(a) * 24);
+            ctx.lineTo(25 + Math.cos(a2) * 14, 25 + Math.sin(a2) * 14);
+            ctx.closePath(); ctx.fill();
+        }
+        const grad = ctx.createRadialGradient(25, 25, 2, 25, 25, 18);
+        grad.addColorStop(0, '#fff'); grad.addColorStop(0.3, '#ff0');
+        grad.addColorStop(0.7, '#f80'); grad.addColorStop(1, 'rgba(255,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(25, 25, 18, 0, Math.PI*2); ctx.fill();
+    })(explosionCanvas.getContext('2d'));
+    explosionImage.src = explosionCanvas.toDataURL();
+
+    // Shooting star: white elongated streak
+    const starCanvas = document.createElement('canvas');
+    starCanvas.width = 50; starCanvas.height = 20;
+    (function(ctx) {
+        const grad = ctx.createLinearGradient(0, 10, 50, 10);
+        grad.addColorStop(0, 'rgba(255,255,255,0)');
+        grad.addColorStop(0.7, '#fff');
+        grad.addColorStop(1, '#adf');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(0, 10); ctx.lineTo(40, 7); ctx.lineTo(50, 10); ctx.lineTo(40, 13);
+        ctx.closePath(); ctx.fill();
+    })(starCanvas.getContext('2d'));
+    shootingStarImage.src = starCanvas.toDataURL();
+
+    // Shield: cyan radial gradient circle
+    const shieldCanvas = document.createElement('canvas');
+    shieldCanvas.width = 50; shieldCanvas.height = 50;
+    (function(ctx) {
+        const gradient = ctx.createRadialGradient(25, 25, 5, 25, 25, 22);
+        gradient.addColorStop(0, 'rgba(0,255,255,0.3)');
+        gradient.addColorStop(1, 'rgba(0,100,255,0.6)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath(); ctx.arc(25, 25, 22, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#0ff'; ctx.lineWidth = 3;
+        ctx.shadowColor = '#0ff'; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(25, 25, 22, 0, Math.PI*2);
+        ctx.stroke();
+    })(shieldCanvas.getContext('2d'));
+    shieldImage.src = shieldCanvas.toDataURL();
+
+    // Mini-boss: magenta/purple large angular ship
+    const miniBossCanvas = document.createElement('canvas');
+    miniBossCanvas.width = 80; miniBossCanvas.height = 60;
+    (function(ctx) {
+        ctx.shadowColor = '#f0f'; ctx.shadowBlur = 12;
+        ctx.fillStyle = '#c0c';
+        ctx.beginPath();
+        ctx.moveTo(40, 4); ctx.lineTo(70, 18); ctx.lineTo(76, 36);
+        ctx.lineTo(58, 56); ctx.lineTo(22, 56); ctx.lineTo(4, 36); ctx.lineTo(10, 18);
+        ctx.closePath(); ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#f8f';
+        ctx.beginPath();
+        ctx.moveTo(40, 10); ctx.lineTo(54, 26); ctx.lineTo(40, 34); ctx.lineTo(26, 26);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#f00';
+        ctx.beginPath(); ctx.arc(28, 38, 5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(52, 38, 5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#800080';
+        ctx.fillRect(36, 40, 8, 14);
+    })(miniBossCanvas.getContext('2d'));
+    miniBossImage.src = miniBossCanvas.toDataURL();
+
+    // All images generated synchronously — proceed immediately
+    assetsLoaded = true;
+    loadingContainer.style.display = 'none';
+    showIntroScreen();
 }
 
 // Initialize assets
@@ -2901,7 +2994,7 @@ quitButton.addEventListener('click', () => {
 
 function toggleSound() {
     soundEnabled = !soundEnabled;
-    soundBtn.textContent = soundEnabled ? '🔊 Sound' : '🔇 Muted';
+    soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
     
     try {
         if (soundEnabled && gameActive) {
@@ -4340,6 +4433,7 @@ function checkWaveCompletion() {
         const waveSeconds = Math.floor((waveTime % 60000) / 1000);
         const summaryMsg = `Wave ${currentWave - 1} Complete! | Enemies: ${waveEnemiesDestroyed} | Correct: ${waveCorrectAnswers} | +${healthReward}HP`;
         showPowerupMessage(summaryMsg, function() {
+            gameRunning = true;
             setTimeout(() => {
                 initEnemies();
             }, 500);
