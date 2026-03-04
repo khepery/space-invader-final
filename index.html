@@ -845,6 +845,7 @@
                 <strong style="color: #ff0;">Destroy enemies, answer questions, save Earth!</strong>
             </p>
             <button id="introStartBtn" class="game-button">LAUNCH MISSION</button>
+            <div style="color:#ff0; font-size:14px; margin-top:10px;">HIGH SCORE: <span id="highScoreDisplay">0</span></div>
         </div>
 
         <!-- Settings Screen -->
@@ -915,6 +916,20 @@
             </div>
         </div>
 
+        <!-- Mobile Controls -->
+        <div id="mobileControls" style="display:none; position:absolute; bottom:20px; width:100%; pointer-events:none; z-index:3;">
+            <button id="leftBtn" style="position:absolute; left:20px; bottom:0; width:80px; height:80px; background:rgba(0,255,255,0.2); border:2px solid #0ff; border-radius:50%; color:#0ff; font-size:30px; pointer-events:all; user-select:none;">◀</button>
+            <button id="rightBtn" style="position:absolute; right:20px; bottom:0; width:80px; height:80px; background:rgba(0,255,255,0.2); border:2px solid #0ff; border-radius:50%; color:#0ff; font-size:30px; pointer-events:all; user-select:none;">▶</button>
+        </div>
+
+        <!-- Boss Health Bar HUD -->
+        <div id="bossHealthContainer" style="display:none; position:absolute; top:20px; left:50%; transform:translateX(-50%); width:300px; text-align:center; z-index:3;">
+            <div style="font-family:'Press Start 2P',cursive; font-size:10px; color:#f0f; margin-bottom:5px;">MINI-BOSS</div>
+            <div style="height:20px; background:rgba(0,0,0,0.8); border:2px solid #f0f; border-radius:10px; overflow:hidden; box-shadow:0 0 15px #f0f;">
+                <div id="bossHealthBar" style="height:100%; width:100%; background:linear-gradient(90deg,#f0f,#f00); transition:width 0.3s;"></div>
+            </div>
+        </div>
+
         <!-- Quiz Container -->
         <div class="quiz-container" id="quizContainer">
             <h2 id="questionText" style="font-size: 20px; margin-bottom: 20px; color: #fff;"></h2>
@@ -938,6 +953,7 @@
             <h2>GAME OVER!</h2>
             <div id="gameStats" style="font-size: 16px; margin-bottom: 30px; text-align: left; display: inline-block; background: rgba(0,0,0,0.5); padding: 25px; border-radius: 15px; border: 2px solid currentColor;">
                 <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Final Score: <span id="finalScore" style="color: #0ff; font-weight: bold;">0</span></div>
+                <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">High Score: <span id="highScoreResult" style="color: #ff0; font-weight: bold;">0</span></div>
                 <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Waves Completed: <span id="wavesCompleted" style="color: #0ff; font-weight: bold;">0</span></div>
                 <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Enemies Destroyed: <span id="enemiesDestroyed" style="color: #0ff; font-weight: bold;">0</span></div>
                 <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Questions Answered: <span id="correctAnswers" style="color: #0ff; font-weight: bold;">0</span>/<span id="totalQuestions" style="color: #0ff; font-weight: bold;">0</span></div>
@@ -1160,6 +1176,18 @@ let bossEnemy = null;
 let waveStartTime = 0;
 let educationalScore = 0; // Track learning progress separately
 let consecutiveWrongAnswers = 0;
+let waveEnemiesDestroyed = 0;
+let waveCorrectAnswers = 0;
+
+// Safe localStorage helpers (fail silently on file:// or private browsing)
+function safeLocalStorageGet(key, defaultValue) {
+    try { return localStorage.getItem(key) || defaultValue; } catch(e) { return defaultValue; }
+}
+function safeLocalStorageSet(key, value) {
+    try { localStorage.setItem(key, value); } catch(e) { /* silent fail */ }
+}
+
+let highScore = parseInt(safeLocalStorageGet('spaceInvadersHighScore', '0'));
 
 // Default questions with categories
 const defaultQuestions = [
@@ -1258,6 +1286,20 @@ function loadGameImages() {
                 tempCtx.fillStyle = '#000';
                 tempCtx.fillRect(15, 20, 5, 5);
                 tempCtx.fillRect(30, 20, 5, 5);
+            } else if (src.includes('shield')) {
+                // Draw cyan shield bubble (circle outline with fill)
+                const gradient = tempCtx.createRadialGradient(25, 25, 5, 25, 25, 22);
+                gradient.addColorStop(0, 'rgba(0,255,255,0.3)');
+                gradient.addColorStop(1, 'rgba(0,100,255,0.6)');
+                tempCtx.fillStyle = gradient;
+                tempCtx.beginPath();
+                tempCtx.arc(25, 25, 22, 0, Math.PI * 2);
+                tempCtx.fill();
+                tempCtx.strokeStyle = '#0ff';
+                tempCtx.lineWidth = 3;
+                tempCtx.shadowColor = '#0ff';
+                tempCtx.shadowBlur = 10;
+                tempCtx.stroke();
             } else {
                 // Default square
                 tempCtx.fillStyle = fallbackColor;
@@ -1305,6 +1347,9 @@ function showIntroScreen() {
     introScreen.style.display = 'block';
     gameActive = false;
     clearCanvas();
+    // Update high score display on intro screen
+    const highScoreDisplay = document.getElementById('highScoreDisplay');
+    if (highScoreDisplay) highScoreDisplay.textContent = highScore;
 }
 
 // Canvas functions
@@ -1510,6 +1555,9 @@ function resetGameState() {
     bossEnemy = null;
     educationalScore = 0;
     consecutiveWrongAnswers = 0;
+    waveEnemiesDestroyed = 0;
+    waveCorrectAnswers = 0;
+    document.getElementById('bossHealthContainer').style.display = 'none';
     
     // Reset player
     player.x = canvas.width / 2 - 25;
@@ -1585,8 +1633,15 @@ Category: Geography
 importExcelBtn.addEventListener('click', () => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.txt,.text';
-    input.onchange = handleTextImport;
+    input.accept = '.txt,.text,.xlsx,.xls';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+            handleExcelImport(e);
+        } else {
+            handleTextImport(e);
+        }
+    };
     input.click();
 });
 
@@ -1662,6 +1717,53 @@ function handleTextImport(e) {
     reader.readAsText(file);
 }
 
+function handleExcelImport(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        try {
+            const data = new Uint8Array(ev.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            const newQuestions = [];
+            // Skip header row; expect columns: Question, A, B, C, D, Correct, Category
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (!row || row.length < 6) continue;
+                const question = String(row[0] || '').trim();
+                const optA = String(row[1] || '').trim();
+                const optB = String(row[2] || '').trim();
+                const optC = String(row[3] || '').trim();
+                const optD = String(row[4] || '').trim();
+                const correctLetter = String(row[5] || '').trim().toUpperCase();
+                const category = String(row[6] || 'General').trim() || 'General';
+                if (!question || !optA || !optB || !optC || !optD) continue;
+                let correct = -1;
+                if (correctLetter === 'A') correct = 0;
+                else if (correctLetter === 'B') correct = 1;
+                else if (correctLetter === 'C') correct = 2;
+                else if (correctLetter === 'D') correct = 3;
+                if (correct < 0) continue;
+                newQuestions.push({ question, options: [optA, optB, optC, optD], correct, category });
+            }
+            if (newQuestions.length > 0) {
+                questions.push(...newQuestions);
+                usedQuestions = [];
+                displayQuestionList();
+                updateCategorySelector();
+                alert(`Successfully imported ${newQuestions.length} questions from Excel.`);
+            } else {
+                alert('No valid questions found. Ensure columns are: Question, A, B, C, D, Correct (A/B/C/D), Category.');
+            }
+        } catch (err) {
+            console.error('Error parsing Excel file:', err);
+            alert('Error importing Excel file. Please check the format.');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
 // Style quiz options
 const styleQuizOption = `
     margin: 10px auto;
@@ -1688,6 +1790,11 @@ addQuestionSetBtn.addEventListener('click', () => {
 cancelNewQuestionBtn.addEventListener('click', () => {
     questionForm.style.display = 'none';
     settingsScreen.style.display = 'block';
+    // Clear form
+    newQuestionText.value = '';
+    newOptions.forEach(i => i.value = '');
+    correctAnswer.value = '0';
+    questionCategory.value = '';
 });
 
 saveNewQuestionBtn.addEventListener('click', () => {
@@ -1740,11 +1847,25 @@ function displayQuestionList() {
         
         categorizedQuestions[category].forEach((q, i) => {
             const div = document.createElement('div');
-            div.innerHTML = `${i+1}. ${q.question}`;
             div.style.marginLeft = '20px';
             div.style.marginBottom = '5px';
             div.style.fontSize = '12px';
             div.style.opacity = '0.8';
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
+            div.style.justifyContent = 'space-between';
+            const textSpan = document.createElement('span');
+            textSpan.textContent = `${i+1}. ${q.question}`;
+            div.appendChild(textSpan);
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '✕';
+            deleteBtn.style.cssText = 'margin-left:10px; padding:2px 6px; background:rgba(150,0,0,0.8); border:1px solid #f00; color:#f00; border-radius:4px; cursor:pointer; font-size:10px; flex-shrink:0;';
+            deleteBtn.onclick = () => {
+                questions.splice(questions.indexOf(q), 1);
+                displayQuestionList();
+                updateCategorySelector();
+            };
+            div.appendChild(deleteBtn);
             questionList.appendChild(div);
         });
     }
@@ -2043,9 +2164,11 @@ function clearQuizTimer() {
 function handleQuizAnswer(isCorrect, eventType) {
     clearQuizTimer();
     totalQuestionsAsked++;
+    const currentQ = quizSession[quizQuestionIndex];
     
     if (isCorrect) {
         totalCorrectAnswers++;
+        waveCorrectAnswers++;
         answerStreak++;
         consecutiveWrongAnswers = 0;
         updateStreakDisplay();
@@ -2101,6 +2224,9 @@ function handleQuizAnswer(isCorrect, eventType) {
             enemySpeedMultiplier *= 0.95; // Slightly slow enemies
             enemyShootInterval *= 1.1; // Enemies shoot less frequently
         }
+
+        quizQuestionIndex++;
+        proceedAfterAnswer(eventType);
     } else {
         answerStreak = 0;
         consecutiveWrongAnswers++;
@@ -2147,21 +2273,42 @@ function handleQuizAnswer(isCorrect, eventType) {
         // Extended invulnerability for learning
         player.invulnerable = true;
         player.invulnerableTimer = 3000; // 3 seconds to recover
+
+        // Highlight the correct answer and show message before proceeding
+        const buttons = optionsContainer.querySelectorAll('button');
+        buttons.forEach(btn => { btn.disabled = true; btn.onmouseover = null; btn.onmouseout = null; });
+        if (buttons[currentQ.correct]) {
+            buttons[currentQ.correct].style.background = 'rgba(0,150,0,0.9)';
+            buttons[currentQ.correct].style.borderColor = '#0f0';
+            buttons[currentQ.correct].style.color = '#0f0';
+        }
+        const msgDiv = document.createElement('div');
+        msgDiv.style.cssText = 'margin-top:15px; color:#0f0; font-size:14px; text-align:center;';
+        msgDiv.textContent = `✓ Correct answer: ${currentQ.options[currentQ.correct]}`;
+        optionsContainer.appendChild(msgDiv);
         
         if (player.health <= 0) {
-            // Give one more chance if they've been answering questions
-            if (totalQuestionsAsked >= 5 && totalCorrectAnswers / totalQuestionsAsked >= 0.5) {
-                player.health = 30;
-                showPowerupMessage("Second Chance! Keep learning!");
-                activatePowerup('shield');
-            } else {
-                handleGameOver();
-            }
+            setTimeout(() => {
+                // Give one more chance if they've been answering questions
+                if (totalQuestionsAsked >= 5 && totalCorrectAnswers / totalQuestionsAsked >= 0.5) {
+                    player.health = 30;
+                    showPowerupMessage("Second Chance! Keep learning!");
+                    activatePowerup('shield');
+                } else {
+                    handleGameOver();
+                }
+            }, 2000);
             return;
         }
-    }
 
-    quizQuestionIndex++;
+        setTimeout(() => {
+            quizQuestionIndex++;
+            proceedAfterAnswer(eventType);
+        }, 2000);
+    }
+}
+
+function proceedAfterAnswer(eventType) {
     if (quizQuestionIndex < quizSession.length) {
         setTimeout(() => {
             displayQuizQuestion(eventType);
@@ -2238,7 +2385,7 @@ function updatePowerupsDisplay() {
     const shieldPowerup = activePowerups.find(p => p.type === 'shield');
     if (shieldPowerup) {
         shieldIndicator.classList.add('active');
-        const progress = shieldPowerup.remainingTime / 10000;
+        const progress = shieldPowerup.remainingTime / 15000;
         shieldBar.style.width = (progress * 100) + '%';
     } else {
         shieldIndicator.classList.remove('active');
@@ -2261,6 +2408,15 @@ function updateHealthBar() {
     // Show warning if health is low
     if (hp <= 20 && gameRunning) {
         showWarning();
+    }
+}
+
+function updateBossHealthBar(enemy) {
+    const bossHealthContainer = document.getElementById('bossHealthContainer');
+    const bossHealthBar = document.getElementById('bossHealthBar');
+    if (bossHealthContainer && bossHealthBar && enemy.maxHealth) {
+        const pct = Math.max(0, (enemy.health / enemy.maxHealth) * 100);
+        bossHealthBar.style.width = pct + '%';
     }
 }
 
@@ -2473,6 +2629,16 @@ function handleGameOver(outcome = "LOSE") {
     bestComboDisplay.textContent = bestCombo;
     educationalScoreDisplay.textContent = educationalScore;
     
+    // Update high score
+    if (score > highScore) {
+        highScore = score;
+        safeLocalStorageSet('spaceInvadersHighScore', score.toString());
+        const highScoreDisplay = document.getElementById('highScoreDisplay');
+        if (highScoreDisplay) highScoreDisplay.textContent = highScore;
+    }
+    const highScoreResult = document.getElementById('highScoreResult');
+    if (highScoreResult) highScoreResult.textContent = highScore;
+    
     const accuracy = totalQuestionsAsked > 0 
         ? Math.round((totalCorrectAnswers / totalQuestionsAsked) * 100) 
         : 0;
@@ -2580,7 +2746,7 @@ backToMenuButton.addEventListener('click', () => {
 
 // Pause button handler
 pauseBtn.addEventListener('click', () => {
-    if (gameActive && quizContainer.style.display === 'none') {
+    if (gameActive && quizContainer.style.display !== 'block') {
         togglePause();
     }
 });
@@ -2673,7 +2839,7 @@ const keys = { left: false, right: false, space: false };
 
 window.addEventListener('keydown', e => {
     if (e.key === 'p' || e.key === 'P') {
-        if (gameActive && quizContainer.style.display === 'none') {
+        if (gameActive && quizContainer.style.display !== 'block') {
             togglePause();
         }
     } else if (e.key === 'm' || e.key === 'M') {
@@ -2755,6 +2921,22 @@ canvas.addEventListener('touchend', e => {
     e.preventDefault();
     isTouching = false;
 }, {passive: false});
+
+// Mobile on-screen controls
+window.addEventListener('touchstart', () => {
+    document.getElementById('mobileControls').style.display = 'block';
+}, { once: true });
+
+const leftBtn = document.getElementById('leftBtn');
+const rightBtn = document.getElementById('rightBtn');
+
+leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.left = true; }, { passive: false });
+leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys.left = false; }, { passive: false });
+leftBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys.left = false; }, { passive: false });
+
+rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.right = true; }, { passive: false });
+rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys.right = false; }, { passive: false });
+rightBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys.right = false; }, { passive: false });
 
 // Particle effects
 function createExplosionParticles(x, y, count, color) {
@@ -3068,6 +3250,8 @@ function initEnemies() {
     enemies = [];
     enemyBullets = [];
     waveStartTime = Date.now();
+    waveEnemiesDestroyed = 0;
+    waveCorrectAnswers = 0;
     
     // EDUCATIONAL DESIGN: Smaller waves for more frequent quizzes
     // Each wave has fewer enemies but always ends with a mini-boss
@@ -3146,6 +3330,14 @@ function initEnemies() {
     bossActive = true;
     bossEnemy = miniBoss;
     enemies.push(miniBoss);
+    
+    // Show boss health bar in HUD
+    const bossHealthContainer = document.getElementById('bossHealthContainer');
+    const bossHealthBar = document.getElementById('bossHealthBar');
+    if (bossHealthContainer && bossHealthBar) {
+        bossHealthBar.style.width = '100%';
+        bossHealthContainer.style.display = 'block';
+    }
     
     waveDisplay.textContent = `Wave: ${currentWave}`;
     
@@ -3737,6 +3929,11 @@ function updatePlayerBullets(deltaTime) {
                 enemy.health -= dmg;
                 enemy.flashTimer = 200;
                 
+                // Update boss health bar in HUD when boss takes damage
+                if ((enemy.isMiniBoss || enemy.isBoss) && enemy.alive) {
+                    updateBossHealthBar(enemy);
+                }
+                
                 // Show damage number
                 createDamageNumber(enemy.x + enemy.width/2, enemy.y, `-${dmg}`, '#ff0');
                 
@@ -3765,6 +3962,7 @@ function updatePlayerBullets(deltaTime) {
                     scoreDisplay.textContent = `Score: ${score}`;
                     animateScoreUpdate();
                     totalEnemiesDestroyed++;
+                    waveEnemiesDestroyed++;
                     
                     // Big explosion
                     createExplosionParticles(
@@ -3787,12 +3985,14 @@ function updatePlayerBullets(deltaTime) {
                     if (enemy.isMiniBoss) {
                         bossActive = false;
                         bossEnemy = null;
+                        document.getElementById('bossHealthContainer').style.display = 'none';
                         showQuizForEvent('boss'); // Always quiz after mini-boss
                         showAchievement('Mini-Boss Defeated!');
                         score += 200;
                     } else if (enemy.isBoss) {
                         bossActive = false;
                         bossEnemy = null;
+                        document.getElementById('bossHealthContainer').style.display = 'none';
                         showQuizForEvent('boss');
                         showAchievement('Boss Slayer!');
                         score += 500;
@@ -4011,19 +4211,6 @@ function checkWaveCompletion() {
         player.invulnerable = true;
         player.invulnerableTimer = 3000;
         
-        // Educational design: Always show educational progress
-        const waveTime = Date.now() - waveStartTime;
-        const waveMinutes = Math.floor(waveTime / 60000);
-        const waveSeconds = Math.floor((waveTime % 60000) / 1000);
-        
-        // Show wave summary
-        showPowerupMessage(`Wave ${currentWave - 1} Complete! Time: ${waveMinutes}:${waveSeconds.toString().padStart(2, '0')}`, function() {
-            // Always continue to next wave after message
-            setTimeout(() => {
-                initEnemies();
-            }, 500);
-        });
-        
         // Bonus health for wave completion
         const healthReward = 20 + (answerStreak * 5);
         player.health = Math.min(player.health + healthReward, player.maxHealth);
@@ -4031,6 +4218,17 @@ function checkWaveCompletion() {
         
         // Educational bonus
         educationalScore += 50;
+
+        // Show wave summary with stats
+        const waveTime = Date.now() - waveStartTime;
+        const waveMinutes = Math.floor(waveTime / 60000);
+        const waveSeconds = Math.floor((waveTime % 60000) / 1000);
+        const summaryMsg = `Wave ${currentWave - 1} Complete! | Enemies: ${waveEnemiesDestroyed} | Correct: ${waveCorrectAnswers} | +${healthReward}HP`;
+        showPowerupMessage(summaryMsg, function() {
+            setTimeout(() => {
+                initEnemies();
+            }, 500);
+        });
     }
 }
 
