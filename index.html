@@ -1258,6 +1258,22 @@ function loadGameImages() {
                 tempCtx.fillStyle = '#000';
                 tempCtx.fillRect(15, 20, 5, 5);
                 tempCtx.fillRect(30, 20, 5, 5);
+            } else if (src.includes('shield')) {
+                // Draw cyan shield bubble (circle with glow)
+                const gradient = tempCtx.createRadialGradient(25, 25, 5, 25, 25, 22);
+                gradient.addColorStop(0, 'rgba(0,255,255,0.3)');
+                gradient.addColorStop(1, 'rgba(0,150,255,0.1)');
+                tempCtx.fillStyle = gradient;
+                tempCtx.beginPath();
+                tempCtx.arc(25, 25, 22, 0, Math.PI * 2);
+                tempCtx.fill();
+                tempCtx.strokeStyle = '#0ff';
+                tempCtx.lineWidth = 3;
+                tempCtx.shadowBlur = 10;
+                tempCtx.shadowColor = '#0ff';
+                tempCtx.beginPath();
+                tempCtx.arc(25, 25, 22, 0, Math.PI * 2);
+                tempCtx.stroke();
             } else {
                 // Default square
                 tempCtx.fillStyle = fallbackColor;
@@ -1585,13 +1601,60 @@ Category: Geography
 importExcelBtn.addEventListener('click', () => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.txt,.text';
+    input.accept = '.txt,.text,.xlsx,.xls';
     input.onchange = handleTextImport;
     input.click();
 });
 
 function handleTextImport(e) {
     const file = e.target.files[0];
+    const fileName = file.name.toLowerCase();
+
+    if ((fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) && window.XLSX) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = window.XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = window.XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                const newQuestions = [];
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (!row || row.length < 6) continue;
+                    const question = String(row[0] || '').trim();
+                    const opts = [
+                        String(row[1] || '').trim(),
+                        String(row[2] || '').trim(),
+                        String(row[3] || '').trim(),
+                        String(row[4] || '').trim()
+                    ];
+                    const correctLetter = String(row[5] || '').trim().toUpperCase();
+                    const correctMap = { A: 0, B: 1, C: 2, D: 3 };
+                    const correct = correctMap[correctLetter];
+                    const category = row[6] ? String(row[6]).trim() : 'General';
+                    if (question && opts.every(o => o) && correct !== undefined) {
+                        newQuestions.push({ question, options: opts, correct, category });
+                    }
+                }
+                if (newQuestions.length > 0) {
+                    questions.push(...newQuestions);
+                    usedQuestions = [];
+                    displayQuestionList();
+                    updateCategorySelector();
+                    alert(`Successfully imported ${newQuestions.length} questions.`);
+                } else {
+                    alert('No valid questions found in the file. Columns must be: Question, A, B, C, D, Correct (A/B/C/D), Category');
+                }
+            } catch (err) {
+                console.error('Error parsing Excel file:', err);
+                alert('Error importing questions. Please check the file format.');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+        return;
+    }
+
     const reader = new FileReader();
 
     reader.onload = function(e) {
@@ -1688,6 +1751,11 @@ addQuestionSetBtn.addEventListener('click', () => {
 cancelNewQuestionBtn.addEventListener('click', () => {
     questionForm.style.display = 'none';
     settingsScreen.style.display = 'block';
+    // Clear form
+    newQuestionText.value = '';
+    newOptions.forEach(i => i.value = '');
+    correctAnswer.value = '0';
+    questionCategory.value = '';
 });
 
 saveNewQuestionBtn.addEventListener('click', () => {
@@ -2043,6 +2111,7 @@ function clearQuizTimer() {
 function handleQuizAnswer(isCorrect, eventType) {
     clearQuizTimer();
     totalQuestionsAsked++;
+    const q = quizSession[quizQuestionIndex]; // capture before index changes
     
     if (isCorrect) {
         totalCorrectAnswers++;
@@ -2159,6 +2228,43 @@ function handleQuizAnswer(isCorrect, eventType) {
             }
             return;
         }
+
+        // Show correct answer before proceeding
+        const buttons = optionsContainer.querySelectorAll('button');
+        if (buttons[q.correct]) {
+            buttons[q.correct].style.background = 'rgba(0,150,0,0.9)';
+            buttons[q.correct].style.borderColor = '#0f0';
+            buttons[q.correct].style.color = '#0f0';
+        }
+        const correctMsg = document.createElement('div');
+        correctMsg.style.cssText = 'color:#0f0; margin:10px auto; font-size:14px; text-align:center;';
+        correctMsg.textContent = `✓ Correct answer: ${q.options[q.correct]}`;
+        optionsContainer.appendChild(correctMsg);
+
+        setTimeout(() => {
+            quizQuestionIndex++;
+            if (quizQuestionIndex < quizSession.length) {
+                setTimeout(() => {
+                    displayQuizQuestion(eventType);
+                }, 1500);
+            } else {
+                quizContainer.style.display = 'none';
+                let availableQuestions = questions.filter(qItem => !usedQuestions.includes(qItem));
+                if (activeCategories.size > 0) {
+                    availableQuestions = availableQuestions.filter(qItem =>
+                        !qItem.category || activeCategories.has(qItem.category));
+                }
+                if (availableQuestions.length === 0) {
+                    handleGameOver("EDUCATIONAL_WIN");
+                } else {
+                    gameRunning = true;
+                    if (!enemies.some(e => e.alive)) {
+                        initEnemies();
+                    }
+                }
+            }
+        }, 2000);
+        return;
     }
 
     quizQuestionIndex++;
@@ -2238,7 +2344,7 @@ function updatePowerupsDisplay() {
     const shieldPowerup = activePowerups.find(p => p.type === 'shield');
     if (shieldPowerup) {
         shieldIndicator.classList.add('active');
-        const progress = shieldPowerup.remainingTime / 10000;
+        const progress = shieldPowerup.remainingTime / 15000;
         shieldBar.style.width = (progress * 100) + '%';
     } else {
         shieldIndicator.classList.remove('active');
@@ -2580,7 +2686,7 @@ backToMenuButton.addEventListener('click', () => {
 
 // Pause button handler
 pauseBtn.addEventListener('click', () => {
-    if (gameActive && quizContainer.style.display === 'none') {
+    if (gameActive && quizContainer.style.display !== 'block') {
         togglePause();
     }
 });
@@ -2673,7 +2779,7 @@ const keys = { left: false, right: false, space: false };
 
 window.addEventListener('keydown', e => {
     if (e.key === 'p' || e.key === 'P') {
-        if (gameActive && quizContainer.style.display === 'none') {
+        if (gameActive && quizContainer.style.display !== 'block') {
             togglePause();
         }
     } else if (e.key === 'm' || e.key === 'M') {
