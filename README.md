@@ -2,6 +2,20 @@
 
 A Space Invaders–style quiz game where players answer questions to defeat waves of alien invaders.
 
+## Changing the access code
+
+Open **`config.js`** and update the `code` value — that is the only file you need to edit:
+
+```js
+window.SITE_CONFIG = {
+  code: "YOURNEWCODE"   // ← change this
+};
+```
+
+Save the file and share the new code with your students. No other file needs to be changed.
+
+The default code is **`GALAXY2026`**.
+
 ## Development
 
 Open `index.html` directly in a browser with all asset files in the same folder:
