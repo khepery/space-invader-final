@@ -294,15 +294,13 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: linear-gradient(135deg, rgba(0, 20, 80, 0.95) 0%, rgba(0, 10, 40, 0.95) 100%);
-            padding: clamp(20px, 4vh, 50px);
+            padding: clamp(10px, 2vh, 40px);
             border: 3px solid #0ff;
             box-shadow: 0 0 50px #0ff, inset 0 0 30px rgba(0, 255, 255, 0.2);
             border-radius: 20px;
             text-align: center;
             width: 80%;
             max-width: 700px;
-            max-height: 90vh;
-            overflow-y: auto;
             box-sizing: border-box;
             animation: introSlide 0.5s ease-out;
         }
@@ -320,8 +318,8 @@
 
         #introScreen h1 {
             font-family: 'Press Start 2P', cursive;
-            font-size: 32px;
-            margin-bottom: 10px;
+            font-size: clamp(20px, 4vh, 32px);
+            margin-bottom: clamp(5px, 1vh, 10px);
             background: linear-gradient(45deg, #0ff, #f0f, #0ff);
             background-size: 200% 100%;
             -webkit-background-clip: text;
@@ -336,17 +334,17 @@
         }
 
         #introScreen .subtitle {
-            font-size: 18px;
+            font-size: clamp(11px, 2vh, 18px);
             color: #ff0;
-            margin-bottom: 30px;
+            margin-bottom: clamp(8px, 1.5vh, 30px);
             text-shadow: 0 0 10px #ff0;
             letter-spacing: 3px;
         }
 
         /* Premium button */
         .game-button {
-            margin: 10px;
-            padding: 18px 40px;
+            margin: clamp(5px, 0.8vh, 10px);
+            padding: clamp(10px, 1.5vh, 18px) 40px;
             background: linear-gradient(45deg, #0066cc, #004499);
             border: none;
             color: #fff;
@@ -391,15 +389,13 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: linear-gradient(135deg, rgba(0, 20, 80, 0.95) 0%, rgba(0, 10, 40, 0.95) 100%);
-            padding: clamp(15px, 3vh, 40px);
+            padding: clamp(10px, 1.5vh, 25px);
             border: 3px solid #0ff;
             border-radius: 20px;
             text-align: center;
             z-index: 5;
-            width: 85%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
+            width: 92%;
+            max-width: 960px;
             box-sizing: border-box;
             box-shadow: 0 0 50px #0ff, inset 0 0 30px rgba(0, 255, 255, 0.1);
         }
@@ -454,17 +450,17 @@
 
         .button-icon {
             display: block;
-            font-size: 28px;
-            padding-top: 15px;
-            padding-bottom: 5px;
+            font-size: clamp(16px, 2.5vh, 28px);
+            padding-top: clamp(8px, 1.2vh, 15px);
+            padding-bottom: clamp(2px, 0.5vh, 5px);
         }
 
         .button-text {
             display: block;
             color: #fff;
             font-weight: 700;
-            font-size: 14px;
-            padding: 0 20px;
+            font-size: clamp(10px, 1.4vh, 14px);
+            padding: 0 clamp(10px, 1.5vw, 20px);
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -472,8 +468,8 @@
         .button-subtitle {
             display: block;
             color: #8cf;
-            font-size: 11px;
-            padding: 0 20px 15px;
+            font-size: clamp(8px, 1.1vh, 11px);
+            padding: 0 clamp(10px, 1.5vw, 20px) clamp(8px, 1.2vh, 15px);
             font-weight: 400;
             opacity: 0.8;
         }
@@ -850,7 +846,7 @@
         <div id="introScreen">
             <h1>ULTRA PRO<br>SPACE INVADERS</h1>
             <div class="subtitle">PREMIUM EDUCATIONAL EDITION</div>
-            <p style="font-size: 16px; line-height: 1.8; color: #fff; margin-bottom: 30px;">
+            <p style="font-size: clamp(11px, 1.8vh, 15px); line-height: clamp(1.4, 2.2vh, 1.7); color: #fff; margin-bottom: clamp(8px, 1.8vh, 25px);">
                 Welcome to the ultimate educational space adventure!<br><br>
                 <strong style="color: #0ff;">LEARN WHILE YOU PLAY:</strong><br>
                 ✦ Answer questions to gain powerful abilities<br>
@@ -866,52 +862,52 @@
 
         <!-- Settings Screen -->
         <div id="settingsScreen">
-            <h2 style="font-family: 'Press Start 2P', cursive; font-size: clamp(14px, 2.5vw, 22px); color: #0ff; text-shadow: 0 0 20px #0ff; margin-bottom: 10px;">⚙️ MISSION CONFIGURATION</h2>
+            <h2 style="font-family: 'Press Start 2P', cursive; font-size: clamp(14px, 2.5vw, 22px); color: #0ff; text-shadow: 0 0 20px #0ff; margin-bottom: clamp(5px, 1vh, 10px);">⚙️ MISSION CONFIGURATION</h2>
 
-            <div id="missionConfigGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; text-align: left;">
+            <div id="missionConfigGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: clamp(8px, 1.2vh, 20px); margin: clamp(6px, 1vh, 15px) 0; text-align: left;">
 
                 <!-- LEFT: Questions -->
-                <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: 20px;">
-                    <div style="font-size: 14px; color: #ff0; margin-bottom: 15px; font-weight: bold;">📚 QUESTIONS</div>
-                    <div id="questionStatusBadge" style="margin-bottom: 15px; padding: 10px; background: rgba(0,50,0,0.5); border: 1px solid #0f0; border-radius: 8px; font-size: 12px; color: #0f0;">
+                <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: clamp(8px,1.2vh,18px);">
+                    <div style="font-size: clamp(11px,1.5vh,14px); color: #ff0; margin-bottom: clamp(6px,1vh,15px); font-weight: bold;">📚 QUESTIONS</div>
+                    <div id="questionStatusBadge" style="margin-bottom: clamp(6px,1vh,15px); padding: clamp(5px,0.8vh,10px); background: rgba(0,50,0,0.5); border: 1px solid #0f0; border-radius: 8px; font-size: clamp(9px,1.2vh,12px); color: #0f0;">
                         <!-- Populated by JS -->
                     </div>
-                    <button id="importExcelBtn" class="action-button" style="width: 100%; margin: 5px 0; min-width: unset;">
+                    <button id="importExcelBtn" class="action-button" style="width: 100%; margin: clamp(3px,0.5vh,5px) 0; min-width: unset;">
                         <span class="button-icon">📂</span>
                         <span class="button-text">Load My Questions</span>
                         <span class="button-subtitle">Import .txt file</span>
                     </button>
-                    <button id="addQuestionSetBtn" class="action-button" style="width: 100%; margin: 5px 0; min-width: unset;">
+                    <button id="addQuestionSetBtn" class="action-button" style="width: 100%; margin: clamp(3px,0.5vh,5px) 0; min-width: unset;">
                         <span class="button-icon">➕</span>
                         <span class="button-text">Add Manually</span>
                         <span class="button-subtitle">Type a question</span>
                     </button>
-                    <button id="resetToDefaultBtn" class="action-button danger" style="width: 100%; margin: 5px 0; min-width: unset;">
+                    <button id="resetToDefaultBtn" class="action-button danger" style="width: 100%; margin: clamp(3px,0.5vh,5px) 0; min-width: unset;">
                         <span class="button-icon">🔄</span>
                         <span class="button-text">Use Default Questions</span>
                         <span class="button-subtitle">Reset to built-in set</span>
                     </button>
-                    <div style="margin-top: 10px; font-size: 10px; color: #666;">
+                    <div style="margin-top: clamp(5px,0.8vh,10px); font-size: 10px; color: #666;">
                         <a href="#" id="downloadExcelTemplateBtn" style="color: #0aa; text-decoration: none;">⬇ Download question template</a>
                     </div>
                 </div>
 
                 <!-- RIGHT: Difficulty + Categories -->
-                <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="display: flex; flex-direction: column; gap: clamp(8px,1.2vh,15px);">
 
                     <!-- Difficulty -->
-                    <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: 20px;">
-                        <div style="font-size: 14px; color: #ff0; margin-bottom: 15px; font-weight: bold;">🎯 DIFFICULTY</div>
+                    <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: clamp(8px,1.2vh,18px);">
+                        <div style="font-size: clamp(11px,1.5vh,14px); color: #ff0; margin-bottom: clamp(6px,1vh,15px); font-weight: bold;">🎯 DIFFICULTY</div>
                         <div class="difficulty-selector" style="display: flex; gap: 10px; justify-content: center;">
-                            <button data-difficulty="easy" class="active" style="flex: 1; padding: 10px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: 12px;">CADET</button>
-                            <button data-difficulty="medium" style="flex: 1; padding: 10px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: 12px;">PILOT</button>
-                            <button data-difficulty="hard" style="flex: 1; padding: 10px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: 12px;">ACE</button>
+                            <button data-difficulty="easy" class="active" style="flex: 1; padding: clamp(5px,0.8vh,10px); background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: clamp(9px,1.2vh,12px);">CADET</button>
+                            <button data-difficulty="medium" style="flex: 1; padding: clamp(5px,0.8vh,10px); background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: clamp(9px,1.2vh,12px);">PILOT</button>
+                            <button data-difficulty="hard" style="flex: 1; padding: clamp(5px,0.8vh,10px); background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: clamp(9px,1.2vh,12px);">ACE</button>
                         </div>
                     </div>
 
                     <!-- Categories -->
-                    <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: 20px; flex: 1;">
-                        <div style="font-size: 14px; color: #ff0; margin-bottom: 15px; font-weight: bold;">🗂 CATEGORIES</div>
+                    <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: clamp(8px,1.2vh,18px); flex: 1;">
+                        <div style="font-size: clamp(11px,1.5vh,14px); color: #ff0; margin-bottom: clamp(6px,1vh,15px); font-weight: bold;">🗂 CATEGORIES</div>
                         <div class="category-selector" id="categorySelector" style="display: flex; flex-wrap: wrap; gap: 8px;">
                             <!-- Populated by JS -->
                         </div>
@@ -919,7 +915,7 @@
                 </div>
             </div>
 
-            <button id="startGameBtn" class="game-button" style="display: block; width: 100%; max-width: 400px; margin: 0 auto;">▶ BEGIN MISSION</button>
+            <button id="startGameBtn" class="game-button" style="display: block; width: 100%; max-width: 400px; margin: clamp(5px,0.8vh,10px) auto 0;">▶ BEGIN MISSION</button>
         </div>
 
         <!-- Add Question Form -->
