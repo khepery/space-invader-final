@@ -89,29 +89,41 @@
             100% { transform: scale(1); }
         }
 
-        #score {
-            top: 20px;
-            left: 20px;
-            min-width: 180px;
+        /* Top-left micro pill */
+        #hudTopLeft {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 11px;
+            color: #fff;
+            backdrop-filter: blur(4px);
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            z-index: 10;
         }
 
-        #powerups {
-            top: 70px;
-            left: 20px;
-            min-width: 250px;
-        }
-
-        #wave {
-            top: 120px;
-            left: 20px;
-            min-width: 120px;
+        #hudPowerups {
+            position: absolute;
+            top: 42px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 4px 12px;
+            font-size: 10px;
+            color: #0ff;
+            backdrop-filter: blur(4px);
+            z-index: 10;
+            min-height: 20px;
         }
 
         /* Combo counter with special effects */
         #comboContainer {
-            position: absolute;
-            top: 170px;
-            left: 20px;
+            position: static;
             font-family: 'Press Start 2P', cursive;
             font-size: 18px;
             color: #ff0;
@@ -119,6 +131,7 @@
             opacity: 0;
             transition: opacity 0.3s;
             transform-origin: center;
+            text-align: right;
         }
 
         #comboContainer.active {
@@ -140,58 +153,74 @@
 
         /* Multiplier display */
         #multiplierDisplay {
-            position: absolute;
-            top: 220px;
-            left: 20px;
+            position: static;
             font-size: 16px;
             color: #0ff;
             font-weight: bold;
             opacity: 0;
             transition: opacity 0.3s;
+            text-align: right;
         }
 
         #multiplierDisplay.active {
             opacity: 1;
         }
 
-        /* Enhanced control buttons */
-        .control-button {
+        /* Control buttons container */
+        #controlButtons {
             position: absolute;
-            top: 20px;
-            background: linear-gradient(135deg, rgba(0, 30, 60, 0.9) 0%, rgba(0, 10, 30, 0.9) 100%);
-            border: 2px solid #0ff;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        /* Control buttons */
+        .control-button {
+            position: static;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: rgba(0, 20, 40, 0.7);
+            border: 2px solid rgba(0, 255, 255, 0.4);
             color: #0ff;
-            padding: 10px 18px;
-            border-radius: 25px;
             cursor: pointer;
-            font-weight: 700;
+            padding: 0;
+            backdrop-filter: blur(4px);
             transition: all 0.3s;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 1px;
         }
 
         .control-button:hover {
-            background: linear-gradient(135deg, rgba(0, 60, 120, 0.9) 0%, rgba(0, 20, 60, 0.9) 100%);
-            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
-            transform: translateY(-2px);
+            background: rgba(0, 60, 120, 0.8);
+            border-color: #0ff;
         }
 
         .control-button:active {
             transform: translateY(0);
         }
 
-        #pauseBtn { right: 220px; }
-        #soundBtn { right: 320px; }
-        #helpBtn { right: 420px; }
+        /* Top-right cluster */
+        #hudTopRight {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 10;
+            width: 160px;
+        }
 
         /* Premium health bar */
         #healthBarContainer {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 200px;
+            position: relative;
+            width: 160px;
             height: 30px;
             border: 2px solid #0ff;
             background: rgba(0, 0, 0, 0.9);
@@ -239,10 +268,7 @@
 
         /* Shield indicator */
         #shieldIndicator {
-            position: absolute;
-            top: 60px;
-            right: 20px;
-            width: 200px;
+            width: 160px;
             height: 10px;
             border: 1px solid #0ff;
             background: rgba(0, 0, 0, 0.5);
@@ -263,17 +289,28 @@
             transition: width 0.1s linear;
         }
 
+        /* Bottom-right cluster */
+        #hudBottomRight {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            z-index: 10;
+        }
+
         /* Streak display */
         #streakDisplay {
-            position: absolute;
-            top: 80px;
-            right: 20px;
+            position: static;
             font-size: 16px;
             color: #ff0;
             font-weight: bold;
             opacity: 0;
             transition: opacity 0.3s;
             font-family: 'Press Start 2P', cursive;
+            text-align: right;
         }
 
         #streakDisplay.active {
@@ -799,29 +836,39 @@
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
         
-        <!-- HUD Elements -->
-        <div id="score" class="hud-element">Score: 0</div>
-        <div id="powerups" class="hud-element">Power-ups: None</div>
-        <div id="wave" class="hud-element">Wave: 1 | Questions: 0</div>
-        <div id="comboContainer">
-            <span id="comboText">COMBO</span> x<span id="comboValue">0</span>
+        <!-- HUD Top-left pill -->
+        <div id="hudTopLeft" class="hud-element">
+            <span id="scoreDisplay">⭐ 0</span>
+            <span id="waveDisplay">🌊 1</span>
         </div>
-        <div id="multiplierDisplay">Multiplier: x<span id="multiplierValue">1.0</span></div>
-        
-        <!-- Control buttons -->
-        <button id="pauseBtn" class="control-button">⏸️ Pause</button>
-        <button id="soundBtn" class="control-button">🔊 Sound</button>
-        <button id="helpBtn" class="control-button">❓ Help</button>
-        
-        <!-- Health and shield -->
-        <div id="healthBarContainer">
-            <div id="healthBar"></div>
-            <div id="healthText">100/100</div>
+        <div id="hudPowerups">Power-ups: None</div>
+
+        <!-- HUD Top-right -->
+        <div id="hudTopRight">
+            <div id="healthBarContainer">
+                <div id="healthBar"></div>
+                <div id="healthText">100/100</div>
+            </div>
+            <div id="shieldIndicator">
+                <div id="shieldBar"></div>
+            </div>
         </div>
-        <div id="shieldIndicator">
-            <div id="shieldBar"></div>
+
+        <!-- Control buttons (bottom-left) -->
+        <div id="controlButtons">
+            <button id="pauseBtn" class="control-button" title="Pause (P)">⏸</button>
+            <button id="soundBtn" class="control-button" title="Sound (M)">🔊</button>
+            <button id="helpBtn" class="control-button" title="Help">❓</button>
         </div>
-        <div id="streakDisplay">STREAK: <span id="streakValue">0</span></div>
+
+        <!-- HUD Bottom-right -->
+        <div id="hudBottomRight">
+            <div id="comboContainer">
+                <span id="comboText">COMBO</span> x<span id="comboValue">0</span>
+            </div>
+            <div id="multiplierDisplay">Multiplier: x<span id="multiplierValue">1.0</span></div>
+            <div id="streakDisplay">STREAK: <span id="streakValue">0</span></div>
+        </div>
 
         <!-- Achievement notification -->
         <div id="achievementNotification"></div>
@@ -1075,9 +1122,9 @@ const questionText = document.getElementById('questionText');
 const optionsContainer = document.getElementById('options');
 const quizTimerText = document.getElementById('quizTimerText');
 const quizCategory = document.getElementById('quizCategory');
-const scoreDisplay = document.getElementById('score');
-const powerupsDisplay = document.getElementById('powerups');
-const waveDisplay = document.getElementById('wave');
+const scoreDisplay = document.getElementById('scoreDisplay');
+const powerupsDisplay = document.getElementById('hudPowerups');
+const waveDisplay = document.getElementById('waveDisplay');
 const healthBar = document.getElementById('healthBar');
 const healthText = document.getElementById('healthText');
 const shieldIndicator = document.getElementById('shieldIndicator');
@@ -1541,8 +1588,8 @@ function resetGameState() {
     updateComboDisplay();
     updateMultiplierDisplay();
     updateStreakDisplay();
-    waveDisplay.textContent = `Wave: ${currentWave} | Questions: ${totalQuestionsAsked}`;
-    scoreDisplay.textContent = `Score: ${score}`;
+    waveDisplay.textContent = `🌊 ${currentWave}`;
+    scoreDisplay.textContent = `⭐ ${score}`;
 }
 
 // Excel template download
@@ -2090,7 +2137,7 @@ function handleQuizAnswer(isCorrect, eventType) {
         updateHealthBar();
         
         // Update score
-        scoreDisplay.textContent = `Score: ${score}`;
+        scoreDisplay.textContent = `⭐ ${score}`;
         animateScoreUpdate();
         
         // Check for achievements
@@ -2436,9 +2483,10 @@ function checkAchievements() {
 
 // Animate score update
 function animateScoreUpdate() {
-    scoreDisplay.classList.add('pulse');
+    const hudTopLeft = document.getElementById('hudTopLeft');
+    hudTopLeft.classList.add('pulse');
     setTimeout(() => {
-        scoreDisplay.classList.remove('pulse');
+        hudTopLeft.classList.remove('pulse');
     }, 500);
 }
 
@@ -2931,13 +2979,8 @@ function updateAsteroids(deltaTime) {
         if (asteroid.health <= 0) {
             createExplosionParticles(asteroid.x, asteroid.y, 30, '#888');
             score += 5;
-            scoreDisplay.textContent = `Score: ${score}`;
+            scoreDisplay.textContent = `⭐ ${score}`;
             asteroids.splice(i, 1);
-        }
-    }
-}
-
-// Update shooting stars
 function updateShootingStars(deltaTime) {
     if (gamePaused || !gameRunning) return;
     
@@ -3147,7 +3190,7 @@ function initEnemies() {
     bossEnemy = miniBoss;
     enemies.push(miniBoss);
     
-    waveDisplay.textContent = `Wave: ${currentWave}`;
+    waveDisplay.textContent = `🌊 ${currentWave}`;
     
     // Show wave start message
     if (currentWave === 1) {
@@ -3762,7 +3805,7 @@ function updatePlayerBullets(deltaTime) {
                     updateComboDisplay();
                     updateMultiplierDisplay();
                     
-                    scoreDisplay.textContent = `Score: ${score}`;
+                    scoreDisplay.textContent = `⭐ ${score}`;
                     animateScoreUpdate();
                     totalEnemiesDestroyed++;
                     
