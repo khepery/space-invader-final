@@ -1161,6 +1161,13 @@ let waveStartTime = 0;
 let educationalScore = 0; // Track learning progress separately
 let consecutiveWrongAnswers = 0;
 
+function safeLocalStorageGet(key, defaultValue) {
+    try { return localStorage.getItem(key) ?? defaultValue; } catch(e) { return defaultValue; }
+}
+function safeLocalStorageSet(key, value) {
+    try { localStorage.setItem(key, value); } catch(e) { /* silent fail */ }
+}
+
 // Default questions with categories
 const defaultQuestions = [
     { question: "What is 2+2?", options: ["3","4","5","6"], correct: 1, category: "Math" },
@@ -1258,6 +1265,21 @@ function loadGameImages() {
                 tempCtx.fillStyle = '#000';
                 tempCtx.fillRect(15, 20, 5, 5);
                 tempCtx.fillRect(30, 20, 5, 5);
+            } else if (src.includes('shield')) {
+                // Draw cyan shield bubble with glow
+                const gradient = tempCtx.createRadialGradient(25, 25, 5, 25, 25, 22);
+                gradient.addColorStop(0, 'rgba(0,255,255,0.3)');
+                gradient.addColorStop(0.7, 'rgba(0,200,255,0.5)');
+                gradient.addColorStop(1, 'rgba(0,255,255,0.9)');
+                tempCtx.shadowColor = '#0ff';
+                tempCtx.shadowBlur = 10;
+                tempCtx.fillStyle = gradient;
+                tempCtx.beginPath();
+                tempCtx.arc(25, 25, 22, 0, Math.PI * 2);
+                tempCtx.fill();
+                tempCtx.strokeStyle = '#0ff';
+                tempCtx.lineWidth = 2;
+                tempCtx.stroke();
             } else {
                 // Default square
                 tempCtx.fillStyle = fallbackColor;
@@ -1585,7 +1607,7 @@ Category: Geography
 importExcelBtn.addEventListener('click', () => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.txt,.text';
+    input.accept = '.txt,.text,.csv,.xlsx,.xls';
     input.onchange = handleTextImport;
     input.click();
 });
@@ -1688,13 +1710,18 @@ addQuestionSetBtn.addEventListener('click', () => {
 cancelNewQuestionBtn.addEventListener('click', () => {
     questionForm.style.display = 'none';
     settingsScreen.style.display = 'block';
+    // Clear form
+    newQuestionText.value = '';
+    newOptions.forEach(i => i.value = '');
+    correctAnswer.value = '0';
+    questionCategory.value = '';
 });
 
 saveNewQuestionBtn.addEventListener('click', () => {
     const question = newQuestionText.value.trim();
     const opts = Array.from(newOptions).map(i => i.value.trim());
     const correct = parseInt(correctAnswer.value);
-    const category = questionCategory.value.trim() || 'General';
+    const category = questionCategory.value.trim() || 'Custom';
 
     if (question && opts.every(o => o) && !isNaN(correct)) {
         questions.push({ question, options: opts, correct, category });
@@ -2040,9 +2067,37 @@ function clearQuizTimer() {
 }
 
 // Handle quiz answer
+function advanceQuizSession(eventType) {
+    quizQuestionIndex++;
+    if (quizQuestionIndex < quizSession.length) {
+        displayQuizQuestion(eventType);
+    } else {
+        quizContainer.style.display = 'none';
+        
+        let availableQuestions = questions.filter(q => !usedQuestions.includes(q));
+        
+        if (activeCategories.size > 0) {
+            availableQuestions = availableQuestions.filter(q => 
+                !q.category || activeCategories.has(q.category));
+        }
+        
+        if (availableQuestions.length === 0) {
+            // Educational victory!
+            handleGameOver("EDUCATIONAL_WIN");
+        } else {
+            gameRunning = true;
+            
+            if (!enemies.some(e => e.alive)) {
+                initEnemies();
+            }
+        }
+    }
+}
+
 function handleQuizAnswer(isCorrect, eventType) {
     clearQuizTimer();
     totalQuestionsAsked++;
+    const q = quizSession[quizQuestionIndex];
     
     if (isCorrect) {
         totalCorrectAnswers++;
@@ -2101,6 +2156,8 @@ function handleQuizAnswer(isCorrect, eventType) {
             enemySpeedMultiplier *= 0.95; // Slightly slow enemies
             enemyShootInterval *= 1.1; // Enemies shoot less frequently
         }
+
+        setTimeout(() => advanceQuizSession(eventType), 1500); // Slightly longer pause between questions
     } else {
         answerStreak = 0;
         consecutiveWrongAnswers++;
@@ -2159,33 +2216,25 @@ function handleQuizAnswer(isCorrect, eventType) {
             }
             return;
         }
-    }
 
-    quizQuestionIndex++;
-    if (quizQuestionIndex < quizSession.length) {
-        setTimeout(() => {
-            displayQuizQuestion(eventType);
-        }, 1500); // Slightly longer pause between questions
-    } else {
-        quizContainer.style.display = 'none';
-        
-        let availableQuestions = questions.filter(q => !usedQuestions.includes(q));
-        
-        if (activeCategories.size > 0) {
-            availableQuestions = availableQuestions.filter(q => 
-                !q.category || activeCategories.has(q.category));
+        // Highlight correct answer and show message before proceeding
+        if (q) {
+            const btns = optionsContainer.querySelectorAll('button');
+            btns.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.correct) {
+                    btn.style.background = 'rgba(0,150,0,0.9)';
+                    btn.style.borderColor = '#0f0';
+                    btn.style.color = '#0f0';
+                }
+            });
+            const msgDiv = document.createElement('div');
+            msgDiv.style.cssText = 'color:#0f0;margin-top:10px;font-size:14px;text-align:center;';
+            msgDiv.textContent = `✓ Correct answer: ${q.options[q.correct]}`;
+            optionsContainer.appendChild(msgDiv);
         }
-        
-        if (availableQuestions.length === 0) {
-            // Educational victory!
-            handleGameOver("EDUCATIONAL_WIN");
-        } else {
-            gameRunning = true;
-            
-            if (!enemies.some(e => e.alive)) {
-                initEnemies();
-            }
-        }
+
+        setTimeout(() => advanceQuizSession(eventType), 2000);
     }
 }
 
@@ -2238,7 +2287,7 @@ function updatePowerupsDisplay() {
     const shieldPowerup = activePowerups.find(p => p.type === 'shield');
     if (shieldPowerup) {
         shieldIndicator.classList.add('active');
-        const progress = shieldPowerup.remainingTime / 10000;
+        const progress = shieldPowerup.remainingTime / 15000;
         shieldBar.style.width = (progress * 100) + '%';
     } else {
         shieldIndicator.classList.remove('active');
@@ -2580,7 +2629,7 @@ backToMenuButton.addEventListener('click', () => {
 
 // Pause button handler
 pauseBtn.addEventListener('click', () => {
-    if (gameActive && quizContainer.style.display === 'none') {
+    if (gameActive && quizContainer.style.display !== 'block') {
         togglePause();
     }
 });
@@ -2673,7 +2722,7 @@ const keys = { left: false, right: false, space: false };
 
 window.addEventListener('keydown', e => {
     if (e.key === 'p' || e.key === 'P') {
-        if (gameActive && quizContainer.style.display === 'none') {
+        if (gameActive && quizContainer.style.display !== 'block') {
             togglePause();
         }
     } else if (e.key === 'm' || e.key === 'M') {
