@@ -960,14 +960,6 @@
             <button id="rightBtn" style="position:absolute; right:20px; bottom:0; width:80px; height:80px; background:rgba(0,255,255,0.2); border:2px solid #0ff; border-radius:50%; color:#0ff; font-size:30px; pointer-events:all; user-select:none;" aria-label="Move right">▶</button>
         </div>
 
-        <!-- Boss Health Bar HUD -->
-        <div id="bossHealthContainer" style="display:none; position:absolute; top:20px; left:50%; transform:translateX(-50%); width:300px; text-align:center; z-index:3;">
-            <div style="font-family:'Press Start 2P',cursive; font-size:10px; color:#f0f; margin-bottom:5px;">MINI-BOSS</div>
-            <div style="height:20px; background:rgba(0,0,0,0.8); border:2px solid #f0f; border-radius:10px; overflow:hidden; box-shadow:0 0 15px #f0f;">
-                <div id="bossHealthBar" style="height:100%; width:100%; background:linear-gradient(90deg,#f0f,#f00); transition:width 0.3s;"></div>
-            </div>
-        </div>
-
         <!-- Quiz Container -->
         <div class="quiz-container" id="quizContainer">
             <h2 id="questionText" style="font-size: 20px; margin-bottom: 20px; color: #fff;"></h2>
@@ -1609,7 +1601,6 @@ function resetGameState() {
     consecutiveWrongAnswers = 0;
     waveEnemiesDestroyed = 0;
     waveCorrectAnswers = 0;
-    document.getElementById('bossHealthContainer').style.display = 'none';
     
     // Reset player
     player.x = canvas.width / 2 - 25;
@@ -2066,18 +2057,8 @@ function showQuizForEvent(eventType = 'none') {
     quizSession = [];
     quizQuestionIndex = 0;
 
-    // For educational focus, sometimes give 2 questions in a row
-    let numQuestions = 1;
-    if (eventType === 'wave' || eventType === 'boss') {
-        numQuestions = 2; // More questions for major events
-    } else if (Math.random() < 0.3 && availableQuestions.length >= 2) {
-        numQuestions = 2; // 30% chance for bonus question
-    }
-    
-    for (let i = 0; i < numQuestions && i < availableQuestions.length; i++) {
-        let question = getRandomQuestion();
-        if (question) quizSession.push(question);
-    }
+    const question = getRandomQuestion();
+    if (question) quizSession.push(question);
 
     let eventMessage;
     switch(eventType) {
@@ -2480,15 +2461,6 @@ function updateHealthBar() {
     // Show warning if health is low
     if (hp <= 20 && gameRunning) {
         showWarning();
-    }
-}
-
-function updateBossHealthBar(enemy) {
-    const bossHealthContainer = document.getElementById('bossHealthContainer');
-    const bossHealthBar = document.getElementById('bossHealthBar');
-    if (bossHealthContainer && bossHealthBar && enemy.maxHealth) {
-        const pct = Math.max(0, (enemy.health / enemy.maxHealth) * 100);
-        bossHealthBar.style.width = pct + '%';
     }
 }
 
@@ -3404,14 +3376,6 @@ function initEnemies() {
     bossEnemy = miniBoss;
     enemies.push(miniBoss);
     
-    // Show boss health bar in HUD
-    const bossHealthContainer = document.getElementById('bossHealthContainer');
-    const bossHealthBar = document.getElementById('bossHealthBar');
-    if (bossHealthContainer && bossHealthBar) {
-        bossHealthBar.style.width = '100%';
-        bossHealthContainer.style.display = 'block';
-    }
-    
     waveDisplay.textContent = `Wave: ${currentWave}`;
     
     // Show wave start message
@@ -3766,16 +3730,7 @@ function updateBoss(boss, deltaTime) {
 }
 
 function drawEnemy(enemy) {
-    // Flash effect when hit
-    if (enemy.flashTimer > 0 && Math.floor(Date.now() / 50) % 2 === 0) {
-        ctx.save();
-        ctx.globalCompositeOperation = 'lighter';
-        ctx.globalAlpha = 0.8;
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-        ctx.restore();
-        return;
-    }
+    const isFlashing = enemy.flashTimer > 0 && Math.floor(Date.now() / 50) % 2 === 0;
     
     if (enemy.isBoss || enemy.isMiniBoss) {
         // Draw boss/mini-boss with special effects
@@ -3809,6 +3764,18 @@ function drawEnemy(enemy) {
             ctx.fillRect(enemy.x + 10, enemy.y + 10, 10, 10);
             ctx.fillRect(enemy.x + enemy.width - 20, enemy.y + 10, 10, 10);
             ctx.fillRect(enemy.x + enemy.width/2 - 5, enemy.y + enemy.height - 20, 10, 10);
+        }
+        
+        // Flash: redraw with lighter composite to tint the ship, not a surrounding square
+        if (isFlashing) {
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.globalAlpha = 0.7;
+            if (enemy.isMiniBoss) {
+                ctx.drawImage(miniBossImage, enemy.x, enemy.y, enemy.width, enemy.height);
+            } else {
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            }
         }
         
         ctx.restore();
@@ -3851,6 +3818,13 @@ function drawEnemy(enemy) {
             enemy.height
         );
         
+        // Flash: overlay lighter composite on ship image
+        if (isFlashing) {
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.globalAlpha = 0.7;
+            ctx.drawImage(specialEnemyShipImage, enemy.x, enemy.y, enemy.width, enemy.height);
+        }
+        
         ctx.restore();
     } else {
         // Regular enemy
@@ -3861,6 +3835,15 @@ function drawEnemy(enemy) {
             enemy.width,
             enemy.height
         );
+        
+        // Flash: overlay lighter composite on ship image
+        if (isFlashing) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.globalAlpha = 0.7;
+            ctx.drawImage(enemyShipImage, enemy.x, enemy.y, enemy.width, enemy.height);
+            ctx.restore();
+        }
     }
     
     // Draw health bar for damaged enemies
@@ -4002,11 +3985,6 @@ function updatePlayerBullets(deltaTime) {
                 enemy.health -= dmg;
                 enemy.flashTimer = 200;
                 
-                // Update boss health bar in HUD when boss takes damage
-                if ((enemy.isMiniBoss || enemy.isBoss) && enemy.alive) {
-                    updateBossHealthBar(enemy);
-                }
-                
                 // Show damage number
                 createDamageNumber(enemy.x + enemy.width/2, enemy.y, `-${dmg}`, '#ff0');
                 
@@ -4058,14 +4036,12 @@ function updatePlayerBullets(deltaTime) {
                     if (enemy.isMiniBoss) {
                         bossActive = false;
                         bossEnemy = null;
-                        document.getElementById('bossHealthContainer').style.display = 'none';
                         showQuizForEvent('boss'); // Always quiz after mini-boss
                         showAchievement('Mini-Boss Defeated!');
                         score += 200;
                     } else if (enemy.isBoss) {
                         bossActive = false;
                         bossEnemy = null;
-                        document.getElementById('bossHealthContainer').style.display = 'none';
                         showQuizForEvent('boss');
                         showAchievement('Boss Slayer!');
                         score += 500;
