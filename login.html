@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ultra Pro Space Invaders — Access Required</title>
+  <!-- Access code config — edit config.js to change the code -->
+  <script src="./config.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #000;
+      color: #0ff;
+      font-family: 'Courier New', Courier, monospace;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #starfield {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem 1.5rem;
+      max-width: 480px;
+      width: 100%;
+    }
+
+    .title {
+      font-size: clamp(0.9rem, 3.5vw, 1.4rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px #0ff, 0 0 20px #0ff;
+      line-height: 1.5;
+      margin-bottom: 0.4rem;
+    }
+
+    .subtitle {
+      font-size: clamp(0.55rem, 2vw, 0.75rem);
+      letter-spacing: 0.2em;
+      color: #0af;
+      text-shadow: 0 0 6px #0af;
+      margin-bottom: 2.5rem;
+      text-transform: uppercase;
+    }
+
+    .panel {
+      border: 2px solid #0ff;
+      border-radius: 4px;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 0 20px #0ff4, inset 0 0 20px #0ff1;
+      background: rgba(0, 255, 255, 0.03);
+    }
+
+    .label {
+      display: block;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: #0cf;
+      margin-bottom: 0.6rem;
+      text-transform: uppercase;
+    }
+
+    #codeInput {
+      width: 100%;
+      background: #000;
+      border: 1px solid #0ff;
+      color: #0ff;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: clamp(0.8rem, 3vw, 1rem);
+      letter-spacing: 0.2em;
+      padding: 0.7rem 1rem;
+      text-align: center;
+      text-transform: uppercase;
+      outline: none;
+      box-shadow: 0 0 8px #0ff4;
+      border-radius: 2px;
+      margin-bottom: 1.2rem;
+      caret-color: #0ff;
+    }
+
+    #codeInput:focus {
+      box-shadow: 0 0 14px #0ff8;
+    }
+
+    #codeInput::placeholder {
+      color: #0ff5;
+      letter-spacing: 0.1em;
+    }
+
+    #launchBtn {
+      width: 100%;
+      background: transparent;
+      border: 2px solid #0ff;
+      color: #0ff;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: clamp(0.7rem, 2.5vw, 0.85rem);
+      letter-spacing: 0.15em;
+      padding: 0.8rem 1rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      box-shadow: 0 0 10px #0ff4;
+      border-radius: 2px;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+
+    #launchBtn:hover:not(:disabled) {
+      background: rgba(0, 255, 255, 0.12);
+      box-shadow: 0 0 20px #0ff8;
+    }
+
+    #launchBtn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #status {
+      min-height: 1.4rem;
+      margin-top: 1rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      line-height: 1.5;
+    }
+
+    #status.error   { color: #f44; text-shadow: 0 0 6px #f44; }
+    #status.warning { color: #fa0; text-shadow: 0 0 6px #fa0; }
+    #status.info    { color: #0ff; text-shadow: 0 0 6px #0ff; }
+
+    .helper {
+      margin-top: 1.8rem;
+      font-size: 0.52rem;
+      letter-spacing: 0.08em;
+      color: #0ff7;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield"></canvas>
+
+  <div class="container">
+    <div class="title">ULTRA PRO SPACE INVADERS</div>
+    <div class="subtitle">EDUCATIONAL EDITION</div>
+
+    <div class="panel">
+      <label class="label" for="codeInput">ENTER ACCESS CODE</label>
+      <input
+        id="codeInput"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="e.g. GALAXY2026"
+      />
+      <button id="launchBtn">[ LAUNCH GAME &#8594; ]</button>
+      <div id="status" role="alert" aria-live="polite"></div>
+    </div>
+
+    <p class="helper">
+      Purchased on Teachers Pay Teachers?<br />
+      Your access code is included in your purchase.
+    </p>
+  </div>
+
+  <script>
+    /* ── Starfield canvas ───────────────────────────────────────────── */
+    (function () {
+      var canvas = document.getElementById('starfield');
+      var ctx = canvas.getContext('2d');
+      var W, H, stars, shootingStars;
+
+      function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+
+      function initStars() {
+        stars = [];
+        for (var i = 0; i < 180; i++) {
+          stars.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: Math.random() * 1.4 + 0.2,
+            a: Math.random() * 0.7 + 0.3,
+            speed: Math.random() * 0.3 + 0.05
+          });
+        }
+        shootingStars = [makeShooting(), makeShooting()];
+        shootingStars[1].delay = 120; // stagger second one
+      }
+
+      function makeShooting() {
+        return {
+          x: Math.random() * W * 0.6 + W * 0.1,
+          y: Math.random() * H * 0.4,
+          len: Math.random() * 80 + 60,
+          speed: Math.random() * 6 + 5,
+          angle: Math.PI / 5,
+          alpha: 0,
+          delay: Math.floor(Math.random() * 200),
+          active: false
+        };
+      }
+
+      function resetShooting(s) {
+        s.x = Math.random() * W * 0.6 + W * 0.1;
+        s.y = Math.random() * H * 0.3;
+        s.len = Math.random() * 80 + 60;
+        s.speed = Math.random() * 6 + 5;
+        s.alpha = 0;
+        s.delay = Math.floor(Math.random() * 300) + 100;
+        s.active = false;
+      }
+
+      function drawFrame() {
+        ctx.clearRect(0, 0, W, H);
+
+        /* static stars */
+        for (var i = 0; i < stars.length; i++) {
+          var s = stars[i];
+          s.y += s.speed;
+          if (s.y > H) { s.y = 0; s.x = Math.random() * W; }
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(200,240,255,' + s.a + ')';
+          ctx.fill();
+        }
+
+        /* shooting stars */
+        for (var j = 0; j < shootingStars.length; j++) {
+          var ss = shootingStars[j];
+          if (ss.delay > 0) { ss.delay--; continue; }
+          ss.active = true;
+          ss.alpha = Math.min(ss.alpha + 0.06, 1);
+          ss.x += Math.cos(ss.angle) * ss.speed;
+          ss.y += Math.sin(ss.angle) * ss.speed;
+
+          var grad = ctx.createLinearGradient(
+            ss.x, ss.y,
+            ss.x - Math.cos(ss.angle) * ss.len,
+            ss.y - Math.sin(ss.angle) * ss.len
+          );
+          grad.addColorStop(0, 'rgba(0,255,255,' + ss.alpha + ')');
+          grad.addColorStop(1, 'rgba(0,255,255,0)');
+          ctx.beginPath();
+          ctx.moveTo(ss.x, ss.y);
+          ctx.lineTo(
+            ss.x - Math.cos(ss.angle) * ss.len,
+            ss.y - Math.sin(ss.angle) * ss.len
+          );
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          if (ss.x > W + ss.len || ss.y > H + ss.len) {
+            resetShooting(ss);
+          }
+        }
+
+        requestAnimationFrame(drawFrame);
+      }
+
+      window.addEventListener('resize', function () { resize(); initStars(); });
+      resize();
+      initStars();
+      drawFrame();
+    })();
+
+    /* ── Access-code logic ──────────────────────────────────────────── */
+    (function () {
+      var STORAGE_KEY = 'siAccessGranted';
+      var GAME_URL    = './index.html';
+
+      /* Code is defined in config.js (loaded via <script src> above).
+         Edit config.js to change the access code — no other file needs updating. */
+      var cfg  = (window.SITE_CONFIG && typeof window.SITE_CONFIG.code === 'string')
+                   ? window.SITE_CONFIG
+                   : null;
+      var CODE = cfg ? cfg.code.toUpperCase() : '';
+
+      var input    = document.getElementById('codeInput');
+      var btn      = document.getElementById('launchBtn');
+      var statusEl = document.getElementById('status');
+
+      function setStatus(msg, type) {
+        statusEl.className = type || '';
+        statusEl.innerHTML = msg;
+      }
+
+      function redirectToGame() {
+        window.location.href = GAME_URL;
+      }
+
+      /* On load: check for a previously validated code */
+      (function checkSaved() {
+        var saved = localStorage.getItem(STORAGE_KEY);
+        if (saved && CODE && saved.toUpperCase() === CODE) {
+          redirectToGame();
+        }
+      })();
+
+      function launch() {
+        var entered = input.value.trim();
+        if (!entered) {
+          setStatus('Please enter your access code.', 'error');
+          input.focus();
+          return;
+        }
+
+        if (!CODE) {
+          setStatus('<span aria-hidden="true">&#9888;&#65039;</span> Configuration error: access code not defined in config.js.', 'warning');
+          return;
+        }
+
+        if (entered.toUpperCase() === CODE) {
+          localStorage.setItem(STORAGE_KEY, entered.toUpperCase());
+          setStatus('&#10003; Access granted! Loading game&hellip;', 'info');
+          setTimeout(redirectToGame, 600);
+        } else {
+          setStatus('<span aria-hidden="true">&#10060;</span> Invalid code. Please check your TPT purchase notes.', 'error');
+          input.focus();
+        }
+      }
+
+      btn.addEventListener('click', launch);
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') launch();
+      });
+    })();
+  </script>
+</body>
+</html>
