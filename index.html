@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Ultra Pro Space Invaders - Premium Educational Edition</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -89,29 +90,42 @@
             100% { transform: scale(1); }
         }
 
-        #score {
-            top: 20px;
-            left: 20px;
-            min-width: 180px;
+        /* Top-left micro pill */
+        #hudTopLeft {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 11px;
+            color: #fff;
+            backdrop-filter: blur(4px);
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            z-index: 10;
         }
 
-        #powerups {
-            top: 70px;
-            left: 20px;
-            min-width: 250px;
-        }
-
-        #wave {
-            top: 120px;
-            left: 20px;
-            min-width: 120px;
+        #hudPowerups {
+            position: absolute;
+            top: 42px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 4px 12px;
+            font-size: 10px;
+            color: #0ff;
+            backdrop-filter: blur(4px);
+            z-index: 10;
+            min-height: 20px;
         }
 
         /* Combo counter with special effects */
         #comboContainer {
-            position: absolute;
-            top: 170px;
-            left: 20px;
+            position: static;
+            text-align: right;
             font-family: 'Press Start 2P', cursive;
             font-size: 18px;
             color: #ff0;
@@ -140,9 +154,8 @@
 
         /* Multiplier display */
         #multiplierDisplay {
-            position: absolute;
-            top: 220px;
-            left: 20px;
+            position: static;
+            text-align: right;
             font-size: 16px;
             color: #0ff;
             font-weight: bold;
@@ -154,37 +167,35 @@
             opacity: 1;
         }
 
-        /* Control buttons container */
+        /* Enhanced control buttons */
         #controlButtons {
             position: absolute;
-            top: 20px;
-            right: 230px;
+            bottom: 20px;
+            left: 20px;
             display: flex;
-            flex-direction: row;
             gap: 8px;
-            align-items: center;
+            z-index: 10;
         }
 
         .control-button {
-            position: static;
-            background: linear-gradient(135deg, rgba(0, 30, 60, 0.9) 0%, rgba(0, 10, 30, 0.9) 100%);
-            border: 2px solid #0ff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: rgba(0, 20, 40, 0.7);
+            border: 2px solid rgba(0, 255, 255, 0.4);
             color: #0ff;
-            padding: 10px 18px;
-            border-radius: 25px;
             cursor: pointer;
-            font-weight: 700;
-            transition: all 0.3s;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 1px;
+            padding: 0;
+            backdrop-filter: blur(4px);
         }
 
         .control-button:hover {
-            background: linear-gradient(135deg, rgba(0, 60, 120, 0.9) 0%, rgba(0, 20, 60, 0.9) 100%);
-            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
-            transform: translateY(-2px);
+            background: rgba(0, 60, 120, 0.8);
+            border-color: #0ff;
         }
 
         .control-button:active {
@@ -193,10 +204,8 @@
 
         /* Premium health bar */
         #healthBarContainer {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 200px;
+            position: relative;
+            width: 160px;
             height: 30px;
             border: 2px solid #0ff;
             background: rgba(0, 0, 0, 0.9);
@@ -244,10 +253,7 @@
 
         /* Shield indicator */
         #shieldIndicator {
-            position: absolute;
-            top: 60px;
-            right: 20px;
-            width: 200px;
+            width: 160px;
             height: 10px;
             border: 1px solid #0ff;
             background: rgba(0, 0, 0, 0.5);
@@ -268,11 +274,34 @@
             transition: width 0.1s linear;
         }
 
+        /* Bottom-right cluster */
+        #hudBottomRight {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            z-index: 10;
+        }
+
+        /* Top-right cluster */
+        #hudTopRight {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 10;
+            width: 160px;
+        }
+
         /* Streak display */
         #streakDisplay {
-            position: absolute;
-            top: 80px;
-            right: 20px;
+            position: static;
+            text-align: right;
             font-size: 16px;
             color: #ff0;
             font-weight: bold;
@@ -765,7 +794,6 @@
             }
             
             #controlButtons {
-                right: 165px;
                 gap: 5px;
             }
 
@@ -820,31 +848,39 @@
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
         
-        <!-- HUD Elements -->
-        <div id="score" class="hud-element">Score: 0</div>
-        <div id="powerups" class="hud-element">Power-ups: None</div>
-        <div id="wave" class="hud-element">Wave: 1 | Questions: 0</div>
-        <div id="comboContainer">
-            <span id="comboText">COMBO</span> x<span id="comboValue">0</span>
+        <!-- HUD Top-left pill -->
+        <div id="hudTopLeft" class="hud-element">
+            <span id="scoreDisplay" aria-live="polite">⭐ 0</span>
+            <span id="waveDisplay" aria-live="polite">🌊 1</span>
         </div>
-        <div id="multiplierDisplay">Multiplier: x<span id="multiplierValue">1.0</span></div>
-        
-        <!-- Control buttons -->
+        <div id="hudPowerups">Power-ups: None</div>
+
+        <!-- HUD Top-right -->
+        <div id="hudTopRight">
+            <div id="healthBarContainer">
+                <div id="healthBar"></div>
+                <div id="healthText">100/100</div>
+            </div>
+            <div id="shieldIndicator">
+                <div id="shieldBar"></div>
+            </div>
+        </div>
+
+        <!-- Control buttons (bottom-left) -->
         <div id="controlButtons">
-            <button id="pauseBtn" class="control-button">⏸️ Pause</button>
-            <button id="soundBtn" class="control-button">🔊 Sound</button>
-            <button id="helpBtn" class="control-button">❓ Help</button>
+            <button id="pauseBtn" class="control-button" title="Pause (P)" aria-label="Pause game">⏸</button>
+            <button id="soundBtn" class="control-button" title="Sound (M)" aria-label="Toggle sound">🔊</button>
+            <button id="helpBtn" class="control-button" title="Help" aria-label="Show help">❓</button>
         </div>
-        
-        <!-- Health and shield -->
-        <div id="healthBarContainer">
-            <div id="healthBar"></div>
-            <div id="healthText">100/100</div>
+
+        <!-- HUD Bottom-right -->
+        <div id="hudBottomRight">
+            <div id="comboContainer">
+                <span id="comboText">COMBO</span> x<span id="comboValue">0</span>
+            </div>
+            <div id="multiplierDisplay">Multiplier: x<span id="multiplierValue">1.0</span></div>
+            <div id="streakDisplay">STREAK: <span id="streakValue">0</span></div>
         </div>
-        <div id="shieldIndicator">
-            <div id="shieldBar"></div>
-        </div>
-        <div id="streakDisplay">STREAK: <span id="streakValue">0</span></div>
 
         <!-- Achievement notification -->
         <div id="achievementNotification"></div>
@@ -868,52 +904,66 @@
                 <strong style="color: #ff0;">Destroy enemies, answer questions, save Earth!</strong>
             </p>
             <button id="introStartBtn" class="game-button">LAUNCH MISSION</button>
-            <div style="color:#ff0; font-size:14px; margin-top:10px;">HIGH SCORE: <span id="highScoreDisplay">0</span></div>
         </div>
 
         <!-- Settings Screen -->
         <div id="settingsScreen">
-            <h2 style="font-family: 'Press Start 2P', cursive; font-size: 28px; color: #0ff; text-shadow: 0 0 20px #0ff; margin-bottom: 30px;">MISSION CONFIGURATION</h2>
-            
-            <div class="difficulty-selector" style="margin: 25px 0; display: flex; justify-content: center; gap: 20px;">
-                <button data-difficulty="easy" class="active" style="padding: 12px 25px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s;">CADET</button>
-                <button data-difficulty="medium" style="padding: 12px 25px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s;">PILOT</button>
-                <button data-difficulty="hard" style="padding: 12px 25px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s;">ACE</button>
+            <h2 style="font-family: 'Press Start 2P', cursive; font-size: clamp(14px, 2.5vw, 22px); color: #0ff; text-shadow: 0 0 20px #0ff; margin-bottom: clamp(5px, 1vh, 10px);">⚙️ MISSION CONFIGURATION</h2>
+
+            <div id="missionConfigGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: clamp(8px, 1.2vh, 20px); margin: clamp(6px, 1vh, 15px) 0; text-align: left;">
+
+                <!-- LEFT: Questions -->
+                <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: clamp(8px,1.2vh,18px);">
+                    <div style="font-size: clamp(11px,1.5vh,14px); color: #ff0; margin-bottom: clamp(6px,1vh,15px); font-weight: bold;">📚 QUESTIONS</div>
+                    <div id="questionStatusBadge" style="margin-bottom: clamp(6px,1vh,15px); padding: clamp(5px,0.8vh,10px); background: rgba(0,50,0,0.5); border: 1px solid #0f0; border-radius: 8px; font-size: clamp(9px,1.2vh,12px); color: #0f0;">
+                        <!-- Populated by JS -->
+                    </div>
+                    <button id="importExcelBtn" class="action-button" style="width: 100%; margin: clamp(3px,0.5vh,5px) 0; min-width: unset;">
+                        <span class="button-icon">📂</span>
+                        <span class="button-text">Load My Questions</span>
+                        <span class="button-subtitle">Import .txt file</span>
+                    </button>
+                    <button id="addQuestionSetBtn" class="action-button" style="width: 100%; margin: clamp(3px,0.5vh,5px) 0; min-width: unset;">
+                        <span class="button-icon">➕</span>
+                        <span class="button-text">Add Manually</span>
+                        <span class="button-subtitle">Type a question</span>
+                    </button>
+                    <button id="resetToDefaultBtn" class="action-button danger" style="width: 100%; margin: clamp(3px,0.5vh,5px) 0; min-width: unset;">
+                        <span class="button-icon">🔄</span>
+                        <span class="button-text">Use Default Questions</span>
+                        <span class="button-subtitle">Reset to built-in set</span>
+                    </button>
+                    <button id="downloadExcelTemplateBtn" class="action-button" style="width: 100%; margin: clamp(3px,0.5vh,5px) 0; min-width: unset; background: linear-gradient(135deg, rgba(0,60,80,0.9) 0%, rgba(0,30,40,0.9) 100%); border-color: #0aa;">
+                        <span class="button-icon" style="font-size: clamp(14px,2vh,22px);">⬇</span>
+                        <span class="button-text" style="color: #0cf;">Download Template</span>
+                        <span class="button-subtitle" style="color: #08a;">.txt question file</span>
+                    </button>
+                </div>
+
+                <!-- RIGHT: Difficulty + Categories -->
+                <div style="display: flex; flex-direction: column; gap: clamp(8px,1.2vh,15px);">
+
+                    <!-- Difficulty -->
+                    <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: clamp(8px,1.2vh,18px);">
+                        <div style="font-size: clamp(11px,1.5vh,14px); color: #ff0; margin-bottom: clamp(6px,1vh,15px); font-weight: bold;">🎯 DIFFICULTY</div>
+                        <div class="difficulty-selector" style="display: flex; gap: clamp(6px,1vw,12px); justify-content: center;">
+                            <button data-difficulty="easy" class="active" style="flex: 1; padding: clamp(8px,1.2vh,14px) 4px; background: linear-gradient(135deg, rgba(0,80,30,0.85) 0%, rgba(0,50,15,0.9) 100%); border: 2px solid #0f8; color: #0f8; border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: clamp(10px,1.4vh,14px); text-shadow: 0 0 8px #0f8; box-shadow: 0 0 10px rgba(0,255,136,0.3); letter-spacing: 1px;">🛸 CADET</button>
+                            <button data-difficulty="medium" style="flex: 1; padding: clamp(8px,1.2vh,14px) 4px; background: linear-gradient(135deg, rgba(80,60,0,0.85) 0%, rgba(50,35,0,0.9) 100%); border: 2px solid #ff0; color: #ff0; border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: clamp(10px,1.4vh,14px); text-shadow: 0 0 8px #ff0; box-shadow: 0 0 10px rgba(255,255,0,0.3); letter-spacing: 1px;">✈️ PILOT</button>
+                            <button data-difficulty="hard" style="flex: 1; padding: clamp(8px,1.2vh,14px) 4px; background: linear-gradient(135deg, rgba(80,10,10,0.85) 0%, rgba(50,5,5,0.9) 100%); border: 2px solid #f44; color: #f44; border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: clamp(10px,1.4vh,14px); text-shadow: 0 0 8px #f44; box-shadow: 0 0 10px rgba(255,68,68,0.3); letter-spacing: 1px;">🔥 ACE</button>
+                        </div>
+                    </div>
+
+                    <!-- Categories -->
+                    <div style="background: rgba(0,20,50,0.8); border: 2px solid #0ff; border-radius: 15px; padding: clamp(8px,1.2vh,18px); flex: 1;">
+                        <div style="font-size: clamp(11px,1.5vh,14px); color: #ff0; margin-bottom: clamp(6px,1vh,15px); font-weight: bold;">🗂 CATEGORIES</div>
+                        <div class="category-selector" id="categorySelector" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="upload-section">
-                <button id="downloadExcelTemplateBtn" class="action-button">
-                    <span class="button-icon">📄</span>
-                    <span class="button-text">Download Template</span>
-                    <span class="button-subtitle">Get question format</span>
-                </button>
-                <button id="importExcelBtn" class="action-button">
-                    <span class="button-icon">📂</span>
-                    <span class="button-text">Import Questions</span>
-                    <span class="button-subtitle">Load your questions</span>
-                </button>
-                <button id="addQuestionSetBtn" class="action-button">
-                    <span class="button-icon">➕</span>
-                    <span class="button-text">Add Manually</span>
-                    <span class="button-subtitle">Create new question</span>
-                </button>
-                <button id="resetToDefaultBtn" class="action-button danger">
-                    <span class="button-icon">🔄</span>
-                    <span class="button-text">Reset to Default</span>
-                    <span class="button-subtitle">Use built-in questions</span>
-                </button>
-                <p style="margin-top: 15px; font-size: 13px; color: #aaa;">
-                    Customize your learning experience with your own questions
-                </p>
-            </div>
-            
-            <div id="questionList" style="height: 200px; margin: 20px auto; background: rgba(0,20,40,0.8); border: 2px solid #0aa; border-radius: 10px; overflow-y: auto; padding: 15px; width: 90%; color: #0ff;"></div>
-            
-            <div class="category-selector" id="categorySelector" style="margin: 20px 0;">
-                <!-- Categories will be added here dynamically -->
-            </div>
-            
-            <button id="startGameBtn" class="game-button">BEGIN MISSION</button>
+            <button id="startGameBtn" class="game-button" style="display: block; width: 100%; max-width: 400px; margin: clamp(5px,0.8vh,10px) auto 0;">▶ BEGIN MISSION</button>
         </div>
 
         <!-- Add Question Form -->
@@ -968,7 +1018,6 @@
             <h2>GAME OVER!</h2>
             <div id="gameStats" style="font-size: 16px; margin-bottom: 30px; text-align: left; display: inline-block; background: rgba(0,0,0,0.5); padding: 25px; border-radius: 15px; border: 2px solid currentColor;">
                 <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Final Score: <span id="finalScore" style="color: #0ff; font-weight: bold;">0</span></div>
-                <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">High Score: <span id="highScoreResult" style="color: #ff0; font-weight: bold;">0</span></div>
                 <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Waves Completed: <span id="wavesCompleted" style="color: #0ff; font-weight: bold;">0</span></div>
                 <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Enemies Destroyed: <span id="enemiesDestroyed" style="color: #0ff; font-weight: bold;">0</span></div>
                 <div style="margin: 10px 0; display: flex; justify-content: space-between; gap: 40px;">Questions Answered: <span id="correctAnswers" style="color: #0ff; font-weight: bold;">0</span>/<span id="totalQuestions" style="color: #0ff; font-weight: bold;">0</span></div>
@@ -1106,9 +1155,9 @@ const questionText = document.getElementById('questionText');
 const optionsContainer = document.getElementById('options');
 const quizTimerText = document.getElementById('quizTimerText');
 const quizCategory = document.getElementById('quizCategory');
-const scoreDisplay = document.getElementById('score');
-const powerupsDisplay = document.getElementById('powerups');
-const waveDisplay = document.getElementById('wave');
+const scoreDisplay = document.getElementById('scoreDisplay');
+const powerupsDisplay = document.getElementById('hudPowerups');
+const waveDisplay = document.getElementById('waveDisplay');
 const healthBar = document.getElementById('healthBar');
 const healthText = document.getElementById('healthText');
 const shieldIndicator = document.getElementById('shieldIndicator');
@@ -1258,85 +1307,178 @@ function imageLoaded() {
 }
 
 function loadGameImages() {
-    const loadImage = (img, src, fallbackColor) => {
-        imagesToLoad++;
-        img.src = src;
-        img.onload = imageLoaded;
-        img.onerror = () => { 
-            console.warn(`Failed to load image: ${src} - Using fallback`);
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = 50;
-            tempCanvas.height = 50;
-            
-            // Create better fallback graphics
-            if (src.includes('playerShip')) {
-                // Draw triangle ship
-                tempCtx.fillStyle = fallbackColor;
-                tempCtx.beginPath();
-                tempCtx.moveTo(25, 5);
-                tempCtx.lineTo(5, 45);
-                tempCtx.lineTo(45, 45);
-                tempCtx.closePath();
-                tempCtx.fill();
-            } else if (src.includes('asteroid')) {
-                // Draw circular asteroid
-                tempCtx.fillStyle = fallbackColor;
-                tempCtx.beginPath();
-                tempCtx.arc(25, 25, 20, 0, Math.PI * 2);
-                tempCtx.fill();
-            } else if (src.includes('miniBoss')) {
-                // Draw cooler mini-boss shape
-                tempCtx.fillStyle = fallbackColor;
-                tempCtx.beginPath();
-                tempCtx.moveTo(25, 5);
-                tempCtx.lineTo(5, 20);
-                tempCtx.lineTo(5, 35);
-                tempCtx.lineTo(15, 45);
-                tempCtx.lineTo(35, 45);
-                tempCtx.lineTo(45, 35);
-                tempCtx.lineTo(45, 20);
-                tempCtx.closePath();
-                tempCtx.fill();
-                // Add details
-                tempCtx.fillStyle = '#000';
-                tempCtx.fillRect(15, 20, 5, 5);
-                tempCtx.fillRect(30, 20, 5, 5);
-            } else if (src.includes('shield')) {
-                // Draw cyan shield bubble (circle outline with fill)
-                const gradient = tempCtx.createRadialGradient(25, 25, 5, 25, 25, 22);
-                gradient.addColorStop(0, 'rgba(0,255,255,0.3)');
-                gradient.addColorStop(1, 'rgba(0,100,255,0.6)');
-                tempCtx.fillStyle = gradient;
-                tempCtx.beginPath();
-                tempCtx.arc(25, 25, 22, 0, Math.PI * 2);
-                tempCtx.fill();
-                tempCtx.strokeStyle = '#0ff';
-                tempCtx.lineWidth = 3;
-                tempCtx.shadowColor = '#0ff';
-                tempCtx.shadowBlur = 10;
-                tempCtx.stroke();
-            } else {
-                // Default square
-                tempCtx.fillStyle = fallbackColor;
-                tempCtx.fillRect(0, 0, 50, 50);
-            }
-            
-            img.src = tempCanvas.toDataURL();
-            imageLoaded();
-        };
-    };
+    // Player ship: green triangle pointing upward with blue engine glow
+    const playerCanvas = document.createElement('canvas');
+    playerCanvas.width = 50; playerCanvas.height = 50;
+    (function(ctx) {
+        const glow = ctx.createRadialGradient(25, 42, 2, 25, 42, 12);
+        glow.addColorStop(0, 'rgba(0,100,255,0.9)');
+        glow.addColorStop(1, 'rgba(0,100,255,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(25, 42, 12, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#0f0';
+        ctx.beginPath();
+        ctx.moveTo(25, 4); ctx.lineTo(8, 44); ctx.lineTo(25, 36); ctx.lineTo(42, 44);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#0af';
+        ctx.beginPath();
+        ctx.moveTo(25, 10); ctx.lineTo(19, 28); ctx.lineTo(25, 24); ctx.lineTo(31, 28);
+        ctx.closePath(); ctx.fill();
+    })(playerCanvas.getContext('2d'));
+    playerShipImage.src = playerCanvas.toDataURL();
 
-    // Load all game images with fallbacks
-    loadImage(playerShipImage, 'playerShip.png', '#0f0');
-    loadImage(enemyShipImage, 'enemyShip.png', '#f00');
-    loadImage(specialEnemyShipImage, 'specialEnemyShip.png', '#ff0');
-    loadImage(powerupImage, 'powerup.png', '#0ff');
-    loadImage(asteroidImage, 'asteroid.png', '#888');
-    loadImage(explosionImage, 'explosion.png', '#f80');
-    loadImage(shootingStarImage, 'shootingStar.png', '#fff');
-    loadImage(shieldImage, 'shield.png', '#00f');
-    loadImage(miniBossImage, 'miniBoss.png', '#f0f');
+    // Enemy ship: red alien/bug shape
+    const enemyCanvas = document.createElement('canvas');
+    enemyCanvas.width = 50; enemyCanvas.height = 50;
+    (function(ctx) {
+        ctx.fillStyle = '#f00';
+        ctx.beginPath();
+        ctx.moveTo(25, 6); ctx.lineTo(42, 18); ctx.lineTo(38, 40);
+        ctx.lineTo(25, 44); ctx.lineTo(12, 40); ctx.lineTo(8, 18);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#ff0';
+        ctx.beginPath(); ctx.arc(17, 22, 4, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(33, 22, 4, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#800'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(8, 18); ctx.lineTo(2, 10); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(42, 18); ctx.lineTo(48, 10); ctx.stroke();
+    })(enemyCanvas.getContext('2d'));
+    enemyShipImage.src = enemyCanvas.toDataURL();
+
+    // Special enemy: gold/yellow diamond with glow
+    const specialCanvas = document.createElement('canvas');
+    specialCanvas.width = 50; specialCanvas.height = 50;
+    (function(ctx) {
+        ctx.shadowColor = '#ff0'; ctx.shadowBlur = 8;
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.moveTo(25, 4); ctx.lineTo(46, 25); ctx.lineTo(25, 46); ctx.lineTo(4, 25);
+        ctx.closePath(); ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#fff8';
+        ctx.beginPath();
+        ctx.moveTo(25, 8); ctx.lineTo(38, 25); ctx.lineTo(25, 38); ctx.lineTo(12, 25);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#ff8c00';
+        ctx.beginPath(); ctx.arc(25, 25, 6, 0, Math.PI*2); ctx.fill();
+    })(specialCanvas.getContext('2d'));
+    specialEnemyShipImage.src = specialCanvas.toDataURL();
+
+    // Power-up: cyan star
+    const powerupCanvas = document.createElement('canvas');
+    powerupCanvas.width = 50; powerupCanvas.height = 50;
+    (function(ctx) {
+        ctx.shadowColor = '#0ff'; ctx.shadowBlur = 10;
+        ctx.fillStyle = '#0ff';
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
+            const a2 = a + Math.PI / 6;
+            ctx.lineTo(25 + Math.cos(a) * 22, 25 + Math.sin(a) * 22);
+            ctx.lineTo(25 + Math.cos(a2) * 10, 25 + Math.sin(a2) * 10);
+        }
+        ctx.closePath(); ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(25, 25, 5, 0, Math.PI*2); ctx.fill();
+    })(powerupCanvas.getContext('2d'));
+    powerupImage.src = powerupCanvas.toDataURL();
+
+    // Asteroid: gray irregular polygon
+    const asteroidCanvas = document.createElement('canvas');
+    asteroidCanvas.width = 50; asteroidCanvas.height = 50;
+    (function(ctx) {
+        ctx.fillStyle = '#888';
+        ctx.beginPath();
+        [[25,3],[38,8],[46,20],[44,35],[32,46],[16,46],[4,32],[6,16],[15,5]].forEach(([x,y],i) =>
+            i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y));
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#aaa';
+        ctx.beginPath(); ctx.arc(18, 16, 5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#666';
+        ctx.beginPath(); ctx.arc(30, 32, 4, 0, Math.PI*2); ctx.fill();
+    })(asteroidCanvas.getContext('2d'));
+    asteroidImage.src = asteroidCanvas.toDataURL();
+
+    // Explosion: orange burst shape
+    const explosionCanvas = document.createElement('canvas');
+    explosionCanvas.width = 50; explosionCanvas.height = 50;
+    (function(ctx) {
+        ctx.fillStyle = '#f80';
+        for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2, a2 = a + Math.PI / 8;
+            ctx.beginPath();
+            ctx.moveTo(25, 25);
+            ctx.lineTo(25 + Math.cos(a) * 24, 25 + Math.sin(a) * 24);
+            ctx.lineTo(25 + Math.cos(a2) * 14, 25 + Math.sin(a2) * 14);
+            ctx.closePath(); ctx.fill();
+        }
+        const grad = ctx.createRadialGradient(25, 25, 2, 25, 25, 18);
+        grad.addColorStop(0, '#fff'); grad.addColorStop(0.3, '#ff0');
+        grad.addColorStop(0.7, '#f80'); grad.addColorStop(1, 'rgba(255,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(25, 25, 18, 0, Math.PI*2); ctx.fill();
+    })(explosionCanvas.getContext('2d'));
+    explosionImage.src = explosionCanvas.toDataURL();
+
+    // Shooting star: white elongated streak
+    const starCanvas = document.createElement('canvas');
+    starCanvas.width = 50; starCanvas.height = 20;
+    (function(ctx) {
+        const grad = ctx.createLinearGradient(0, 10, 50, 10);
+        grad.addColorStop(0, 'rgba(255,255,255,0)');
+        grad.addColorStop(0.7, '#fff');
+        grad.addColorStop(1, '#adf');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(0, 10); ctx.lineTo(40, 7); ctx.lineTo(50, 10); ctx.lineTo(40, 13);
+        ctx.closePath(); ctx.fill();
+    })(starCanvas.getContext('2d'));
+    shootingStarImage.src = starCanvas.toDataURL();
+
+    // Shield: cyan radial gradient circle
+    const shieldCanvas = document.createElement('canvas');
+    shieldCanvas.width = 50; shieldCanvas.height = 50;
+    (function(ctx) {
+        const gradient = ctx.createRadialGradient(25, 25, 5, 25, 25, 22);
+        gradient.addColorStop(0, 'rgba(0,255,255,0.3)');
+        gradient.addColorStop(1, 'rgba(0,100,255,0.6)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath(); ctx.arc(25, 25, 22, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#0ff'; ctx.lineWidth = 3;
+        ctx.shadowColor = '#0ff'; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(25, 25, 22, 0, Math.PI*2);
+        ctx.stroke();
+    })(shieldCanvas.getContext('2d'));
+    shieldImage.src = shieldCanvas.toDataURL();
+
+    // Mini-boss: magenta/purple large angular ship
+    const miniBossCanvas = document.createElement('canvas');
+    miniBossCanvas.width = 80; miniBossCanvas.height = 60;
+    (function(ctx) {
+        ctx.shadowColor = '#f0f'; ctx.shadowBlur = 12;
+        ctx.fillStyle = '#c0c';
+        ctx.beginPath();
+        ctx.moveTo(40, 4); ctx.lineTo(70, 18); ctx.lineTo(76, 36);
+        ctx.lineTo(58, 56); ctx.lineTo(22, 56); ctx.lineTo(4, 36); ctx.lineTo(10, 18);
+        ctx.closePath(); ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#f8f';
+        ctx.beginPath();
+        ctx.moveTo(40, 10); ctx.lineTo(54, 26); ctx.lineTo(40, 34); ctx.lineTo(26, 26);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#f00';
+        ctx.beginPath(); ctx.arc(28, 38, 5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(52, 38, 5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#800080';
+        ctx.fillRect(36, 40, 8, 14);
+    })(miniBossCanvas.getContext('2d'));
+    miniBossImage.src = miniBossCanvas.toDataURL();
+
+    // All images generated synchronously — proceed immediately
+    assetsLoaded = true;
+    loadingContainer.style.display = 'none';
+    showIntroScreen();
 }
 
 // Initialize assets
@@ -1363,9 +1505,6 @@ function showIntroScreen() {
     introScreen.style.display = 'block';
     gameActive = false;
     clearCanvas();
-    // Update high score display on intro screen
-    const highScoreDisplay = document.getElementById('highScoreDisplay');
-    if (highScoreDisplay) highScoreDisplay.textContent = highScore;
 }
 
 // Canvas functions
@@ -1456,7 +1595,7 @@ introStartBtn.addEventListener('click', () => {
 });
 
 function showSettingsScreen() {
-    if (questions.length === 0 && !usingCustomQuestions) {
+    if (questions.length === 0) {
         questions = JSON.parse(JSON.stringify(defaultQuestions));
     }
     updateQuestionStatusBadge();
@@ -1593,7 +1732,7 @@ startGameBtn.addEventListener('click', () => {
     
     // Show educational tip at start
     setTimeout(() => {
-        showPowerupMessage("TIP: Answer questions correctly to gain power!");
+        showPowerupMessage("TIP: Answer questions correctly to gain power!", null, false);
     }, 3000);
     
     gameLoop();
@@ -1651,8 +1790,8 @@ function resetGameState() {
     updateComboDisplay();
     updateMultiplierDisplay();
     updateStreakDisplay();
-    waveDisplay.textContent = `Wave: ${currentWave} | Questions: ${totalQuestionsAsked}`;
-    scoreDisplay.textContent = `Score: ${score}`;
+    waveDisplay.textContent = `🌊 ${currentWave}`;
+    scoreDisplay.textContent = `⭐ ${score}`;
     // Re-apply difficulty settings to ensure all multipliers are correct
     applyDifficultySettings();
 }
@@ -1697,7 +1836,7 @@ Category: Geography
 importExcelBtn.addEventListener('click', () => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.txt,.text,.xlsx,.xls';
+    input.accept = '.txt,.text,.xlsx,.xls,.csv';
     input.onchange = (e) => {
         const file = e.target.files[0];
         if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
@@ -1854,8 +1993,13 @@ addQuestionSetBtn.addEventListener('click', () => {
 });
 
 cancelNewQuestionBtn.addEventListener('click', () => {
+    // Clear all form fields before hiding
+    newQuestionText.value = '';
+    newOptions.forEach(i => i.value = '');
+    correctAnswer.value = '0';
+    questionCategory.value = '';
     questionForm.style.display = 'none';
-    settingsScreen.style.display = 'block';
+    settingsScreen.style.display = 'flex';
 });
 
 saveNewQuestionBtn.addEventListener('click', () => {
@@ -1942,16 +2086,17 @@ function displayQuestionList() {
 function updateQuestionStatusBadge() {
     const badge = document.getElementById('questionStatusBadge');
     if (!badge) return;
-    if (usingCustomQuestions) {
+    const count = questions.length;
+    if (count === 0) {
+        badge.innerHTML = '⚠️ No questions loaded — using defaults on start';
+        badge.style.borderColor = '#f80';
+        badge.style.background = 'rgba(50,20,0,0.5)';
+        badge.style.color = '#f80';
+    } else {
+        badge.innerHTML = `✅ ${count} question${count !== 1 ? 's' : ''} ready`;
         badge.style.borderColor = '#0f0';
         badge.style.background = 'rgba(0,50,0,0.5)';
         badge.style.color = '#0f0';
-        badge.innerHTML = `✅ ${questions.length} custom question${questions.length !== 1 ? 's' : ''} loaded`;
-    } else {
-        badge.style.borderColor = '#0aa';
-        badge.style.background = 'rgba(0,30,50,0.5)';
-        badge.style.color = '#0aa';
-        badge.innerHTML = `📚 ${questions.length} default questions`;
     }
 }
 
@@ -2287,7 +2432,7 @@ function handleQuizAnswer(isCorrect, eventType) {
         updateHealthBar();
         
         // Update score
-        scoreDisplay.textContent = `Score: ${score}`;
+        scoreDisplay.textContent = `⭐ ${score}`;
         animateScoreUpdate();
         
         // Check for achievements
@@ -2318,7 +2463,7 @@ function handleQuizAnswer(isCorrect, eventType) {
         // Reduce penalty if player is struggling
         if (consecutiveWrongAnswers >= 3) {
             healthPenalty = Math.floor(healthPenalty / 2);
-            showPowerupMessage("Don't give up! You've got this!");
+            showPowerupMessage("Don't give up! You've got this!", null, false);
         }
         
         player.health = Math.max(player.health - healthPenalty, 20); // Never go below 20 HP
@@ -2366,7 +2511,7 @@ function handleQuizAnswer(isCorrect, eventType) {
                 // Give one more chance if they've been answering questions
                 if (totalQuestionsAsked >= 5 && totalCorrectAnswers / totalQuestionsAsked >= 0.5) {
                     player.health = 30;
-                    showPowerupMessage("Second Chance! Keep learning!");
+                    showPowerupMessage("Second Chance! Keep learning!", null, false);
                     activatePowerup('shield');
                 } else {
                     handleGameOver();
@@ -2434,7 +2579,7 @@ function activatePowerup(type) {
     else if (type === 'shield') msg = 'SHIELD ACTIVATED!';
     else if (type === 'doubleDamage') msg = 'DOUBLE DAMAGE ACTIVATED!';
     
-    showPowerupMessage(msg);
+    showPowerupMessage(msg, null, false);
     playSound(powerupSound);
 }
 
@@ -2522,11 +2667,13 @@ function updateStreakDisplay() {
 }
 
 // Show powerup message
-function showPowerupMessage(message, callback) {
+function showPowerupMessage(message, callback, pauseGame = true) {
     powerupMessage.textContent = message;
     powerupMessage.style.display = 'block';
     
-    gameRunning = false;
+    if (pauseGame) {
+        gameRunning = false;
+    }
     
     setTimeout(() => {
         powerupMessage.style.display = 'none';
@@ -2544,7 +2691,7 @@ function showPowerupMessage(message, callback) {
             if (availableQuestions.length === 0) {
                 handleGameOver("WIN");
             } else {
-                gameRunning = true;
+                if (pauseGame) gameRunning = true;
                 
                 if (!enemies.some(e => e.alive)) {
                     initEnemies();
@@ -2698,11 +2845,7 @@ function handleGameOver(outcome = "LOSE") {
     if (score > highScore) {
         highScore = score;
         safeLocalStorageSet('spaceInvadersHighScore', score.toString());
-        const highScoreDisplay = document.getElementById('highScoreDisplay');
-        if (highScoreDisplay) highScoreDisplay.textContent = highScore;
     }
-    const highScoreResult = document.getElementById('highScoreResult');
-    if (highScoreResult) highScoreResult.textContent = highScore;
     
     const accuracy = totalQuestionsAsked > 0 
         ? Math.round((totalCorrectAnswers / totalQuestionsAsked) * 100) 
@@ -2856,7 +2999,7 @@ quitButton.addEventListener('click', () => {
 
 function toggleSound() {
     soundEnabled = !soundEnabled;
-    soundBtn.textContent = soundEnabled ? '🔊 Sound' : '🔇 Muted';
+    soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
     
     try {
         if (soundEnabled && gameActive) {
@@ -3179,7 +3322,7 @@ function updateAsteroids(deltaTime) {
         if (asteroid.health <= 0) {
             createExplosionParticles(asteroid.x, asteroid.y, 30, '#888');
             score += 5;
-            scoreDisplay.textContent = `Score: ${score}`;
+            scoreDisplay.textContent = `⭐ ${score}`;
             asteroids.splice(i, 1);
         }
     }
@@ -3397,14 +3540,14 @@ function initEnemies() {
     bossEnemy = miniBoss;
     enemies.push(miniBoss);
     
-    waveDisplay.textContent = `Wave: ${currentWave}`;
+    waveDisplay.textContent = `🌊 ${currentWave}`;
     
     // Show wave start message
     if (currentWave === 1) {
-        showPowerupMessage("Wave 1 - Let's Learn and Play!");
+        showPowerupMessage("Wave 1 - Let's Learn and Play!", null, false);
     } else {
         playSound(levelUpSound);
-        showPowerupMessage(`Wave ${currentWave} - Knowledge is Power!`);
+        showPowerupMessage(`Wave ${currentWave} - Knowledge is Power!`, null, false);
     }
     
     // Educational checkpoint - automatic quiz every 3 waves
@@ -3698,7 +3841,7 @@ function updateBoss(boss, deltaTime) {
         boss.y += 1;
         if (boss.y >= 80) {
             boss.entrancePhase = false;
-            showPowerupMessage("Mini-Boss Arrived! Defeat for Knowledge!");
+            showPowerupMessage("Mini-Boss Arrived! Defeat for Knowledge!", null, false);
         }
         return;
     }
@@ -4031,7 +4174,7 @@ function updatePlayerBullets(deltaTime) {
                     updateComboDisplay();
                     updateMultiplierDisplay();
                     
-                    scoreDisplay.textContent = `Score: ${score}`;
+                    scoreDisplay.textContent = `⭐ ${score}`;
                     animateScoreUpdate();
                     totalEnemiesDestroyed++;
                     waveEnemiesDestroyed++;
@@ -4295,6 +4438,7 @@ function checkWaveCompletion() {
         const waveSeconds = Math.floor((waveTime % 60000) / 1000);
         const summaryMsg = `Wave ${currentWave - 1} Complete! | Enemies: ${waveEnemiesDestroyed} | Correct: ${waveCorrectAnswers} | +${healthReward}HP`;
         showPowerupMessage(summaryMsg, function() {
+            gameRunning = true;
             setTimeout(() => {
                 initEnemies();
             }, 500);
