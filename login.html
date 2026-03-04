@@ -292,9 +292,13 @@
 
     /* ── Access-code logic ──────────────────────────────────────────── */
     (function () {
-      var STORAGE_KEY = 'siAccessGranted';
-      var CONFIG_URL  = './config.json';
-      var GAME_URL    = './index.html';
+      var STORAGE_KEY  = 'siAccessGranted';
+      var CONFIG_URL   = './config.json';
+      var GAME_URL     = './index.html';
+      /* Fallback code used when config.json cannot be fetched
+         (e.g. opening the file directly from disk via file:// protocol).
+         Update this whenever you change config.json. */
+      var FALLBACK_CODE = 'GALAXY2026';
 
       var input   = document.getElementById('codeInput');
       var btn     = document.getElementById('launchBtn');
@@ -324,7 +328,12 @@
             /* else: saved code no longer valid — show login screen */
           })
           .catch(function () {
-            /* Network error: cannot validate, show login screen */
+            /* fetch unavailable (e.g. file:// protocol) —
+               trust the saved code only if it matches the embedded fallback */
+            if (saved.toUpperCase() === FALLBACK_CODE.toUpperCase()) {
+              redirectToGame();
+            }
+            /* else: saved code cannot be verified — show login screen */
           });
       })();
 
@@ -359,10 +368,19 @@
             }
           })
           .catch(function () {
-            setStatus('<span aria-hidden="true">&#9888;&#65039;</span> Could not verify code. Please check your connection.', 'warning');
-            btn.disabled = false;
-            input.disabled = false;
-            input.focus();
+            /* fetch unavailable (e.g. file:// protocol or no network) —
+               fall back to the embedded code */
+            var normalizedCode = entered.toUpperCase();
+            if (normalizedCode === FALLBACK_CODE.toUpperCase()) {
+              localStorage.setItem(STORAGE_KEY, normalizedCode);
+              setStatus('&#10003; Access granted! Loading game&hellip;', 'info');
+              setTimeout(redirectToGame, 600);
+            } else {
+              setStatus('<span aria-hidden="true">&#10060;</span> Invalid code. Please check your TPT purchase notes.', 'error');
+              btn.disabled = false;
+              input.disabled = false;
+              input.focus();
+            }
           });
       }
 
