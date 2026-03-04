@@ -1485,7 +1485,7 @@ startGameBtn.addEventListener('click', () => {
     
     // Show educational tip at start
     setTimeout(() => {
-        showPowerupMessage("TIP: Answer questions correctly to gain power!");
+        showPowerupMessage("TIP: Answer questions correctly to gain power!", null, false);
     }, 3000);
     
     gameLoop();
@@ -2118,7 +2118,7 @@ function handleQuizAnswer(isCorrect, eventType) {
         // Reduce penalty if player is struggling
         if (consecutiveWrongAnswers >= 3) {
             healthPenalty = Math.floor(healthPenalty / 2);
-            showPowerupMessage("Don't give up! You've got this!");
+            showPowerupMessage("Don't give up! You've got this!", null, false);
         }
         
         player.health = Math.max(player.health - healthPenalty, 20); // Never go below 20 HP
@@ -2213,7 +2213,7 @@ function activatePowerup(type) {
     else if (type === 'shield') msg = 'SHIELD ACTIVATED!';
     else if (type === 'doubleDamage') msg = 'DOUBLE DAMAGE ACTIVATED!';
     
-    showPowerupMessage(msg);
+    showPowerupMessage(msg, null, false);
     playSound(powerupSound);
 }
 
@@ -2301,11 +2301,13 @@ function updateStreakDisplay() {
 }
 
 // Show powerup message
-function showPowerupMessage(message, callback) {
+function showPowerupMessage(message, callback, pauseGame = true) {
     powerupMessage.textContent = message;
     powerupMessage.style.display = 'block';
     
-    gameRunning = false;
+    if (pauseGame) {
+        gameRunning = false;
+    }
     
     setTimeout(() => {
         powerupMessage.style.display = 'none';
@@ -2323,7 +2325,9 @@ function showPowerupMessage(message, callback) {
             if (availableQuestions.length === 0) {
                 handleGameOver("WIN");
             } else {
-                gameRunning = true;
+                if (pauseGame) {
+                    gameRunning = true;
+                }
                 
                 if (!enemies.some(e => e.alive)) {
                     initEnemies();
@@ -3151,10 +3155,10 @@ function initEnemies() {
     
     // Show wave start message
     if (currentWave === 1) {
-        showPowerupMessage("Wave 1 - Let's Learn and Play!");
+        showPowerupMessage("Wave 1 - Let's Learn and Play!", null, false);
     } else {
         playSound(levelUpSound);
-        showPowerupMessage(`Wave ${currentWave} - Knowledge is Power!`);
+        showPowerupMessage(`Wave ${currentWave} - Knowledge is Power!`, null, false);
     }
     
     // Educational checkpoint - automatic quiz every 3 waves
@@ -3448,7 +3452,7 @@ function updateBoss(boss, deltaTime) {
         boss.y += 1;
         if (boss.y >= 80) {
             boss.entrancePhase = false;
-            showPowerupMessage("Mini-Boss Arrived! Defeat for Knowledge!");
+            showPowerupMessage("Mini-Boss Arrived! Defeat for Knowledge!", null, false);
         }
         return;
     }
