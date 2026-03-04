@@ -852,9 +852,18 @@
             <h2 style="font-family: 'Press Start 2P', cursive; font-size: 28px; color: #0ff; text-shadow: 0 0 20px #0ff; margin-bottom: 30px;">MISSION CONFIGURATION</h2>
             
             <div class="difficulty-selector" style="margin: 25px 0; display: flex; justify-content: center; gap: 20px;">
-                <button data-difficulty="easy" class="active" style="padding: 12px 25px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s;">CADET</button>
-                <button data-difficulty="medium" style="padding: 12px 25px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s;">PILOT</button>
-                <button data-difficulty="hard" style="padding: 12px 25px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s;">ACE</button>
+                <button data-difficulty="easy" class="active" style="padding: 12px 20px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; min-width: 130px;">
+                    <div style="font-size:14px;">🛸 CADET</div>
+                    <div style="font-size:9px; opacity:0.8; margin-top:4px; font-weight:400;">2x damage · slow enemies · 30% powerups</div>
+                </button>
+                <button data-difficulty="medium" style="padding: 12px 20px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; min-width: 130px;">
+                    <div style="font-size:14px;">🚀 PILOT</div>
+                    <div style="font-size:9px; opacity:0.8; margin-top:4px; font-weight:400;">balanced · standard combat</div>
+                </button>
+                <button data-difficulty="hard" style="padding: 12px 20px; background: rgba(0,50,100,0.8); border: 2px solid #0ff; color: #0ff; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.3s; min-width: 130px;">
+                    <div style="font-size:14px;">⚡ ACE</div>
+                    <div style="font-size:9px; opacity:0.8; margin-top:4px; font-weight:400;">tankier enemies · 3-way fire · rare powerups</div>
+                </button>
             </div>
 
             <div class="upload-section">
@@ -1380,6 +1389,13 @@ const bossType = {
 // Enemy timing variables
 let enemyShootInterval = 5000;
 let enemySpeedMultiplier = 1.0;
+let enemyHpMultiplier = 1.0;        // Multiplies enemy base HP
+let playerBaseDamage = 1;           // Player bullet base damage
+let powerupDropRate = 0.2;          // Chance enemy drops powerup (0.0-1.0)
+let enemyBulletCountNormal = 1;     // Bullets normal enemies fire
+let enemyBulletCountBoss = 2;       // Bullets mini-boss fires per shot
+let miniBossHpCap = 999;            // Cap on mini-boss max HP
+let enemyCountMultiplier = 1.0;     // Multiplies total enemies per wave
 
 // Event listeners
 introStartBtn.addEventListener('click', () => {
@@ -1420,25 +1436,52 @@ difficultyButtons.forEach(button => {
 function applyDifficultySettings() {
     switch(gameDifficulty) {
         case 'easy':
-            player.maxHealth = 150; // More forgiving for learning
+            // CADET — Educational focus: forgiving combat, learn at your pace
+            player.maxHealth = 150;
             player.health = player.maxHealth;
+            player.shootInterval = 250;         // Slightly faster shooting
             enemySpeedMultiplier = 0.7;
             enemyShootInterval = 7000;
-            minQuizInterval = 20000; // Quiz every 20 seconds minimum
+            minQuizInterval = 20000;
+            enemyHpMultiplier = 0.6;            // Enemies have 60% HP — die in fewer shots
+            playerBaseDamage = 2;               // Player deals 2 damage per bullet (not 1)
+            powerupDropRate = 0.30;             // 30% powerup drop rate (was 20%)
+            enemyBulletCountNormal = 1;
+            enemyBulletCountBoss = 1;           // Boss fires only 1 bullet at a time
+            miniBossHpCap = 40;                 // Boss never exceeds 40 HP on Easy
+            enemyCountMultiplier = 0.8;         // 20% fewer enemies
             break;
         case 'medium':
+            // PILOT — Balanced defaults
             player.maxHealth = 120;
             player.health = player.maxHealth;
+            player.shootInterval = 300;
             enemySpeedMultiplier = 0.9;
             enemyShootInterval = 5500;
-            minQuizInterval = 15000; // Quiz every 15 seconds minimum
+            minQuizInterval = 15000;
+            enemyHpMultiplier = 1.0;            // Normal HP
+            playerBaseDamage = 1;               // Normal damage
+            powerupDropRate = 0.20;             // 20% powerup drop (default)
+            enemyBulletCountNormal = 1;
+            enemyBulletCountBoss = 2;
+            miniBossHpCap = 80;                 // Boss capped at 80 HP
+            enemyCountMultiplier = 1.0;
             break;
         case 'hard':
+            // ACE — Real challenge: tankier enemies, more firepower against you
             player.maxHealth = 100;
             player.health = player.maxHealth;
+            player.shootInterval = 300;
             enemySpeedMultiplier = 1.1;
             enemyShootInterval = 4500;
-            minQuizInterval = 12000; // Quiz every 12 seconds minimum
+            minQuizInterval = 12000;
+            enemyHpMultiplier = 1.5;            // Enemies have 150% HP — need more shots
+            playerBaseDamage = 1;               // Normal damage (no buff)
+            powerupDropRate = 0.12;             // 12% powerup drop (harder to get powerups)
+            enemyBulletCountNormal = 1;
+            enemyBulletCountBoss = 3;           // Boss fires 3 bullets per shot
+            miniBossHpCap = 999;                // No cap — boss HP scales freely
+            enemyCountMultiplier = 1.2;         // 20% more enemies
             break;
     }
     updateHealthBar();
@@ -1543,6 +1586,8 @@ function resetGameState() {
     updateStreakDisplay();
     waveDisplay.textContent = `Wave: ${currentWave} | Questions: ${totalQuestionsAsked}`;
     scoreDisplay.textContent = `Score: ${score}`;
+    // Re-apply difficulty settings to ensure all multipliers are correct
+    applyDifficultySettings();
 }
 
 // Excel template download
@@ -3075,7 +3120,7 @@ function initEnemies() {
     // Calculate wave size - starts small, grows gradually
     let baseEnemies = 8; // Start with just 8 enemies
     let additionalEnemies = Math.min(currentWave * 2, 20); // Add 2 per wave, max 20 additional
-    let totalRegularEnemies = baseEnemies + additionalEnemies;
+    let totalRegularEnemies = Math.round((baseEnemies + additionalEnemies) * enemyCountMultiplier);
     
     // Arrange enemies in a more compact formation
     let rows = Math.min(3 + Math.floor(currentWave / 4), 5); // Max 5 rows
@@ -3105,8 +3150,8 @@ function initEnemies() {
                 height: 40,
                 type: enemyType,
                 alive: true,
-                health: enemyType.health + Math.floor(currentWave / 5),
-                maxHealth: enemyType.health + Math.floor(currentWave / 5),
+                health: Math.max(1, Math.round((enemyType.health + Math.floor(currentWave / 5)) * enemyHpMultiplier)),
+                maxHealth: Math.max(1, Math.round((enemyType.health + Math.floor(currentWave / 5)) * enemyHpMultiplier)),
                 dx: enemySpeed * (Math.random() > 0.5 ? 1 : -1),
                 dy: 0,
                 shootTimer: Math.random() * enemyShootInterval,
@@ -3119,7 +3164,7 @@ function initEnemies() {
     }
     
     // ALWAYS create a mini-boss at the end of each wave
-    const miniBossHealth = 20 + (currentWave * 10);
+    const miniBossHealth = Math.min(Math.round((20 + (currentWave * 10)) * enemyHpMultiplier), miniBossHpCap);
     const miniBoss = {
         x: canvas.width / 2 - 60,
         y: -100, // Start off screen
@@ -3227,7 +3272,7 @@ function updatePlayer(deltaTime) {
                 width: bulletWidth,
                 height: bulletHeight,
                 speed: 12,
-                damage: 2
+                damage: playerBaseDamage * 2
             });
             player.bullets.push({
                 x: player.x + (player.width * 2 / 3) - bulletWidth / 2,
@@ -3235,7 +3280,7 @@ function updatePlayer(deltaTime) {
                 width: bulletWidth,
                 height: bulletHeight,
                 speed: 12,
-                damage: 2
+                damage: playerBaseDamage * 2
             });
         } else {
             // Single shot
@@ -3245,7 +3290,7 @@ function updatePlayer(deltaTime) {
                 width: bulletWidth,
                 height: bulletHeight,
                 speed: 12,
-                damage: 1
+                damage: playerBaseDamage
             });
         }
         
@@ -3379,21 +3424,21 @@ function updateEnemies(deltaTime) {
             if (enemy.y > 0 && enemy.y < canvas.height - 200) {
                 if (enemy.isMiniBoss) {
                     // Mini-boss shooting pattern - less aggressive for education
-                    for (let j = 0; j < 2; j++) {
+                    for (let j = 0; j < enemyBulletCountBoss; j++) {
                         enemyBullets.push({
-                            x: enemy.x + (enemy.width / 3) * (j + 1) - 5,
+                            x: enemy.x + (enemy.width / (enemyBulletCountBoss + 1)) * (j + 1) - 5,
                             y: enemy.y + enemy.height,
                             width: 8,
                             height: 8,
                             speed: 3,
                             special: true,
                             damage: 15,
-                            angle: (j - 0.5) * 0.15
+                            angle: (j - (enemyBulletCountBoss - 1) / 2) * 0.15
                         });
                     }
                 } else if (enemy.isBoss) {
                     // Full boss shooting pattern
-                    for (let j = 0; j < 3; j++) {
+                    for (let j = 0; j < Math.max(enemyBulletCountBoss, 3); j++) {
                         enemyBullets.push({
                             x: enemy.x + (enemy.width / 4) * (j + 1) - 5,
                             y: enemy.y + enemy.height,
@@ -3809,7 +3854,7 @@ function updatePlayerBullets(deltaTime) {
                         }
                         
                         // Power-up drops more frequently for engagement
-                        if (Math.random() < 0.2) { // 20% chance
+                        if (Math.random() < powerupDropRate) {
                             powerUpItems.push({
                                 x: enemy.x + enemy.width/2 - 15,
                                 y: enemy.y + enemy.height,
