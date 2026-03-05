@@ -48,10 +48,9 @@ Copy that one file to a USB drive, share it by email, or open it on any machine 
 ### What the build script does
 
 1. Reads `index.html` as the source.
-2. Downloads `xlsx.full.min.js` if it is not already present locally, then embeds it inline.
-3. Replaces the Google Fonts CDN `<link>` with an offline CSS fallback `<style>` block.
-4. Converts every `<audio src="…mp3">` tag to an inline Base64 data URI.
-5. Converts every `loadImage(…, 'file.png', …)` call to use an inline Base64 data URI.
-6. Writes the result to `Ultra_Pro_Space_Invaders_RELEASE.html`.
+2. Replaces the Google Fonts CDN `<link>` with an offline CSS fallback `<style>` block.
+3. Converts every `<audio src="…mp3">` tag to an inline Base64 data URI.
+4. Converts every `loadImage(…, 'file.png', …)` call to use an inline Base64 data URI.
+5. Writes the result to `Ultra_Pro_Space_Invaders_RELEASE.html`.
 
-> **Note:** `Ultra_Pro_Space_Invaders_RELEASE.html` and `xlsx.full.min.js` are listed in `.gitignore` and are not committed to the repository.
+> **Note:** `Ultra_Pro_Space_Invaders_RELEASE.html` is listed in `.gitignore` and is not committed to the repository.
