@@ -2903,6 +2903,7 @@ function handleGameOver(outcome = "LOSE") {
 
 // ─── Leaderboard System ──────────────────────────────────────────────────────
 const LEADERBOARD_KEY = 'spaceInvadersLeaderboard';
+const MAX_LEADERBOARD_ENTRIES = 10;
 
 function getLeaderboard() {
     try {
@@ -2930,7 +2931,7 @@ function addLeaderboardEntry(name, scoreVal, wavesVal, accuracy) {
         date: new Date().toLocaleDateString()
     });
     board.sort((a, b) => b.score - a.score);
-    board.splice(10); // keep top 10
+    board.splice(MAX_LEADERBOARD_ENTRIES); // keep top entries
     saveLeaderboard(board);
 }
 
@@ -3002,7 +3003,7 @@ confirmSaveScoreBtn.addEventListener('click', () => {
     const accuracy = totalQuestionsAsked > 0
         ? Math.round((totalCorrectAnswers / totalQuestionsAsked) * 100)
         : 0;
-    addLeaderboardEntry(name, score, currentWave - 1, accuracy);
+    addLeaderboardEntry(name, score, Math.max(0, currentWave - 1), accuracy);
     hideSaveScoreModal();
     showLeaderboardModal();
 });
