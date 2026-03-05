@@ -766,6 +766,7 @@
             font-weight: bold;
             text-shadow: 0 0 20px #f00;
             opacity: 0;
+            display: none;
             pointer-events: none;
             animation: none;
         }
@@ -904,6 +905,7 @@
                 <strong style="color: #ff0;">Destroy enemies, answer questions, save Earth!</strong>
             </p>
             <button id="introStartBtn" class="game-button">LAUNCH MISSION</button>
+            <button id="introLeaderboardBtn" class="game-button" style="background: linear-gradient(45deg, #004080, #002060); border-color: #0cf; margin-top: 10px;">🏆 Leaderboard</button>
         </div>
 
         <!-- Settings Screen -->
@@ -1041,6 +1043,7 @@
             <div>
                 <button id="restartButton" class="game-button">RETRY MISSION</button>
                 <button id="backToMenuButton" class="game-button" style="background: linear-gradient(45deg, #cc0000, #990000);">MAIN MENU</button>
+                <button id="gameOverLeaderboardBtn" class="game-button" style="background: linear-gradient(45deg, #004080, #002060); border-color: #0cf;">🏆 Leaderboard</button>
             </div>
         </div>
 
@@ -1126,6 +1129,27 @@
             
             <button id="closeHelpBtn" class="game-button" style="display: block; margin: 0 auto;">CLOSE</button>
         </div>
+
+        <!-- Leaderboard Modal -->
+        <div id="leaderboardModal" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, rgba(0,10,40,0.98) 0%, rgba(0,5,20,0.98) 100%); padding: clamp(15px,3vh,35px); border: 3px solid #0cf; border-radius: 20px; text-align: center; z-index: 10; width: 85%; max-width: 580px; max-height: 85vh; overflow-y: auto; box-sizing: border-box; box-shadow: 0 0 60px #0cf;">
+            <h3 style="font-family: 'Press Start 2P', cursive; font-size: clamp(12px,2vh,18px); color: #0cf; text-shadow: 0 0 15px #0cf; margin-bottom: 18px;">🏆 LEADERBOARD</h3>
+            <div id="leaderboardTable" style="text-align: left; font-size: clamp(10px,1.4vh,13px); color: #fff; margin-bottom: 15px;"></div>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button id="clearLeaderboardBtn" class="game-button" style="background: linear-gradient(45deg, #800000, #500000); border-color: #f44; color: #f88; font-size: clamp(9px,1.3vh,12px);">🗑 Clear</button>
+                <button id="closeLeaderboardBtn" class="game-button" style="background: linear-gradient(45deg, #004080, #002060); border-color: #0cf; font-size: clamp(9px,1.3vh,12px);">CLOSE</button>
+            </div>
+        </div>
+
+        <!-- Save Score Modal -->
+        <div id="saveScoreModal" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, rgba(0,20,50,0.98) 0%, rgba(0,10,30,0.98) 100%); padding: clamp(15px,3vh,35px); border: 3px solid #ff0; border-radius: 20px; text-align: center; z-index: 11; width: 80%; max-width: 420px; box-sizing: border-box; box-shadow: 0 0 40px #ff0;">
+            <h3 style="font-family: 'Press Start 2P', cursive; font-size: clamp(11px,1.8vh,16px); color: #ff0; text-shadow: 0 0 12px #ff0; margin-bottom: 15px;">💾 SAVE YOUR SCORE</h3>
+            <p style="font-size: clamp(10px,1.5vh,13px); color: #0ff; margin-bottom: 15px;">Score: <strong id="saveScoreValue" style="color: #ff0;">0</strong></p>
+            <input id="playerNameInput" type="text" maxlength="20" placeholder="Enter your name" style="width: 80%; padding: 10px; background: rgba(0,20,40,0.9); border: 2px solid #ff0; color: #fff; border-radius: 8px; font-family: inherit; font-size: clamp(12px,1.8vh,15px); text-align: center; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="confirmSaveScoreBtn" class="game-button" style="background: linear-gradient(45deg, #005000, #003000); border-color: #0f0; color: #0f0;">SAVE</button>
+                <button id="skipSaveScoreBtn" class="game-button" style="background: linear-gradient(45deg, #404040, #303030); border-color: #888; color: #aaa;">SKIP</button>
+            </div>
+        </div>
     </div>
 
     <!-- Audio Elements -->
@@ -1208,6 +1232,19 @@ const educationalScoreDisplay = document.getElementById('educationalScoreDisplay
 const gradeDisplay = document.getElementById('gradeDisplay');
 const achievementNotification = document.getElementById('achievementNotification');
 const warningIndicator = document.getElementById('warningIndicator');
+
+// Leaderboard elements
+const leaderboardModal = document.getElementById('leaderboardModal');
+const leaderboardTable = document.getElementById('leaderboardTable');
+const closeLeaderboardBtn = document.getElementById('closeLeaderboardBtn');
+const clearLeaderboardBtn = document.getElementById('clearLeaderboardBtn');
+const introLeaderboardBtn = document.getElementById('introLeaderboardBtn');
+const gameOverLeaderboardBtn = document.getElementById('gameOverLeaderboardBtn');
+const saveScoreModal = document.getElementById('saveScoreModal');
+const saveScoreValue = document.getElementById('saveScoreValue');
+const playerNameInput = document.getElementById('playerNameInput');
+const confirmSaveScoreBtn = document.getElementById('confirmSaveScoreBtn');
+const skipSaveScoreBtn = document.getElementById('skipSaveScoreBtn');
 
 // Audio Elements
 const shootSound = document.getElementById('shootSound');
@@ -1457,7 +1494,8 @@ function resizeCanvas() {
 }
 
 function clearCanvas() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
@@ -2651,9 +2689,11 @@ function showPowerupMessage(message, callback, pauseGame = true) {
 
 // Show warning
 function showWarning() {
+    warningIndicator.style.display = 'block';
     warningIndicator.style.animation = 'warningPulse 1s ease-out';
     setTimeout(() => {
         warningIndicator.style.animation = '';
+        warningIndicator.style.display = 'none';
     }, 1000);
 }
 
@@ -2850,6 +2890,9 @@ function handleGameOver(outcome = "LOSE") {
     
     gameOverScreen.style.display = 'block';
     
+    // Prompt to save score to leaderboard
+    setTimeout(() => showSaveScoreModal(), 500);
+
     try {
         backgroundMusic.pause();
         backgroundMusic.currentTime = 0;
@@ -2858,9 +2901,124 @@ function handleGameOver(outcome = "LOSE") {
     }
 }
 
+// ─── Leaderboard System ──────────────────────────────────────────────────────
+const LEADERBOARD_KEY = 'spaceInvadersLeaderboard';
+
+function getLeaderboard() {
+    try {
+        return JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveLeaderboard(data) {
+    try {
+        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(data));
+    } catch (e) {
+        console.warn('Could not save leaderboard:', e);
+    }
+}
+
+function addLeaderboardEntry(name, scoreVal, wavesVal, accuracy) {
+    const board = getLeaderboard();
+    board.push({
+        name: name.trim() || 'Anonymous',
+        score: scoreVal,
+        waves: wavesVal,
+        accuracy: accuracy,
+        date: new Date().toLocaleDateString()
+    });
+    board.sort((a, b) => b.score - a.score);
+    board.splice(10); // keep top 10
+    saveLeaderboard(board);
+}
+
+function renderLeaderboard() {
+    const board = getLeaderboard();
+    if (board.length === 0) {
+        leaderboardTable.innerHTML = '<p style="text-align:center; color:#0cf; opacity:0.7; padding: 20px 0;">No scores yet. Play to be first!</p>';
+        return;
+    }
+    const medals = ['🥇', '🥈', '🥉'];
+    let html = '<table style="width:100%; border-collapse:collapse; font-size:clamp(9px,1.3vh,13px);">';
+    html += '<thead><tr style="color:#0cf; border-bottom:2px solid #0cf4;">';
+    html += '<th style="padding:6px 4px; text-align:left;">#</th>';
+    html += '<th style="padding:6px 4px; text-align:left;">Name</th>';
+    html += '<th style="padding:6px 4px; text-align:right;">Score</th>';
+    html += '<th style="padding:6px 4px; text-align:right;">Waves</th>';
+    html += '<th style="padding:6px 4px; text-align:right;">Acc%</th>';
+    html += '<th style="padding:6px 4px; text-align:right;">Date</th>';
+    html += '</tr></thead><tbody>';
+    board.forEach((entry, i) => {
+        const rank = medals[i] || `${i + 1}`;
+        const rowStyle = i === 0 ? 'color:#ffd700;' : i === 1 ? 'color:#c0c0c0;' : i === 2 ? 'color:#cd7f32;' : 'color:#adf;';
+        html += `<tr style="${rowStyle} border-bottom:1px solid #0cf2;">`;
+        html += `<td style="padding:5px 4px;">${rank}</td>`;
+        html += `<td style="padding:5px 4px;">${entry.name}</td>`;
+        html += `<td style="padding:5px 4px; text-align:right; font-weight:bold;">${entry.score.toLocaleString()}</td>`;
+        html += `<td style="padding:5px 4px; text-align:right;">${entry.waves}</td>`;
+        html += `<td style="padding:5px 4px; text-align:right;">${entry.accuracy}%</td>`;
+        html += `<td style="padding:5px 4px; text-align:right; font-size:0.85em; opacity:0.7;">${entry.date}</td>`;
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+    leaderboardTable.innerHTML = html;
+}
+
+function showLeaderboardModal() {
+    renderLeaderboard();
+    leaderboardModal.style.display = 'block';
+}
+
+function hideLeaderboardModal() {
+    leaderboardModal.style.display = 'none';
+}
+
+function showSaveScoreModal() {
+    saveScoreValue.textContent = score.toLocaleString();
+    playerNameInput.value = '';
+    saveScoreModal.style.display = 'block';
+    setTimeout(() => playerNameInput.focus(), 100);
+}
+
+function hideSaveScoreModal() {
+    saveScoreModal.style.display = 'none';
+}
+
+// Leaderboard button handlers
+introLeaderboardBtn.addEventListener('click', showLeaderboardModal);
+gameOverLeaderboardBtn.addEventListener('click', showLeaderboardModal);
+closeLeaderboardBtn.addEventListener('click', hideLeaderboardModal);
+clearLeaderboardBtn.addEventListener('click', () => {
+    if (confirm('Clear all leaderboard scores?')) {
+        saveLeaderboard([]);
+        renderLeaderboard();
+    }
+});
+
+confirmSaveScoreBtn.addEventListener('click', () => {
+    const name = playerNameInput.value.trim() || 'Anonymous';
+    const accuracy = totalQuestionsAsked > 0
+        ? Math.round((totalCorrectAnswers / totalQuestionsAsked) * 100)
+        : 0;
+    addLeaderboardEntry(name, score, currentWave - 1, accuracy);
+    hideSaveScoreModal();
+    showLeaderboardModal();
+});
+
+skipSaveScoreBtn.addEventListener('click', hideSaveScoreModal);
+
+playerNameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') confirmSaveScoreBtn.click();
+});
+// ─── End Leaderboard System ──────────────────────────────────────────────────
+
 // Game restart handling
 restartButton.addEventListener('click', () => {
     gameOverScreen.style.display = 'none';
+    hideSaveScoreModal();
+    hideLeaderboardModal();
     resetGameState();
     initializeGameState();
     initEnemies();
@@ -2882,6 +3040,8 @@ restartButton.addEventListener('click', () => {
 // Back to menu
 backToMenuButton.addEventListener('click', () => {
     gameOverScreen.style.display = 'none';
+    hideSaveScoreModal();
+    hideLeaderboardModal();
     gameRunning = false;
     gameActive = false;
     gamePaused = false;
@@ -2964,6 +3124,7 @@ function toggleSound() {
 
 function togglePause() {
     gamePaused = !gamePaused;
+    pauseBtn.textContent = gamePaused ? '▶' : '⏸';
     
     if (gamePaused) {
         pauseScreen.style.display = 'block';
@@ -4389,7 +4550,7 @@ function checkWaveCompletion() {
             setTimeout(() => {
                 initEnemies();
             }, 500);
-        });
+        }, false);
     }
 }
 
@@ -4407,9 +4568,8 @@ function gameLoop() {
     updateShootingStars(deltaTime);
     updateParticles(deltaTime);
     
-    // Clear canvas with trail effect
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Clear canvas each frame
+    clearCanvas();
     
     // Draw background elements
     drawStars();
