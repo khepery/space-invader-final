@@ -872,6 +872,7 @@
             <button id="pauseBtn" class="control-button" title="Pause (P)" aria-label="Pause game">⏸</button>
             <button id="soundBtn" class="control-button" title="Sound (M)" aria-label="Toggle sound">🔊</button>
             <button id="helpBtn" class="control-button" title="Help" aria-label="Show help">❓</button>
+            <button id="fullscreenBtn" class="control-button" title="Fullscreen (F)" aria-label="Toggle fullscreen">⛶</button>
         </div>
 
         <!-- HUD Bottom-right -->
@@ -1213,6 +1214,7 @@ const backToMenuButton = document.getElementById('backToMenuButton');
 const pauseBtn = document.getElementById('pauseBtn');
 const soundBtn = document.getElementById('soundBtn');
 const helpBtn = document.getElementById('helpBtn');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
 const pauseScreen = document.getElementById('pauseScreen');
 const resumeButton = document.getElementById('resumeButton');
 const quitButton = document.getElementById('quitButton');
@@ -3087,6 +3089,33 @@ soundBtn.addEventListener('click', () => {
     toggleSound();
 });
 
+fullscreenBtn.addEventListener('click', () => {
+    toggleFullscreen();
+});
+
+document.addEventListener('keydown', (e) => {
+    const tag = document.activeElement ? document.activeElement.tagName : '';
+    if ((e.key === 'f' || e.key === 'F') && tag !== 'INPUT' && tag !== 'TEXTAREA') toggleFullscreen();
+});
+
+document.addEventListener('fullscreenchange', () => {
+    fullscreenBtn.textContent = document.fullscreenElement ? '⊠' : '⛶';
+});
+document.addEventListener('webkitfullscreenchange', () => {
+    fullscreenBtn.textContent = (document.webkitFullscreenElement || document.fullscreenElement) ? '⊠' : '⛶';
+});
+
+function toggleFullscreen() {
+    const container = document.getElementById('gameContainer');
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        const req = container.requestFullscreen || container.webkitRequestFullscreen;
+        if (req) req.call(container).catch(e => console.warn('Fullscreen request failed:', e));
+    } else {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (exit) exit.call(document).catch(e => console.warn('Exit fullscreen failed:', e));
+    }
+}
+
 // Resume and quit buttons
 resumeButton.addEventListener('click', () => {
     togglePause();
@@ -3725,25 +3754,28 @@ function updatePlayer(deltaTime) {
         
         // Create bullets
         if (player.powerups.doubleDamage) {
-            // Double shot
+            // Double shot — rockets
+            const rocketW = 8, rocketH = 26;
             player.bullets.push({
-                x: player.x + player.width / 3 - bulletWidth / 2,
-                y: player.y - bulletHeight,
-                width: bulletWidth,
-                height: bulletHeight,
+                x: player.x + player.width / 3 - rocketW / 2,
+                y: player.y - rocketH,
+                width: rocketW,
+                height: rocketH,
                 speed: 12,
-                damage: playerBaseDamage * 2
+                damage: playerBaseDamage * 2,
+                rocket: true
             });
             player.bullets.push({
-                x: player.x + (player.width * 2 / 3) - bulletWidth / 2,
-                y: player.y - bulletHeight,
-                width: bulletWidth,
-                height: bulletHeight,
+                x: player.x + (player.width * 2 / 3) - rocketW / 2,
+                y: player.y - rocketH,
+                width: rocketW,
+                height: rocketH,
                 speed: 12,
-                damage: playerBaseDamage * 2
+                damage: playerBaseDamage * 2,
+                rocket: true
             });
         } else {
-            // Single shot
+            // Single laser shot
             player.bullets.push({
                 x: player.x + player.width / 2 - bulletWidth / 2,
                 y: player.y - bulletHeight,
@@ -4223,27 +4255,104 @@ function updateEnemyBullets(deltaTime) {
 }
 
 // Update player bullets
+function drawLaserBullet(x, y, w, h, color) {
+    ctx.save();
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = color;
+    const grad = ctx.createLinearGradient(x + w / 2, y + h, x + w / 2, y);
+    grad.addColorStop(0.0, 'rgba(255,255,255,0)');
+    grad.addColorStop(0.3, color);
+    grad.addColorStop(0.5, '#ffffff');
+    grad.addColorStop(0.7, color);
+    grad.addColorStop(1.0, color);
+    ctx.fillStyle = grad;
+    const r = w / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawRocketBullet(x, y, w, h, color) {
+    ctx.save();
+    ctx.shadowBlur = 22;
+    ctx.shadowColor = color;
+    const cx = x + w / 2;
+
+    // Body
+    const bodyGrad = ctx.createLinearGradient(x, 0, x + w, 0);
+    bodyGrad.addColorStop(0, '#888');
+    bodyGrad.addColorStop(0.5, '#fff');
+    bodyGrad.addColorStop(1, '#888');
+    ctx.fillStyle = bodyGrad;
+    ctx.fillRect(x + 1, y + 5, w - 2, h - 10);
+
+    // Nose cone
+    ctx.beginPath();
+    ctx.moveTo(cx, y);
+    ctx.lineTo(x, y + 6);
+    ctx.lineTo(x + w, y + 6);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    // Left fin
+    ctx.beginPath();
+    ctx.moveTo(x, y + h - 8);
+    ctx.lineTo(x - 4, y + h - 2);
+    ctx.lineTo(x + 3, y + h - 4);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    // Right fin
+    ctx.beginPath();
+    ctx.moveTo(x + w, y + h - 8);
+    ctx.lineTo(x + w + 4, y + h - 2);
+    ctx.lineTo(x + w - 3, y + h - 4);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    // Exhaust flame
+    const flameH = 5 + Math.random() * 7;
+    const flameGrad = ctx.createLinearGradient(cx, y + h, cx, y + h + flameH);
+    flameGrad.addColorStop(0.0, '#ffffff');
+    flameGrad.addColorStop(0.3, '#ff8800');
+    flameGrad.addColorStop(1.0, 'rgba(255,0,0,0)');
+    ctx.fillStyle = flameGrad;
+    ctx.beginPath();
+    ctx.ellipse(cx, y + h + flameH / 2, w / 2, flameH / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
 function updatePlayerBullets(deltaTime) {
     for (let i = player.bullets.length - 1; i >= 0; i--) {
         let bullet = player.bullets[i];
         bullet.y -= bullet.speed * (deltaTime / 16.67);
         
         // Draw bullet with effects
-        let bulletColor = '#fff';
-        if (player.powerups.doubleDamage && player.powerups.rapidFire) {
-            bulletColor = '#f0f';
-        } else if (player.powerups.doubleDamage) {
-            bulletColor = '#f88';
-        } else if (player.powerups.rapidFire) {
-            bulletColor = '#0ff';
+        if (bullet.rocket) {
+            const rocketColor = (player.powerups.rapidFire) ? '#f0f' : '#ff6600';
+            drawRocketBullet(bullet.x, bullet.y, bullet.width, bullet.height, rocketColor);
+        } else {
+            let laserColor = '#00cfff';
+            if (player.powerups.rapidFire) {
+                laserColor = '#ffcc00';
+            }
+            drawLaserBullet(bullet.x, bullet.y, bullet.width, bullet.height, laserColor);
         }
-        
-        ctx.save();
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = bulletColor;
-        ctx.fillStyle = bulletColor;
-        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-        ctx.restore();
 
         let bulletHit = false;
 
