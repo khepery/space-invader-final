@@ -1290,6 +1290,7 @@ let achievements = [];
 let bossActive = false;
 let bossEnemy = null;
 let waveStartTime = 0;
+let waveCompletionPending = false;
 let educationalScore = 0; // Track learning progress separately
 let consecutiveWrongAnswers = 0;
 let waveEnemiesDestroyed = 0;
@@ -1740,6 +1741,7 @@ function resetGameState() {
     consecutiveWrongAnswers = 0;
     waveEnemiesDestroyed = 0;
     waveCorrectAnswers = 0;
+    waveCompletionPending = false;
     
     // Reset player
     player.x = canvas.width / 2 - 25;
@@ -4526,7 +4528,9 @@ function updateActivePowerups(deltaTime) {
 
 // Check wave completion
 function checkWaveCompletion() {
+    if (waveCompletionPending) return;
     if (!enemies.some(e => e.alive)) {
+        waveCompletionPending = true;
         currentWave++;
         initAsteroids();
         
@@ -4550,6 +4554,7 @@ function checkWaveCompletion() {
         showPowerupMessage(summaryMsg, function() {
             setTimeout(() => {
                 initEnemies();
+                waveCompletionPending = false;
             }, 500);
         }, false);
     }
