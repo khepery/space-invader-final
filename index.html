@@ -4256,29 +4256,45 @@ function updateEnemyBullets(deltaTime) {
 
 // Update player bullets
 function drawLaserBullet(x, y, w, h, color) {
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+
     ctx.save();
-    ctx.shadowBlur = 16;
-    ctx.shadowColor = color;
-    const grad = ctx.createLinearGradient(x + w / 2, y + h, x + w / 2, y);
-    grad.addColorStop(0.0, 'rgba(255,255,255,0)');
-    grad.addColorStop(0.3, color);
-    grad.addColorStop(0.5, '#ffffff');
-    grad.addColorStop(0.7, color);
-    grad.addColorStop(1.0, color);
-    ctx.fillStyle = grad;
-    const r = w / 2;
+
+    // Vertical comet tail (fades downward)
+    const tail = ctx.createLinearGradient(cx, cy + h * 0.4, cx, cy + h * 1.6);
+    tail.addColorStop(0.0, 'rgba(100,200,255,0.7)');
+    tail.addColorStop(1.0, 'rgba(0,60,180,0)');
+    ctx.fillStyle = tail;
     ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
+    ctx.ellipse(cx, cy + h * 0.9, w * 0.55, h * 0.8, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    // Horizontal lens-flare streak
+    const streak = ctx.createLinearGradient(cx - w * 4, cy, cx + w * 4, cy);
+    streak.addColorStop(0.0, 'rgba(150,220,255,0)');
+    streak.addColorStop(0.35, 'rgba(150,220,255,0.5)');
+    streak.addColorStop(0.5, 'rgba(255,255,255,0.9)');
+    streak.addColorStop(0.65, 'rgba(150,220,255,0.5)');
+    streak.addColorStop(1.0, 'rgba(150,220,255,0)');
+    ctx.fillStyle = streak;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, w * 4, w * 0.45, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bright electric-blue core oval (shadowBlur provides the outer halo)
+    const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 1.2);
+    core.addColorStop(0.0, '#ffffff');
+    core.addColorStop(0.3, '#aaeeff');
+    core.addColorStop(0.6, color);
+    core.addColorStop(1.0, 'rgba(0,80,255,0)');
+    ctx.shadowBlur = 24; // controls the outer diffuse glow radius
+    ctx.shadowColor = color;
+    ctx.fillStyle = core;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, w * 1.2, h * 0.38, 0, 0, Math.PI * 2);
+    ctx.fill();
+
     ctx.restore();
 }
 
@@ -4349,7 +4365,7 @@ function updatePlayerBullets(deltaTime) {
         } else {
             let laserColor = '#00cfff';
             if (player.powerups.rapidFire) {
-                laserColor = '#ffcc00';
+                laserColor = '#66aaff';
             }
             drawLaserBullet(bullet.x, bullet.y, bullet.width, bullet.height, laserColor);
         }
