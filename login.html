@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; media-src 'self' data: blob:;">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; media-src 'self' data: blob:;">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ultra Pro Space Invaders — Access Required</title>
   <!-- Access code config — edit config.js to change the code -->
@@ -301,11 +301,16 @@
         window.location.href = GAME_URL;
       }
 
-      /* On load: check for a previously validated code */
+      /* On load: if previously validated, pre-fill and auto-submit after short delay */
       (function checkSaved() {
         var saved = localStorage.getItem(STORAGE_KEY);
         if (saved && CODE && saved.toUpperCase() === CODE) {
-          redirectToGame();
+          input.value = saved;
+          setStatus('Welcome back! Loading game\u2026', 'info');
+          // Small delay to let the page render and avoid redirect loops
+          setTimeout(function() {
+            redirectToGame();
+          }, 800);
         }
       })();
 
