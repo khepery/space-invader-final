@@ -886,7 +886,7 @@
         <div id="achievementNotification"></div>
 
         <!-- Warning indicator -->
-        <div id="warningIndicator">⚠️ DANGER ⚠️</div>
+        <div id="warningIndicator" style="display:none">⚠️ DANGER ⚠️</div>
 
         <!-- Intro Screen -->
         <div id="introScreen">
@@ -938,6 +938,11 @@
                         <span class="button-text" style="color: #0cf;">Download Template</span>
                         <span class="button-subtitle" style="color: #08a;">.txt question file</span>
                     </button>
+                    <button id="viewQuestionsBtn" class="action-button" style="width: 100%; margin: clamp(3px,0.5vh,5px) 0; min-width: unset; background: linear-gradient(135deg, rgba(40,0,80,0.9) 0%, rgba(20,0,40,0.9) 100%); border-color: #a0f;">
+                        <span class="button-icon" style="font-size: clamp(14px,2vh,22px);">📋</span>
+                        <span class="button-text" style="color: #c8f;">View Questions</span>
+                        <span class="button-subtitle" style="color: #90c;">Browse loaded questions</span>
+                    </button>
                 </div>
 
                 <!-- RIGHT: Difficulty + Categories -->
@@ -966,7 +971,12 @@
             <button id="startGameBtn" class="game-button" style="display: block; width: 100%; max-width: 400px; margin: clamp(5px,0.8vh,10px) auto 0;">▶ BEGIN MISSION</button>
         </div>
 
-        <!-- Add Question Form -->
+        <!-- Question List Modal -->
+        <div id="questionListModal" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, rgba(0,30,80,0.97) 0%, rgba(0,15,40,0.97) 100%); padding: clamp(15px,3vh,30px); border: 3px solid #0ff; border-radius: 20px; text-align: left; z-index: 8; width: 80%; max-width: 600px; max-height: 80vh; box-sizing: border-box; box-shadow: 0 0 50px #0ff;">
+            <h3 style="font-size: 20px; margin-bottom: 15px; color: #0ff; text-align: center;">📋 Loaded Questions</h3>
+            <div id="questionList" style="overflow-y: auto; max-height: 55vh; padding-right: 5px; margin-bottom: 15px;"></div>
+            <button id="closeQuestionListBtn" class="game-button" style="display: block; margin: 0 auto;">CLOSE</button>
+        </div>
         <div id="questionForm" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, rgba(0,30,80,0.95) 0%, rgba(0,15,40,0.95) 100%); padding: clamp(15px,3vh,40px); border: 3px solid #0ff; border-radius: 20px; text-align: center; z-index: 6; width: 80%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; box-shadow: 0 0 50px #0ff;">
             <h3 style="font-size: 24px; margin-bottom: 25px; color: #0ff;">Add New Question</h3>
             <textarea id="newQuestionText" placeholder="Enter your question" rows="3" style="width: 90%; margin: 10px; padding: 12px; background: rgba(0,20,40,0.8); border: 2px solid #0ff; color: #fff; border-radius: 10px; font-family: inherit; font-size: 14px;"></textarea>
@@ -1384,7 +1394,28 @@ function loadGameImages() {
     loadImage(asteroidImage, 'asteroid.png', '#888');
     loadImage(explosionImage, 'explosion.png', '#f80');
     loadImage(shootingStarImage, 'shootingStar.png', '#fff');
-    loadImage(shieldImage, 'shield.png', '#00f');
+    // Generate shield image programmatically (no shield.png file exists)
+    (() => {
+        imagesToLoad++;
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = 50;
+        tempCanvas.height = 50;
+        const gradient = tempCtx.createRadialGradient(25, 25, 5, 25, 25, 22);
+        gradient.addColorStop(0, 'rgba(0,255,255,0.3)');
+        gradient.addColorStop(1, 'rgba(0,100,255,0.6)');
+        tempCtx.fillStyle = gradient;
+        tempCtx.beginPath();
+        tempCtx.arc(25, 25, 22, 0, Math.PI * 2);
+        tempCtx.fill();
+        tempCtx.strokeStyle = '#0ff';
+        tempCtx.lineWidth = 3;
+        tempCtx.shadowColor = '#0ff';
+        tempCtx.shadowBlur = 10;
+        tempCtx.stroke();
+        shieldImage.onload = imageLoaded;
+        shieldImage.src = tempCanvas.toDataURL();
+    })();
     loadImage(miniBossImage, 'miniBoss.png', '#f0f');
 }
 
@@ -1897,6 +1928,17 @@ const styleQuizOption = `
 addQuestionSetBtn.addEventListener('click', () => {
     questionForm.style.display = 'block';
     settingsScreen.style.display = 'none';
+});
+
+document.getElementById('viewQuestionsBtn').addEventListener('click', () => {
+    displayQuestionList();
+    document.getElementById('questionListModal').style.display = 'block';
+    settingsScreen.style.display = 'none';
+});
+
+document.getElementById('closeQuestionListBtn').addEventListener('click', () => {
+    document.getElementById('questionListModal').style.display = 'none';
+    settingsScreen.style.display = 'flex';
 });
 
 cancelNewQuestionBtn.addEventListener('click', () => {
@@ -2605,9 +2647,11 @@ function showPowerupMessage(message, callback, pauseGame = true) {
 
 // Show warning
 function showWarning() {
+    warningIndicator.style.display = 'block';
     warningIndicator.style.animation = 'warningPulse 1s ease-out';
     setTimeout(() => {
         warningIndicator.style.animation = '';
+        warningIndicator.style.display = 'none';
     }, 1000);
 }
 
@@ -2901,7 +2945,7 @@ quitButton.addEventListener('click', () => {
 
 function toggleSound() {
     soundEnabled = !soundEnabled;
-    soundBtn.textContent = soundEnabled ? '🔊 Sound' : '🔇 Muted';
+    soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
     
     try {
         if (soundEnabled && gameActive) {
@@ -4340,6 +4384,7 @@ function checkWaveCompletion() {
         const waveSeconds = Math.floor((waveTime % 60000) / 1000);
         const summaryMsg = `Wave ${currentWave - 1} Complete! | Enemies: ${waveEnemiesDestroyed} | Correct: ${waveCorrectAnswers} | +${healthReward}HP`;
         showPowerupMessage(summaryMsg, function() {
+            gameRunning = true;
             setTimeout(() => {
                 initEnemies();
             }, 500);
