@@ -767,7 +767,7 @@
             text-shadow: 0 0 20px #f00;
             opacity: 0;
             pointer-events: none;
-            animation: warningPulse 1s ease-out;
+            animation: none;
         }
 
         @keyframes warningPulse {
@@ -933,6 +933,11 @@
                         <span class="button-text">Use Default Questions</span>
                         <span class="button-subtitle">Reset to built-in set</span>
                     </button>
+                    <button id="viewQuestionsBtn" class="action-button" style="width: 100%; margin: clamp(3px,0.5vh,5px) 0; min-width: unset; background: linear-gradient(135deg, rgba(20,0,60,0.9) 0%, rgba(10,0,40,0.9) 100%); border-color: #a0f;">
+                        <span class="button-icon" style="font-size: clamp(14px,2vh,22px);">📋</span>
+                        <span class="button-text" style="color: #c8f;">View Questions</span>
+                        <span class="button-subtitle" style="color: #80a;">See loaded questions</span>
+                    </button>
                     <button id="downloadExcelTemplateBtn" class="action-button" style="width: 100%; margin: clamp(3px,0.5vh,5px) 0; min-width: unset; background: linear-gradient(135deg, rgba(0,60,80,0.9) 0%, rgba(0,30,40,0.9) 100%); border-color: #0aa;">
                         <span class="button-icon" style="font-size: clamp(14px,2vh,22px);">⬇</span>
                         <span class="button-text" style="color: #0cf;">Download Template</span>
@@ -987,6 +992,13 @@
                 <button id="saveNewQuestionBtn" class="game-button" style="display: inline-block; margin: 0 10px;">SAVE</button>
                 <button id="cancelNewQuestionBtn" class="quiz-option" style="display: inline-block; padding: 15px 30px; background: rgba(50,0,0,0.8); border: 2px solid #f00; color: #f00;">CANCEL</button>
             </div>
+        </div>
+
+        <!-- View Questions Modal -->
+        <div id="viewQuestionsModal" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, rgba(0,30,80,0.97) 0%, rgba(0,15,40,0.97) 100%); padding: clamp(15px,3vh,35px); border: 3px solid #a0f; border-radius: 20px; text-align: center; z-index: 8; width: 85%; max-width: 560px; max-height: 85vh; overflow-y: auto; box-sizing: border-box; box-shadow: 0 0 50px #a0f;">
+            <h3 style="font-family: 'Press Start 2P', cursive; font-size: clamp(12px,2vh,18px); color: #c8f; text-shadow: 0 0 15px #a0f; margin-bottom: 15px;">📋 LOADED QUESTIONS</h3>
+            <div id="questionList" style="text-align: left; font-size: clamp(11px,1.5vh,13px); color: #fff; margin-bottom: 15px;"></div>
+            <button id="closeViewQuestionsBtn" class="game-button" style="background: linear-gradient(45deg, #600090, #400060); border-color: #a0f; color: #c8f;">CLOSE</button>
         </div>
 
         <!-- Mobile Controls -->
@@ -1142,6 +1154,9 @@ const downloadExcelTemplateBtn = document.getElementById('downloadExcelTemplateB
 const importExcelBtn = document.getElementById('importExcelBtn');
 const addQuestionSetBtn = document.getElementById('addQuestionSetBtn');
 const resetToDefaultBtn = document.getElementById('resetToDefaultBtn');
+const viewQuestionsBtn = document.getElementById('viewQuestionsBtn');
+const viewQuestionsModal = document.getElementById('viewQuestionsModal');
+const closeViewQuestionsBtn = document.getElementById('closeViewQuestionsBtn');
 const questionList = document.getElementById('questionList');
 const questionForm = document.getElementById('questionForm');
 const newQuestionText = document.getElementById('newQuestionText');
@@ -1384,7 +1399,28 @@ function loadGameImages() {
     loadImage(asteroidImage, 'asteroid.png', '#888');
     loadImage(explosionImage, 'explosion.png', '#f80');
     loadImage(shootingStarImage, 'shootingStar.png', '#fff');
-    loadImage(shieldImage, 'shield.png', '#00f');
+    // Generate shield graphic directly (no shield.png in repo)
+    (function() {
+        imagesToLoad++;
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = 50;
+        tempCanvas.height = 50;
+        const gradient = tempCtx.createRadialGradient(25, 25, 5, 25, 25, 22);
+        gradient.addColorStop(0, 'rgba(0,255,255,0.3)');
+        gradient.addColorStop(1, 'rgba(0,100,255,0.6)');
+        tempCtx.fillStyle = gradient;
+        tempCtx.beginPath();
+        tempCtx.arc(25, 25, 22, 0, Math.PI * 2);
+        tempCtx.fill();
+        tempCtx.strokeStyle = '#0ff';
+        tempCtx.lineWidth = 3;
+        tempCtx.shadowColor = '#0ff';
+        tempCtx.shadowBlur = 10;
+        tempCtx.stroke();
+        shieldImage.onload = imageLoaded;
+        shieldImage.src = tempCanvas.toDataURL();
+    })();
     loadImage(miniBossImage, 'miniBoss.png', '#f0f');
 }
 
@@ -1901,6 +1937,17 @@ addQuestionSetBtn.addEventListener('click', () => {
 
 cancelNewQuestionBtn.addEventListener('click', () => {
     questionForm.style.display = 'none';
+    settingsScreen.style.display = 'flex';
+});
+
+viewQuestionsBtn.addEventListener('click', () => {
+    displayQuestionList();
+    settingsScreen.style.display = 'none';
+    viewQuestionsModal.style.display = 'block';
+});
+
+closeViewQuestionsBtn.addEventListener('click', () => {
+    viewQuestionsModal.style.display = 'none';
     settingsScreen.style.display = 'flex';
 });
 
@@ -2594,7 +2641,6 @@ function showPowerupMessage(message, callback, pauseGame = true) {
                 handleGameOver("WIN");
             } else {
                 if (pauseGame) gameRunning = true;
-                
                 if (!enemies.some(e => e.alive)) {
                     initEnemies();
                 }
@@ -2901,7 +2947,7 @@ quitButton.addEventListener('click', () => {
 
 function toggleSound() {
     soundEnabled = !soundEnabled;
-    soundBtn.textContent = soundEnabled ? '🔊 Sound' : '🔇 Muted';
+    soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
     
     try {
         if (soundEnabled && gameActive) {
