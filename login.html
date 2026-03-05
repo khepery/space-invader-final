@@ -328,7 +328,7 @@
         }
 
         if (entered.toUpperCase() === CODE) {
-          localStorage.setItem(STORAGE_KEY, entered.toUpperCase());
+          try { localStorage.setItem(STORAGE_KEY, entered.toUpperCase()); } catch(e) {}
           setStatus('&#10003; Access granted! Loading game&hellip;', 'info');
           setTimeout(redirectToGame, 600);
         } else {
