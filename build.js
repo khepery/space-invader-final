@@ -20,43 +20,73 @@ async function build() {
   console.log('Reading index.html…');
   let html = fs.readFileSync(INPUT, 'utf8');
 
-  // 1. Embed Google Fonts (offline fallback with system fonts) ────────────────
-  //    We replace the <link> tag with a <style> block that uses system-font
-  //    stacks matching the visual intent of Press Start 2P and Orbitron.
-  //    If you have the .woff2 files available locally, add them here as Base64.
-  const fontStyle = `<style>
-/* Offline font fallbacks replacing Google Fonts CDN */
-@font-face {
-  font-family: 'Press Start 2P';
-  src: local('Press Start 2P'), local('PressStart2P-Regular');
-  font-style: normal;
-  font-weight: 400;
-}
-@font-face {
-  font-family: 'Orbitron';
-  src: local('Orbitron'), local('Orbitron-Regular');
-  font-style: normal;
-  font-weight: 400;
-}
-@font-face {
-  font-family: 'Orbitron';
-  src: local('Orbitron Bold'), local('Orbitron-Bold');
-  font-style: normal;
-  font-weight: 700;
-}
-@font-face {
-  font-family: 'Orbitron';
-  src: local('Orbitron Black'), local('Orbitron-Black');
-  font-style: normal;
-  font-weight: 900;
-}
-</style>`;
+  // 0. Inline external CSS and JS files ────────────────────────────────────────
+  //    The source code uses separate files for maintainability, but the release
+  //    must be a single self-contained HTML file.
+  const cssPath = path.join(ROOT, 'styles.css');
+  if (fs.existsSync(cssPath)) {
+    const css = fs.readFileSync(cssPath, 'utf8');
+    html = html.replace(
+      /    <link rel="stylesheet" href="\.\/styles\.css">/,
+      `    <style>\n${css.replace(/^/gm, '        ')}\n    </style>`
+    );
+    console.log('  ✓ Inlined styles.css');
+  }
 
+  const jsPath = path.join(ROOT, 'game.js');
+  if (fs.existsSync(jsPath)) {
+    const js = fs.readFileSync(jsPath, 'utf8');
+    html = html.replace(
+      /    <script src="\.\/game\.js"><\/script>/,
+      `    <script>\n${js}\n    </script>`
+    );
+    console.log('  ✓ Inlined game.js');
+  }
+
+  // 1. Embed fonts for offline use ─────────────────────────────────────────────
+  //    Replace self-hosted @font-face rules with Base64-embedded woff2 files
+  //    and remove the CDN fallback <link> tag entirely.
+  const fontFiles = {
+    'press-start-2p-latin-400-normal': { family: 'Press Start 2P', weight: 400 },
+    'orbitron-latin-400-normal':       { family: 'Orbitron',        weight: 400 },
+    'orbitron-latin-700-normal':       { family: 'Orbitron',        weight: 700 },
+    'orbitron-latin-900-normal':       { family: 'Orbitron',        weight: 900 }
+  };
+
+  let fontFaces = '/* Embedded fonts for offline single-file release */\n';
+  for (const [filename, meta] of Object.entries(fontFiles)) {
+    const fontPath = path.join(ROOT, 'fonts', filename + '.woff2');
+    if (fs.existsSync(fontPath)) {
+      const b64 = toBase64(fontPath);
+      fontFaces += `@font-face {\n  font-family: '${meta.family}';\n  font-style: normal;\n  font-weight: ${meta.weight};\n  font-display: swap;\n  src: url('data:font/woff2;base64,${b64}') format('woff2');\n}\n`;
+      console.log(`  ✓ Embedded font: ${filename}.woff2`);
+    } else {
+      // Fall back to local() if woff2 file not available
+      fontFaces += `@font-face {\n  font-family: '${meta.family}';\n  src: local('${meta.family}');\n  font-style: normal;\n  font-weight: ${meta.weight};\n}\n`;
+      console.warn(`  ⚠ Font file not found, using local() fallback: ${filename}.woff2`);
+    }
+  }
+
+  // Remove the self-hosted font <style> block and CDN fallback <link>
+  // Note: the font block regex may also capture the CDN link depending on whitespace;
+  // we handle both cases gracefully.
+  const beforeFontReplace = html;
   html = html.replace(
-    '<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">',
-    fontStyle
+    /    <!-- Self-hosted fonts.*?<\/style>\s*\n/s,
+    `    <style>\n${fontFaces}</style>\n`
   );
-  console.log('  ✓ Google Fonts replaced with offline fallbacks');
+  if (html === beforeFontReplace) {
+    console.warn('  ⚠ Self-hosted font block not found — fonts may already be processed or HTML structure changed');
+  }
+
+  // Remove CDN fallback <link> tag if it wasn't already captured above
+  if (html.includes('fonts.googleapis.com')) {
+    html = html.replace(
+      /    <!-- CDN fallback:.*?\n.*?rel="stylesheet">\n/s,
+      ''
+    );
+  }
+  console.log('  ✓ Fonts embedded and CDN link removed for offline use');
 
   // 2. Embed audio files ──────────────────────────────────────────────────────
   html = html.replace(/<audio([^>]*)\ssrc="([^"]+\.mp3)"([^>]*)>/g, (match, before, filename, after) => {
