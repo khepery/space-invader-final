@@ -1,0 +1,5 @@
+# Prevent search engines from indexing this educational game
+# The game is sold on Teachers Pay Teachers and should not
+# appear in public search results.
+User-agent: *
+Disallow: /
