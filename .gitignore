@@ -1,2 +1,17 @@
 Ultra_Pro_Space_Invaders_RELEASE.html
 xlsx.full.min.js
+
+# Development artifacts — do not deploy
+*.xlsx
+*original*.png
+*original*.jpg
+*original*.webp
+*.bak
+*.tmp
+
+# Old version files
+space invaders*.html
+space *.html
+test.html
+updated v*.html
+upload version*
