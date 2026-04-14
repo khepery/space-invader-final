@@ -67,17 +67,25 @@ async function build() {
     }
   }
 
-  // Remove the self-hosted font <style> block (everything between the comment and closing </style>)
+  // Remove the self-hosted font <style> block and CDN fallback <link>
+  // Note: the font block regex may also capture the CDN link depending on whitespace;
+  // we handle both cases gracefully.
+  const beforeFontReplace = html;
   html = html.replace(
-    /    <!-- Self-hosted fonts.*?<\/style>\n/s,
+    /    <!-- Self-hosted fonts.*?<\/style>\s*\n/s,
     `    <style>\n${fontFaces}</style>\n`
   );
+  if (html === beforeFontReplace) {
+    console.warn('  ⚠ Self-hosted font block not found — fonts may already be processed or HTML structure changed');
+  }
 
-  // Remove the CDN fallback <link> tag
-  html = html.replace(
-    /    <!-- CDN fallback:.*?\n.*?rel="stylesheet">\n/s,
-    ''
-  );
+  // Remove CDN fallback <link> tag if it wasn't already captured above
+  if (html.includes('fonts.googleapis.com')) {
+    html = html.replace(
+      /    <!-- CDN fallback:.*?\n.*?rel="stylesheet">\n/s,
+      ''
+    );
+  }
   console.log('  ✓ Fonts embedded and CDN link removed for offline use');
 
   // 2. Embed audio files ──────────────────────────────────────────────────────
