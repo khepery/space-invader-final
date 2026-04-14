@@ -1,0 +1,832 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background: #000;
+    font-family: 'Orbitron', sans-serif;
+    color: #fff;
+    user-select: none; 
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    position: relative;
+}
+
+/* Premium animated background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at center bottom, #001a44 0%, #000 70%);
+    z-index: -2;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at top right, rgba(138, 43, 226, 0.1) 0%, transparent 50%);
+    z-index: -1;
+    animation: nebulaPulse 20s ease-in-out infinite;
+}
+
+@keyframes nebulaPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.1; }
+}
+
+#gameContainer {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    margin: auto;
+    background: transparent;
+    overflow: hidden;
+}
+
+#gameCanvas {
+    display: block;
+    background: transparent;
+    touch-action: none;
+    cursor: crosshair;
+}
+
+/* Enhanced HUD styling */
+.hud-element {
+    position: absolute;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 20, 40, 0.9) 100%);
+    border: 2px solid #0ff;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), inset 0 0 10px rgba(0, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.hud-element.pulse {
+    animation: hudPulse 0.5s ease-out;
+}
+
+@keyframes hudPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Top-left micro pill */
+#hudTopLeft {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(0, 255, 255, 0.4);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 11px;
+    color: #fff;
+    backdrop-filter: blur(4px);
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    z-index: 10;
+}
+
+#hudPowerups {
+    position: absolute;
+    top: 42px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 15px;
+    padding: 4px 12px;
+    font-size: 10px;
+    color: #0ff;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+    min-height: 20px;
+}
+
+/* Combo counter with special effects */
+#comboContainer {
+    position: static;
+    text-align: right;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 18px;
+    color: #ff0;
+    text-shadow: 0 0 10px #ff0, 0 0 20px #ff8800;
+    opacity: 0;
+    transition: opacity 0.3s;
+    transform-origin: center;
+}
+
+#comboContainer.active {
+    opacity: 1;
+    animation: comboShake 0.3s ease-out;
+}
+
+#comboContainer.super {
+    color: #f0f;
+    text-shadow: 0 0 15px #f0f, 0 0 30px #ff00ff;
+    font-size: 24px;
+}
+
+@keyframes comboShake {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-5px) rotate(-5deg); }
+    75% { transform: translateX(5px) rotate(5deg); }
+}
+
+/* Multiplier display */
+#multiplierDisplay {
+    position: static;
+    text-align: right;
+    font-size: 16px;
+    color: #0ff;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#multiplierDisplay.active {
+    opacity: 1;
+}
+
+/* Enhanced control buttons */
+#controlButtons {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.control-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: rgba(0, 20, 40, 0.7);
+    border: 2px solid rgba(0, 255, 255, 0.4);
+    color: #0ff;
+    cursor: pointer;
+    padding: 0;
+    backdrop-filter: blur(4px);
+}
+
+.control-button:hover {
+    background: rgba(0, 60, 120, 0.8);
+    border-color: #0ff;
+}
+
+.control-button:active {
+    transform: translateY(0);
+}
+
+/* Premium health bar */
+#healthBarContainer {
+    position: relative;
+    width: 160px;
+    height: 30px;
+    border: 2px solid #0ff;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+#healthBar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #00ff00 0%, #00ffaa 50%, #00ff00 100%);
+    background-size: 200% 100%;
+    transition: width 0.3s ease, background 0.3s ease;
+    position: relative;
+    animation: healthGradient 3s linear infinite;
+}
+
+@keyframes healthGradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+#healthBar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(0,0,0,0.2) 100%);
+}
+
+#healthText {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    font-weight: bold;
+    color: #000;
+    text-shadow: 0 0 3px rgba(255,255,255,0.5);
+    z-index: 1;
+}
+
+/* Shield indicator */
+#shieldIndicator {
+    width: 160px;
+    height: 10px;
+    border: 1px solid #0ff;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#shieldIndicator.active {
+    opacity: 1;
+}
+
+#shieldBar {
+    height: 100%;
+    background: linear-gradient(90deg, #0ff, #00f);
+    width: 100%;
+    transition: width 0.1s linear;
+}
+
+/* Bottom-right cluster */
+#hudBottomRight {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    z-index: 10;
+}
+
+/* Top-right cluster */
+#hudTopRight {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 10;
+    width: 160px;
+}
+
+/* Streak display */
+#streakDisplay {
+    position: static;
+    text-align: right;
+    font-size: 16px;
+    color: #ff0;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-family: 'Press Start 2P', cursive;
+}
+
+#streakDisplay.active {
+    opacity: 1;
+    animation: streakGlow 1s ease-out;
+}
+
+@keyframes streakGlow {
+    0%, 100% { text-shadow: 0 0 10px #ff0; }
+    50% { text-shadow: 0 0 20px #ff0, 0 0 30px #ff8800; }
+}
+
+/* Enhanced intro screen */
+#introScreen {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, rgba(0, 20, 80, 0.95) 0%, rgba(0, 10, 40, 0.95) 100%);
+    padding: clamp(10px, 2vh, 40px);
+    border: 3px solid #0ff;
+    box-shadow: 0 0 50px #0ff, inset 0 0 30px rgba(0, 255, 255, 0.2);
+    border-radius: 20px;
+    text-align: center;
+    width: 80%;
+    max-width: 700px;
+    box-sizing: border-box;
+    animation: introSlide 0.5s ease-out;
+}
+
+@keyframes introSlide {
+    from {
+        transform: translate(-50%, -50%) scale(0.8) rotateX(90deg);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1) rotateX(0deg);
+        opacity: 1;
+    }
+}
+
+#introScreen h1 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: clamp(20px, 4vh, 32px);
+    margin-bottom: clamp(5px, 1vh, 10px);
+    background: linear-gradient(45deg, #0ff, #f0f, #0ff);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: titleGradient 3s linear infinite;
+}
+
+@keyframes titleGradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+#introScreen .subtitle {
+    font-size: clamp(11px, 2vh, 18px);
+    color: #ff0;
+    margin-bottom: clamp(8px, 1.5vh, 30px);
+    text-shadow: 0 0 10px #ff0;
+    letter-spacing: 3px;
+}
+
+/* Premium button */
+.game-button {
+    margin: clamp(5px, 0.8vh, 10px);
+    padding: clamp(10px, 1.5vh, 18px) 40px;
+    background: linear-gradient(45deg, #0066cc, #004499);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(0, 102, 204, 0.4);
+}
+
+.game-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+}
+
+.game-button:hover::before {
+    left: 100%;
+}
+
+.game-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 102, 204, 0.6);
+}
+
+/* Settings screen */
+#settingsScreen {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, rgba(0, 20, 80, 0.95) 0%, rgba(0, 10, 40, 0.95) 100%);
+    padding: clamp(10px, 1.5vh, 25px);
+    border: 3px solid #0ff;
+    border-radius: 20px;
+    text-align: center;
+    z-index: 5;
+    width: 92%;
+    max-width: 960px;
+    box-sizing: border-box;
+    box-shadow: 0 0 50px #0ff, inset 0 0 30px rgba(0, 255, 255, 0.1);
+}
+
+/* Enhanced action buttons */
+.action-button {
+    display: inline-block;
+    margin: 8px;
+    padding: 0;
+    background: linear-gradient(135deg, rgba(0, 60, 120, 0.9) 0%, rgba(0, 30, 60, 0.9) 100%);
+    border: 2px solid #0ff;
+    border-radius: 15px;
+    cursor: pointer;
+    min-width: 220px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+}
+
+.action-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.action-button:hover::before {
+    left: 100%;
+}
+
+.action-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5);
+    background: linear-gradient(135deg, rgba(0, 80, 160, 0.9) 0%, rgba(0, 40, 80, 0.9) 100%);
+}
+
+.action-button.danger {
+    background: linear-gradient(135deg, rgba(120, 30, 30, 0.9) 0%, rgba(60, 15, 15, 0.9) 100%);
+    border-color: #f88;
+    box-shadow: 0 5px 15px rgba(255, 136, 136, 0.3);
+}
+
+.action-button.danger:hover {
+    background: linear-gradient(135deg, rgba(160, 40, 40, 0.9) 0%, rgba(80, 20, 20, 0.9) 100%);
+    box-shadow: 0 8px 25px rgba(255, 136, 136, 0.5);
+}
+
+.button-icon {
+    display: block;
+    font-size: clamp(16px, 2.5vh, 28px);
+    padding-top: clamp(8px, 1.2vh, 15px);
+    padding-bottom: clamp(2px, 0.5vh, 5px);
+}
+
+.button-text {
+    display: block;
+    color: #fff;
+    font-weight: 700;
+    font-size: clamp(10px, 1.4vh, 14px);
+    padding: 0 clamp(10px, 1.5vw, 20px);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.button-subtitle {
+    display: block;
+    color: #8cf;
+    font-size: clamp(8px, 1.1vh, 11px);
+    padding: 0 clamp(10px, 1.5vw, 20px) clamp(8px, 1.2vh, 15px);
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+.action-button.danger .button-subtitle {
+    color: #faa;
+}
+
+/* Basic quiz option style for other buttons */
+.quiz-option {
+    margin: 10px;
+    padding: 12px 25px;
+    background: rgba(0,50,100,0.8);
+    border: 2px solid #0ff;
+    color: #0ff;
+    cursor: pointer;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.quiz-option:hover {
+    background: rgba(0,100,200,0.9);
+    box-shadow: 0 0 20px #0ff;
+}
+
+#settingsScreen::-webkit-scrollbar {
+    width: 10px;
+}
+
+#settingsScreen::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+}
+
+#settingsScreen::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #0ff, #00f);
+    border-radius: 10px;
+}
+
+@media (max-width: 600px), (max-height: 550px) {
+    #missionConfigGrid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Quiz container with premium effects */
+.quiz-container {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, rgba(0, 30, 100, 0.95) 0%, rgba(0, 15, 50, 0.95) 100%);
+    padding: clamp(15px, 3vh, 40px);
+    border: 3px solid #0ff;
+    border-radius: 20px;
+    width: 80%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    text-align: center;
+    z-index: 6;
+    box-shadow: 0 0 60px #0ff, inset 0 0 30px rgba(0, 255, 255, 0.2);
+    animation: quizAppear 0.5s ease-out;
+}
+
+@keyframes quizAppear {
+    from {
+        transform: translate(-50%, -50%) scale(0) rotate(180deg);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* Quiz timer with circular progress */
+#quizTimerContainer {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timer-circle {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    top: 0;
+    left: 0;
+}
+
+.timer-circle-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 8;
+}
+
+.timer-circle-progress {
+    fill: none;
+    stroke: #0ff;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.3s;
+}
+
+.timer-circle-progress.warning {
+    stroke: #ff0;
+}
+
+.timer-circle-progress.danger {
+    stroke: #f00;
+}
+
+#quizTimerText {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+    font-family: 'Press Start 2P', cursive;
+}
+
+/* Power-up message with effects */
+#powerupMessage {
+    display: none;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, rgba(0, 50, 150, 0.95) 0%, rgba(0, 25, 75, 0.95) 100%);
+    padding: 30px 50px;
+    border: 3px solid #0ff;
+    border-radius: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    z-index: 6;
+    box-shadow: 0 0 50px #0ff;
+    animation: powerupBounce 0.5s ease-out;
+}
+
+@keyframes powerupBounce {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    60% {
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Game over screen */
+#gameOverScreen {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, rgba(50, 0, 0, 0.95) 0%, rgba(20, 0, 0, 0.95) 100%);
+    border: 3px solid #f00;
+    border-radius: 20px;
+    text-align: center;
+    width: 80%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: clamp(15px, 3vh, 40px);
+    z-index: 6;
+    box-shadow: 0 0 60px #f00;
+    animation: gameOverZoom 0.5s ease-out;
+}
+
+@keyframes gameOverZoom {
+    from {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+#gameOverScreen.victory {
+    background: linear-gradient(135deg, rgba(0, 50, 0, 0.95) 0%, rgba(0, 25, 0, 0.95) 100%);
+    border-color: #0f0;
+    box-shadow: 0 0 60px #0f0;
+}
+
+#gameOverScreen h2 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 36px;
+    margin-bottom: 30px;
+    text-shadow: 0 0 30px currentColor;
+}
+
+/* Achievement notifications */
+#achievementNotification {
+    position: absolute;
+    top: 50%;
+    right: -400px;
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.9) 0%, rgba(255, 140, 0, 0.9) 100%);
+    padding: 20px 30px;
+    border-radius: 10px;
+    color: #000;
+    font-weight: bold;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+    transition: right 0.5s ease-out;
+    z-index: 10;
+}
+
+#achievementNotification.show {
+    right: 20px;
+}
+
+/* Damage numbers */
+.damage-number {
+    position: absolute;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 16px;
+    font-weight: bold;
+    pointer-events: none;
+    animation: damageFloat 1s ease-out forwards;
+}
+
+@keyframes damageFloat {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-50px) scale(0.5);
+        opacity: 0;
+    }
+}
+
+/* Warning indicator */
+#warningIndicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: #f00;
+    font-weight: bold;
+    text-shadow: 0 0 20px #f00;
+    opacity: 0;
+    display: none;
+    pointer-events: none;
+    animation: none;
+}
+
+@keyframes warningPulse {
+    0%, 100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.5);
+    }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .hud-element {
+        font-size: 12px;
+        padding: 8px 15px;
+    }
+    
+    .control-button {
+        padding: 8px 12px;
+        font-size: 10px;
+    }
+    
+    #controlButtons {
+        gap: 5px;
+    }
+
+    #helpBtn { display: none; }
+    
+    #healthBarContainer {
+        width: 150px;
+        height: 25px;
+    }
+    
+    #comboContainer {
+        font-size: 14px;
+    }
+    
+    #introScreen h1 {
+        font-size: 24px;
+    }
+}
+
+/* Loading animation */
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.loading-text {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 24px;
+    color: #0ff;
+    animation: loadingBlink 1s ease-in-out infinite;
+}
+
+@keyframes loadingBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}

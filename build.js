@@ -20,6 +20,29 @@ async function build() {
   console.log('Reading index.html…');
   let html = fs.readFileSync(INPUT, 'utf8');
 
+  // 0. Inline external CSS and JS files ────────────────────────────────────────
+  //    The source code uses separate files for maintainability, but the release
+  //    must be a single self-contained HTML file.
+  const cssPath = path.join(ROOT, 'styles.css');
+  if (fs.existsSync(cssPath)) {
+    const css = fs.readFileSync(cssPath, 'utf8');
+    html = html.replace(
+      /    <link rel="stylesheet" href="\.\/styles\.css">/,
+      `    <style>\n${css.replace(/^/gm, '        ')}\n    </style>`
+    );
+    console.log('  ✓ Inlined styles.css');
+  }
+
+  const jsPath = path.join(ROOT, 'game.js');
+  if (fs.existsSync(jsPath)) {
+    const js = fs.readFileSync(jsPath, 'utf8');
+    html = html.replace(
+      /    <script src="\.\/game\.js"><\/script>/,
+      `    <script>\n${js}\n    </script>`
+    );
+    console.log('  ✓ Inlined game.js');
+  }
+
   // 1. Embed fonts for offline use ─────────────────────────────────────────────
   //    Replace self-hosted @font-face rules with Base64-embedded woff2 files
   //    and remove the CDN fallback <link> tag entirely.
