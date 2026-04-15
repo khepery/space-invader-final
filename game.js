@@ -2048,17 +2048,19 @@ let touchX = 0;
 // Called each frame before updatePlayer to sync pointer state into legacy vars.
 function syncPointerState() {
     if (activePointers.size > 0) {
-        // Use the most-recently-updated pointer (last in iteration order).
-        let lastPtr = null;
+        // Pick the first active (pressed) pointer found in the map.
+        let found = false;
         for (const ptr of activePointers.values()) {
-            if (ptr.pressed) lastPtr = ptr;
+            if (ptr.pressed) {
+                isMousePressed = true;
+                isTouching = true;
+                mouseX = ptr.x;
+                touchX = ptr.x;
+                found = true;
+                break;
+            }
         }
-        if (lastPtr) {
-            isMousePressed = true;
-            isTouching = true;
-            mouseX = lastPtr.x;
-            touchX = lastPtr.x;
-        } else {
+        if (!found) {
             isMousePressed = false;
             isTouching = false;
         }

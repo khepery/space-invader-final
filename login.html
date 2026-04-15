@@ -103,6 +103,23 @@
       letter-spacing: 0.1em;
     }
 
+    .input-wrapper {
+      position: relative;
+    }
+
+    #toggleVisibility {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: #0ff8;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0.3rem;
+    }
+
     #launchBtn {
       width: 100%;
       background: transparent;
@@ -159,7 +176,7 @@
 
     <div class="panel">
       <label class="label" for="codeInput">ENTER ACCESS CODE</label>
-      <div style="position: relative;">
+      <div class="input-wrapper">
         <input
           id="codeInput"
           type="password"
@@ -167,7 +184,7 @@
           spellcheck="false"
           placeholder="e.g. GALAXY2026"
         />
-        <button id="toggleVisibility" type="button" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#0ff8; font-size:1rem; cursor:pointer; padding:0.3rem;" aria-label="Show access code">👁</button>
+        <button id="toggleVisibility" type="button" aria-label="Show access code">👁</button>
       </div>
       <button id="launchBtn">[ LAUNCH GAME &#8594; ]</button>
       <div id="status" role="alert" aria-live="polite"></div>
