@@ -560,12 +560,24 @@ Category: Math
   red cursor on the right game window. They race through waves and compare scores at the end!
 </div>
 
-<h3>Alternative: One Mouse + One Keyboard</h3>
+<h3>Why Mouse + Keyboard Is Not Two-Player</h3>
+<div class="tip">
+  <strong>Important:</strong> You might expect that one student could use the mouse while another
+  uses the keyboard to create a two-player experience — but this does <strong>not</strong> work.
+  Both mouse and keyboard inputs control the <strong>same ship</strong> in the same game instance.
+  In a split-screen setup (two browser windows), the keyboard always sends input to whichever
+  window is focused, and there is only one mouse cursor — so you cannot independently control
+  two separate windows with mouse and keyboard.
+</div>
 <p>
-  If two-mouse software isn't available, one student can use the <strong>mouse</strong>
-  (move + click to shoot) while the other uses the <strong>keyboard</strong>
-  (arrow keys + spacebar) — but this only works in a single game instance, not split-screen.
+  For true simultaneous two-player gameplay you need one of these setups:
 </p>
+<ul>
+  <li><strong>Touchscreen display</strong> — each student touches their own half of the screen;
+      touch events are routed per-window (see <a href="#touchscreen-setup">Section 10</a>).</li>
+  <li><strong>Two mice with multi-cursor software</strong> — each mouse gets its own independent
+      cursor that can interact with a different window (see above).</li>
+</ul>
 
 <!-- ════════════════════════════════════════════════════════════════════ -->
 <!-- 12. FAQ                                                            -->
