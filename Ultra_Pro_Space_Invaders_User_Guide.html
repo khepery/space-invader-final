@@ -645,8 +645,27 @@ Category: Math
 <!-- 14. CHANGING THE ACCESS CODE                                       -->
 <!-- ════════════════════════════════════════════════════════════════════ -->
 <h2 id="changing-password">14. Changing the Access Code</h2>
+
+<h3>Option A: Teacher Settings Panel (Recommended)</h3>
 <p>
-  You can change the access code at any time by editing a single file:
+  The easiest way to change the access code is directly from the login page — no file editing required:
+</p>
+<ol>
+  <li>On the login page, click the <strong>⚙ Teacher Settings</strong> button at the bottom.</li>
+  <li>Enter the <strong>current access code</strong> to verify you are the teacher.</li>
+  <li>Enter and confirm your <strong>new access code</strong>, then click <strong>Save New Code</strong>.</li>
+  <li>The new code takes effect immediately. Share it with your students.</li>
+</ol>
+<div class="tip">
+  The Teacher Settings panel stores your custom code in the browser's localStorage.
+  This means the change is <strong>per-device</strong> — if you use the game on multiple
+  computers, you'll need to set the code on each one. To reset back to the original default
+  code (from config.js), use the <strong>Reset to Default</strong> button in the panel.
+</div>
+
+<h3>Option B: Edit config.js (Advanced)</h3>
+<p>
+  You can also change the default access code by editing the source file directly:
 </p>
 <ol>
   <li>Open the file <code>config.js</code> in any text editor (Notepad, VS Code, etc.).</li>
@@ -661,7 +680,7 @@ window.SITE_CONFIG = {
 };
 </pre>
 <div class="important">
-  After changing the code, tell your students the new code.
+  After changing the code (either way), tell your students the new code.
   Students who previously logged in with the old code will need to enter the new one.
 </div>
 <div class="tip">

@@ -165,6 +165,158 @@
       color: #0ff7;
       line-height: 1.7;
     }
+
+    /* Teacher Settings button */
+    #teacherSettingsBtn {
+      margin-top: 1.2rem;
+      background: transparent;
+      border: 1px solid #0ff4;
+      color: #0ff6;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      border-radius: 2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    #teacherSettingsBtn:hover {
+      color: #0ff;
+      border-color: #0ff;
+    }
+
+    /* Modal overlay */
+    #teacherModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 10;
+      align-items: center;
+      justify-content: center;
+    }
+    #teacherModal.open {
+      display: flex;
+    }
+
+    .modal-content {
+      position: relative;
+      max-width: 420px;
+      width: 90%;
+      border: 2px solid #0ff;
+      border-radius: 4px;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 0 30px #0ff4, inset 0 0 20px #0ff1;
+      background: rgba(0,10,20,0.97);
+      text-align: center;
+    }
+    .modal-content h2 {
+      font-size: clamp(0.7rem, 2.5vw, 0.95rem);
+      letter-spacing: 0.12em;
+      color: #0ff;
+      text-shadow: 0 0 8px #0ff;
+      margin-bottom: 1.5rem;
+    }
+    .modal-content input {
+      width: 100%;
+      background: #000;
+      border: 1px solid #0ff;
+      color: #0ff;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: clamp(0.7rem, 2.5vw, 0.85rem);
+      letter-spacing: 0.15em;
+      padding: 0.6rem 0.8rem;
+      text-align: center;
+      text-transform: uppercase;
+      outline: none;
+      box-shadow: 0 0 6px #0ff3;
+      border-radius: 2px;
+      margin-bottom: 0.8rem;
+      caret-color: #0ff;
+    }
+    .modal-content input:focus {
+      box-shadow: 0 0 12px #0ff6;
+    }
+    .modal-content input::placeholder {
+      color: #0ff4;
+      letter-spacing: 0.1em;
+      text-transform: none;
+    }
+    .modal-content .label {
+      display: block;
+      font-size: 0.55rem;
+      letter-spacing: 0.12em;
+      color: #0cf;
+      margin-bottom: 0.4rem;
+      margin-top: 0.6rem;
+      text-transform: uppercase;
+    }
+
+    .modal-btn {
+      display: block;
+      width: 100%;
+      background: transparent;
+      border: 2px solid #0ff;
+      color: #0ff;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: clamp(0.6rem, 2vw, 0.75rem);
+      letter-spacing: 0.12em;
+      padding: 0.7rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      box-shadow: 0 0 8px #0ff3;
+      border-radius: 2px;
+      margin-top: 0.6rem;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .modal-btn:hover {
+      background: rgba(0,255,255,0.1);
+      box-shadow: 0 0 16px #0ff6;
+    }
+    .modal-btn.secondary {
+      border-color: #fa0;
+      color: #fa0;
+      box-shadow: 0 0 8px rgba(255,170,0,0.2);
+      font-size: clamp(0.5rem, 1.8vw, 0.65rem);
+    }
+    .modal-btn.secondary:hover {
+      background: rgba(255,170,0,0.1);
+      box-shadow: 0 0 16px rgba(255,170,0,0.4);
+    }
+    .modal-btn.close-btn {
+      margin-top: 1.2rem;
+      border-color: #555;
+      color: #888;
+      box-shadow: none;
+    }
+    .modal-btn.close-btn:hover {
+      color: #ccc;
+      border-color: #888;
+    }
+
+    .current-code-display {
+      font-size: 0.6rem;
+      color: #0ff8;
+      margin-bottom: 1rem;
+      letter-spacing: 0.08em;
+    }
+    .current-code-display strong {
+      color: #ff0;
+      letter-spacing: 0.2em;
+    }
+
+    #authStatus, #changeStatus {
+      min-height: 1.2rem;
+      margin-top: 0.6rem;
+      font-size: 0.55rem;
+      letter-spacing: 0.08em;
+      line-height: 1.4;
+    }
+    #authStatus.error, #changeStatus.error { color: #f44; text-shadow: 0 0 6px #f44; }
+    #authStatus.info, #changeStatus.info   { color: #0ff; text-shadow: 0 0 6px #0ff; }
+    #changeStatus.success { color: #0f0; text-shadow: 0 0 6px #0f0; }
   </style>
 </head>
 <body>
@@ -194,6 +346,37 @@
       Purchased on Teachers Pay Teachers?<br />
       Your access code is included in your purchase.
     </p>
+
+    <button id="teacherSettingsBtn" type="button">&#9881; Teacher Settings</button>
+  </div>
+
+  <!-- Teacher Settings Modal -->
+  <div id="teacherModal" role="dialog" aria-labelledby="teacherModalTitle" aria-modal="true">
+    <div class="modal-content">
+      <h2 id="teacherModalTitle">&#9881; TEACHER SETTINGS</h2>
+
+      <!-- Step 1: Authenticate -->
+      <div id="authStep">
+        <label class="label" for="authInput">ENTER CURRENT ACCESS CODE</label>
+        <input id="authInput" type="password" autocomplete="off" spellcheck="false" placeholder="Current code" />
+        <button id="authBtn" class="modal-btn">VERIFY</button>
+        <div id="authStatus" role="alert" aria-live="polite"></div>
+      </div>
+
+      <!-- Step 2: Change code -->
+      <div id="changeStep" style="display:none;">
+        <p class="current-code-display">Current code: <strong id="currentCodeDisplay"></strong></p>
+        <label class="label" for="newCodeInput">NEW ACCESS CODE</label>
+        <input id="newCodeInput" type="text" autocomplete="off" spellcheck="false" placeholder="Enter new code" maxlength="40" />
+        <label class="label" for="confirmCodeInput">CONFIRM NEW CODE</label>
+        <input id="confirmCodeInput" type="text" autocomplete="off" spellcheck="false" placeholder="Re-enter new code" maxlength="40" />
+        <button id="saveCodeBtn" class="modal-btn">SAVE NEW CODE</button>
+        <button id="resetCodeBtn" class="modal-btn secondary">RESET TO DEFAULT</button>
+        <div id="changeStatus" role="alert" aria-live="polite"></div>
+      </div>
+
+      <button id="closeModalBtn" class="modal-btn close-btn">CLOSE</button>
+    </div>
   </div>
 
   <script>
@@ -302,15 +485,30 @@
 
     /* ── Access-code logic ──────────────────────────────────────────── */
     (function () {
-      var STORAGE_KEY = 'siAccessGranted';
-      var GAME_URL    = './index.html';
+      var STORAGE_KEY       = 'siAccessGranted';
+      var CODE_OVERRIDE_KEY = 'siAccessCodeOverride';
+      var GAME_URL          = './index.html';
 
       /* Code is defined in config.js (loaded via <script src> above).
-         Edit config.js to change the access code — no other file needs updating. */
+         Teachers can override the code via the Teacher Settings panel,
+         which stores the override in localStorage. The override takes
+         priority; config.js acts as the factory default. */
       var cfg  = (window.SITE_CONFIG && typeof window.SITE_CONFIG.code === 'string')
                    ? window.SITE_CONFIG
                    : null;
-      var CODE = cfg ? cfg.code.toUpperCase() : '';
+      var DEFAULT_CODE = cfg ? cfg.code.toUpperCase() : '';
+
+      function getActiveCode() {
+        try {
+          var override = localStorage.getItem(CODE_OVERRIDE_KEY);
+          if (override && typeof override === 'string' && override.trim()) {
+            return override.toUpperCase();
+          }
+        } catch(e) {}
+        return DEFAULT_CODE;
+      }
+
+      var CODE = getActiveCode();
 
       var input    = document.getElementById('codeInput');
       var btn      = document.getElementById('launchBtn');
@@ -382,6 +580,150 @@
           input.focus();
         });
       }
+
+      /* ── Teacher Settings Modal ────────────────────────────────────── */
+      var modal          = document.getElementById('teacherModal');
+      var openBtn        = document.getElementById('teacherSettingsBtn');
+      var closeBtn       = document.getElementById('closeModalBtn');
+      var authStep       = document.getElementById('authStep');
+      var changeStep     = document.getElementById('changeStep');
+      var authInput      = document.getElementById('authInput');
+      var authBtn        = document.getElementById('authBtn');
+      var authStatus     = document.getElementById('authStatus');
+      var currentDisplay = document.getElementById('currentCodeDisplay');
+      var newCodeInput   = document.getElementById('newCodeInput');
+      var confirmInput   = document.getElementById('confirmCodeInput');
+      var saveBtn        = document.getElementById('saveCodeBtn');
+      var resetBtn       = document.getElementById('resetCodeBtn');
+      var changeStatus   = document.getElementById('changeStatus');
+
+      function setAuthStatus(msg, type) {
+        authStatus.className = type || '';
+        authStatus.innerHTML = msg;
+      }
+      function setChangeStatus(msg, type) {
+        changeStatus.className = type || '';
+        changeStatus.innerHTML = msg;
+      }
+
+      function openModal() {
+        /* Reset modal to auth step */
+        authStep.style.display = '';
+        changeStep.style.display = 'none';
+        authInput.value = '';
+        newCodeInput.value = '';
+        confirmInput.value = '';
+        setAuthStatus('');
+        setChangeStatus('');
+        modal.classList.add('open');
+        authInput.focus();
+      }
+
+      function closeModal() {
+        modal.classList.remove('open');
+      }
+
+      function showChangeStep() {
+        authStep.style.display = 'none';
+        changeStep.style.display = '';
+        currentDisplay.textContent = CODE;
+        newCodeInput.value = '';
+        confirmInput.value = '';
+        setChangeStatus('');
+        newCodeInput.focus();
+      }
+
+      /* Authenticate teacher with current code */
+      function authenticate() {
+        var entered = authInput.value.trim();
+        if (!entered) {
+          setAuthStatus('Please enter the current access code.', 'error');
+          authInput.focus();
+          return;
+        }
+        if (entered.toUpperCase() === CODE) {
+          setAuthStatus('&#10003; Verified!', 'info');
+          setTimeout(showChangeStep, 400);
+        } else {
+          setAuthStatus('&#10060; Incorrect code.', 'error');
+          authInput.focus();
+        }
+      }
+
+      /* Save new code */
+      function saveNewCode() {
+        var newCode    = newCodeInput.value.trim();
+        var confirmCode = confirmInput.value.trim();
+
+        if (!newCode) {
+          setChangeStatus('Please enter a new code.', 'error');
+          newCodeInput.focus();
+          return;
+        }
+        if (newCode.length < 3) {
+          setChangeStatus('Code must be at least 3 characters.', 'error');
+          newCodeInput.focus();
+          return;
+        }
+        if (newCode.toUpperCase() !== confirmCode.toUpperCase()) {
+          setChangeStatus('Codes do not match. Please re-enter.', 'error');
+          confirmInput.focus();
+          return;
+        }
+        try {
+          localStorage.setItem(CODE_OVERRIDE_KEY, newCode.toUpperCase());
+          /* Clear the saved student login so they need the new code */
+          localStorage.removeItem(STORAGE_KEY);
+          CODE = newCode.toUpperCase();
+          currentDisplay.textContent = CODE;
+          setChangeStatus('&#10003; Access code updated to: ' + CODE, 'success');
+          newCodeInput.value = '';
+          confirmInput.value = '';
+          /* Also clear the main login field */
+          input.value = '';
+          setStatus('');
+        } catch(e) {
+          setChangeStatus('&#9888; Could not save. localStorage may be disabled.', 'error');
+        }
+      }
+
+      /* Reset to config.js default */
+      function resetToDefault() {
+        try {
+          localStorage.removeItem(CODE_OVERRIDE_KEY);
+          localStorage.removeItem(STORAGE_KEY);
+          CODE = DEFAULT_CODE;
+          currentDisplay.textContent = CODE;
+          setChangeStatus('&#10003; Reset to default: ' + CODE, 'success');
+          input.value = '';
+          setStatus('');
+        } catch(e) {
+          setChangeStatus('&#9888; Could not reset. localStorage may be disabled.', 'error');
+        }
+      }
+
+      /* Event listeners */
+      openBtn.addEventListener('click', openModal);
+      closeBtn.addEventListener('click', closeModal);
+      authBtn.addEventListener('click', authenticate);
+      authInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') authenticate(); });
+      saveBtn.addEventListener('click', saveNewCode);
+      confirmInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') saveNewCode(); });
+      resetBtn.addEventListener('click', function() {
+        if (confirm('Reset access code to the default from config.js?\n\nDefault: ' + DEFAULT_CODE)) {
+          resetToDefault();
+        }
+      });
+
+      /* Close modal on backdrop click */
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+      });
+
+      /* Close modal on Escape key */
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+      });
     })();
   </script>
 </body>
