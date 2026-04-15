@@ -2002,75 +2002,90 @@ document.addEventListener('keyup', e => {
     if (e.key === ' ') keys.space = false;
 });
 
-// Mouse events
-let isMousePressed = false;
-let mouseX = 0;
+// Pointer events — unified handler for mouse, touch, pen, and multi-pointer devices.
+// Uses the Pointer Events API so each pointer (finger, mouse, stylus) gets its own ID.
+// On touchscreens every finger is tracked independently.
+// With multi-cursor software (e.g. TeamPlayer, MouseMux) each mouse also gets a unique
+// pointerId, enabling true dual-mouse play in split-screen setups.
+let activePointers = new Map(); // pointerId → { x, pressed }
 
-canvas.addEventListener('mousedown', (e) => {
+canvas.addEventListener('pointerdown', e => {
     if (!gameRunning || gamePaused) return;
-    isMousePressed = true;
-});
-
-canvas.addEventListener('mouseup', () => {
-    isMousePressed = false;
-});
-
-canvas.addEventListener('mouseleave', () => {
-    isMousePressed = false;
-});
-
-canvas.addEventListener('mousemove', e => {
-    if (!gameRunning || gamePaused) return;
-    
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
     const rect = canvas.getBoundingClientRect();
-    mouseX = e.clientX - rect.left;
-});
-
-// Touch events
-let touchX = 0;
-let isTouching = false;
-
-canvas.addEventListener('touchstart', e => {
-    if (!gameRunning || gamePaused) return;
-    
-    e.preventDefault();
-    if (e.touches.length === 1) {
-        isTouching = true;
-        touchX = e.touches[0].clientX;
-    }
-}, {passive: false});
-
-canvas.addEventListener('touchmove', e => {
-    if (!gameRunning || gamePaused) return;
-    
-    e.preventDefault();
-    if (isTouching && e.touches.length === 1) {
-        const rect = canvas.getBoundingClientRect();
-        touchX = e.touches[0].clientX - rect.left;
-    }
+    activePointers.set(e.pointerId, { x: e.clientX - rect.left, pressed: true });
 }, { passive: false });
 
-canvas.addEventListener('touchend', e => {
-    e.preventDefault();
-    isTouching = false;
-}, {passive: false});
+canvas.addEventListener('pointermove', e => {
+    if (!gameRunning || gamePaused) return;
+    const ptr = activePointers.get(e.pointerId);
+    if (ptr) {
+        const rect = canvas.getBoundingClientRect();
+        ptr.x = e.clientX - rect.left;
+    }
+});
 
-// Mobile on-screen controls
-window.addEventListener('touchstart', () => {
-    const mobileControls = document.getElementById('mobileControls');
-    if (mobileControls) mobileControls.style.display = 'block';
+canvas.addEventListener('pointerup', e => {
+    activePointers.delete(e.pointerId);
+});
+
+canvas.addEventListener('pointercancel', e => {
+    activePointers.delete(e.pointerId);
+});
+
+canvas.addEventListener('pointerleave', e => {
+    activePointers.delete(e.pointerId);
+});
+
+// Compatibility shims: keep the legacy variables so the rest of the game code
+// (updatePlayer, shooting logic, etc.) continues to work without changes.
+let isMousePressed = false;
+let mouseX = 0;
+let isTouching = false;
+let touchX = 0;
+
+// Called each frame before updatePlayer to sync pointer state into legacy vars.
+function syncPointerState() {
+    if (activePointers.size > 0) {
+        // Use the most-recently-updated pointer (last in iteration order).
+        let lastPtr = null;
+        for (const ptr of activePointers.values()) {
+            if (ptr.pressed) lastPtr = ptr;
+        }
+        if (lastPtr) {
+            isMousePressed = true;
+            isTouching = true;
+            mouseX = lastPtr.x;
+            touchX = lastPtr.x;
+        } else {
+            isMousePressed = false;
+            isTouching = false;
+        }
+    } else {
+        isMousePressed = false;
+        isTouching = false;
+    }
+}
+
+// Mobile on-screen controls — show on first touch/pointer-touch interaction
+window.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch') {
+        const mobileControls = document.getElementById('mobileControls');
+        if (mobileControls) mobileControls.style.display = 'block';
+    }
 }, { once: true });
 
 const leftBtn = document.getElementById('leftBtn');
 const rightBtn = document.getElementById('rightBtn');
 
-leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.left = true; }, { passive: false });
-leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys.left = false; }, { passive: false });
-leftBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys.left = false; }, { passive: false });
+leftBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); keys.left = true; });
+leftBtn.addEventListener('pointerup',   (e) => { e.preventDefault(); keys.left = false; });
+leftBtn.addEventListener('pointercancel', (e) => { e.preventDefault(); keys.left = false; });
 
-rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.right = true; }, { passive: false });
-rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys.right = false; }, { passive: false });
-rightBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys.right = false; }, { passive: false });
+rightBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); keys.right = true; });
+rightBtn.addEventListener('pointerup',   (e) => { e.preventDefault(); keys.right = false; });
+rightBtn.addEventListener('pointercancel', (e) => { e.preventDefault(); keys.right = false; });
 
 // Particle effects
 function createExplosionParticles(x, y, count, color) {
@@ -2499,6 +2514,9 @@ function initializeGameState() {
 
 // Player update and draw
 function updatePlayer(deltaTime) {
+    // Sync pointer events into legacy mouse/touch variables
+    syncPointerState();
+
     // Handle keyboard input
     if (keys.left) {
         player.x -= player.speed * (deltaTime / 16.67);
