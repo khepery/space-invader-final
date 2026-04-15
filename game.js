@@ -653,7 +653,7 @@ Category: Geography
 importExcelBtn.addEventListener('click', () => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.txt,.text';
+    input.accept = '.txt,.text,.csv,.xlsx,.xls';
     input.onchange = (e) => {
         handleTextImport(e);
     };
@@ -760,6 +760,10 @@ addQuestionSetBtn.addEventListener('click', () => {
 cancelNewQuestionBtn.addEventListener('click', () => {
     questionForm.style.display = 'none';
     settingsScreen.style.display = 'flex';
+    newQuestionText.value = '';
+    newOptions.forEach(i => i.value = '');
+    correctAnswer.value = '0';
+    questionCategory.value = '';
 });
 
 viewQuestionsBtn.addEventListener('click', () => {

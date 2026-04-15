@@ -72,7 +72,7 @@ async function build() {
   // we handle both cases gracefully.
   const beforeFontReplace = html;
   html = html.replace(
-    /    <!-- Self-hosted fonts.*?<\/style>\s*\n/s,
+    /    <!-- Self-hosted fonts.*?<\/style>\s*\r?\n/s,
     `    <style>\n${fontFaces}</style>\n`
   );
   if (html === beforeFontReplace) {
@@ -82,7 +82,7 @@ async function build() {
   // Remove CDN fallback <link> tag if it wasn't already captured above
   if (html.includes('fonts.googleapis.com')) {
     html = html.replace(
-      /    <!-- CDN fallback:.*?\n.*?rel="stylesheet">\n/s,
+      /    <!-- CDN fallback:.*?\r?\n.*?rel="stylesheet">\r?\n/s,
       ''
     );
   }
