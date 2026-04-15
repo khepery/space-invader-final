@@ -103,6 +103,23 @@
       letter-spacing: 0.1em;
     }
 
+    .input-wrapper {
+      position: relative;
+    }
+
+    #toggleVisibility {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: #0ff8;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0.3rem;
+    }
+
     #launchBtn {
       width: 100%;
       background: transparent;
@@ -159,13 +176,16 @@
 
     <div class="panel">
       <label class="label" for="codeInput">ENTER ACCESS CODE</label>
-      <input
-        id="codeInput"
-        type="text"
-        autocomplete="off"
-        spellcheck="false"
-        placeholder="e.g. GALAXY2026"
-      />
+      <div class="input-wrapper">
+        <input
+          id="codeInput"
+          type="password"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="e.g. GALAXY2026"
+        />
+        <button id="toggleVisibility" type="button" aria-label="Show access code">👁</button>
+      </div>
       <button id="launchBtn">[ LAUNCH GAME &#8594; ]</button>
       <div id="status" role="alert" aria-live="polite"></div>
     </div>
@@ -345,6 +365,23 @@
       input.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') launch();
       });
+
+      /* Toggle code visibility */
+      var toggleBtn = document.getElementById('toggleVisibility');
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', function () {
+          if (input.type === 'password') {
+            input.type = 'text';
+            toggleBtn.textContent = '\uD83D\uDE48'; // 🙈
+            toggleBtn.setAttribute('aria-label', 'Hide access code');
+          } else {
+            input.type = 'password';
+            toggleBtn.textContent = '\uD83D\uDC41'; // 👁
+            toggleBtn.setAttribute('aria-label', 'Show access code');
+          }
+          input.focus();
+        });
+      }
     })();
   </script>
 </body>

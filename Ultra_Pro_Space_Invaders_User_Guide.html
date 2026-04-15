@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultra Pro Space Invaders — User Guide</title>
+<style>
+  @page {
+    size: letter;
+    margin: 0.75in 0.85in;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color: #1a1a2e;
+    line-height: 1.6;
+    background: #fff;
+    max-width: 8.5in;
+    margin: 0 auto;
+    padding: 0.5in;
+  }
+
+  /* ── Cover Page ───────────────────────────────────────────────── */
+  .cover {
+    text-align: center;
+    padding: 1.5in 0 1in;
+    page-break-after: always;
+  }
+  .cover h1 {
+    font-size: 2.2rem;
+    letter-spacing: 0.08em;
+    color: #0a0a2e;
+    margin-bottom: 0.3rem;
+  }
+  .cover .edition {
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    color: #007acc;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .cover .tagline {
+    font-size: 1.1rem;
+    color: #444;
+    font-style: italic;
+    margin-bottom: 3rem;
+  }
+  .cover .info {
+    font-size: 0.85rem;
+    color: #666;
+    line-height: 1.8;
+  }
+
+  /* ── Headings ─────────────────────────────────────────────────── */
+  h2 {
+    font-size: 1.4rem;
+    color: #0a0a2e;
+    border-bottom: 3px solid #007acc;
+    padding-bottom: 0.3rem;
+    margin: 1.6rem 0 0.8rem;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 1.1rem;
+    color: #007acc;
+    margin: 1.2rem 0 0.5rem;
+    page-break-after: avoid;
+  }
+
+  /* ── Body ─────────────────────────────────────────────────────── */
+  p { margin-bottom: 0.6rem; }
+  ul, ol { margin: 0.4rem 0 0.8rem 1.4rem; }
+  li { margin-bottom: 0.35rem; }
+
+  /* ── Callout boxes ────────────────────────────────────────────── */
+  .tip, .important, .example {
+    border-left: 4px solid;
+    padding: 0.7rem 1rem;
+    margin: 0.8rem 0;
+    border-radius: 0 6px 6px 0;
+    page-break-inside: avoid;
+  }
+  .tip       { border-color: #0a0; background: #f0fff0; }
+  .important { border-color: #c00; background: #fff5f5; }
+  .example   { border-color: #007acc; background: #f0f8ff; }
+  .tip::before       { content: "💡 TIP: ";      font-weight: 700; }
+  .important::before { content: "⚠️ IMPORTANT: "; font-weight: 700; }
+  .example::before   { content: "📌 EXAMPLE: ";   font-weight: 700; }
+
+  /* ── Table ────────────────────────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.8rem 0;
+    font-size: 0.9rem;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 0.45rem 0.6rem;
+    text-align: left;
+  }
+  th { background: #0a0a2e; color: #fff; }
+  tr:nth-child(even) { background: #f8f8ff; }
+
+  /* ── Keyboard shortcut badge ──────────────────────────────────── */
+  kbd {
+    display: inline-block;
+    padding: 0.1em 0.45em;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    background: #eee;
+    border: 1px solid #bbb;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 #999;
+  }
+
+  /* ── Code block for question format ──────────────────────────── */
+  pre {
+    background: #1a1a2e;
+    color: #7fdbca;
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    overflow-x: auto;
+    margin: 0.6rem 0;
+    page-break-inside: avoid;
+  }
+
+  /* ── Footer ───────────────────────────────────────────────────── */
+  .footer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: 2rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #ddd;
+  }
+
+  /* ── Print tweaks ─────────────────────────────────────────────── */
+  @media print {
+    body { padding: 0; }
+    h2 { page-break-before: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- COVER PAGE                                                         -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <h1>ULTRA PRO SPACE INVADERS</h1>
+  <div class="edition">Premium Educational Edition — User Guide</div>
+  <div class="tagline">"Destroy enemies, answer questions, save Earth!"</div>
+  <div class="info">
+    © 2026 Khepery. All rights reserved.<br>
+    Licensed for classroom use by the purchasing teacher only.<br><br>
+    <strong>Version 1.0</strong>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- TABLE OF CONTENTS                                                  -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2>Table of Contents</h2>
+<ol>
+  <li><a href="#getting-started">Getting Started</a></li>
+  <li><a href="#access-code">Access Code &amp; Login</a></li>
+  <li><a href="#game-overview">Game Overview</a></li>
+  <li><a href="#controls">Controls</a></li>
+  <li><a href="#setup-questions">Setting Up Questions</a></li>
+  <li><a href="#difficulty">Difficulty Levels</a></li>
+  <li><a href="#gameplay">Gameplay — Enemies, Power-Ups &amp; Scoring</a></li>
+  <li><a href="#educational">Educational System &amp; Grading</a></li>
+  <li><a href="#leaderboard">Leaderboard</a></li>
+  <li><a href="#touchscreen-setup">Touchscreen &amp; Split-Screen Setup (2 Players)</a></li>
+  <li><a href="#dual-mouse">Using Two Mice (Dual-Mouse Mode)</a></li>
+  <li><a href="#faq">Frequently Asked Questions</a></li>
+  <li><a href="#troubleshooting">Troubleshooting</a></li>
+  <li><a href="#changing-password">Changing the Access Code</a></li>
+</ol>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 1. GETTING STARTED                                                 -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="getting-started">1. Getting Started</h2>
+<p>
+  Ultra Pro Space Invaders is a browser-based educational game that combines
+  classic arcade action with quiz-based learning. Students destroy enemy ships
+  while answering curriculum-aligned questions to earn power-ups, build combos,
+  and compete on the leaderboard.
+</p>
+<h3>What You Need</h3>
+<ul>
+  <li>A modern web browser (Chrome, Edge, Firefox, or Safari)</li>
+  <li>No internet required after initial load — the game runs entirely offline</li>
+  <li>A computer, tablet, or <strong>large touchscreen display</strong> (recommended for classroom use)</li>
+</ul>
+
+<h3>Opening the Game</h3>
+<ol>
+  <li>Open the game URL in your browser, or open the provided HTML file directly.</li>
+  <li>You will see the <strong>Access Code</strong> screen.</li>
+  <li>Enter the code included with your purchase and click <strong>LAUNCH GAME</strong>.</li>
+  <li>You're in! The code is remembered by the browser for next time.</li>
+</ol>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 2. ACCESS CODE                                                     -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="access-code">2. Access Code &amp; Login</h2>
+<p>
+  The game is protected by a simple access code to ensure only authorized
+  users can play. Your access code was provided in your Teachers Pay Teachers
+  purchase confirmation.
+</p>
+<ul>
+  <li><strong>Default code:</strong> included in your purchase receipt.</li>
+  <li>The code is <strong>not case-sensitive</strong> — "galaxy2026" and "GALAXY2026" both work.</li>
+  <li>Once entered correctly, the browser remembers it — students won't need to re-enter it each time (unless they clear browser data).</li>
+</ul>
+<div class="tip">
+  Bookmark the game URL on all classroom devices so students can access it quickly.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 3. GAME OVERVIEW                                                   -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="game-overview">3. Game Overview</h2>
+<p>
+  Players pilot a spaceship at the bottom of the screen. Enemy ships descend
+  from above, and asteroids drift across the battlefield. Players shoot enemies,
+  dodge hazards, answer quiz questions, and collect power-ups.
+</p>
+<h3>Game Flow</h3>
+<ol>
+  <li><strong>Intro Screen</strong> — "LAUNCH MISSION" to begin or view the leaderboard.</li>
+  <li><strong>Mission Configuration</strong> — Choose difficulty, load questions, select categories.</li>
+  <li><strong>Gameplay</strong> — Destroy enemies wave by wave. Questions appear regularly.</li>
+  <li><strong>Wave Boss</strong> — Each wave ends with a mini-boss encounter + quiz.</li>
+  <li><strong>Game Over</strong> — See your score, accuracy, grade, and save to the leaderboard.</li>
+</ol>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 4. CONTROLS                                                        -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="controls">4. Controls</h2>
+
+<h3>Keyboard</h3>
+<table>
+  <tr><th>Action</th><th>Key</th></tr>
+  <tr><td>Move ship left</td><td><kbd>←</kbd> Arrow Left</td></tr>
+  <tr><td>Move ship right</td><td><kbd>→</kbd> Arrow Right</td></tr>
+  <tr><td>Fire weapons</td><td><kbd>Space</kbd></td></tr>
+  <tr><td>Pause / Resume</td><td><kbd>P</kbd></td></tr>
+  <tr><td>Toggle sound</td><td><kbd>M</kbd></td></tr>
+  <tr><td>Show help</td><td><kbd>H</kbd></td></tr>
+  <tr><td>Fullscreen</td><td><kbd>F</kbd></td></tr>
+</table>
+
+<h3>Mouse</h3>
+<ul>
+  <li><strong>Move:</strong> Move the mouse left/right over the game canvas — the ship follows smoothly.</li>
+  <li><strong>Shoot:</strong> Hold down the left mouse button to fire continuously.</li>
+</ul>
+
+<h3>Touchscreen</h3>
+<ul>
+  <li><strong>Move:</strong> Touch and drag on the game canvas — the ship follows your finger.</li>
+  <li><strong>Shoot:</strong> The ship fires automatically while your finger is on the screen.</li>
+  <li>On-screen <strong>◀ ▶ arrow buttons</strong> also appear on touch devices for alternative control.</li>
+</ul>
+
+<h3>Answering Questions</h3>
+<ul>
+  <li>When a quiz appears, click/tap one of the four answer buttons (A, B, C, or D).</li>
+  <li>A timer counts down — answer before it expires!</li>
+  <li>The game pauses while the question is displayed.</li>
+</ul>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 5. SETTING UP QUESTIONS                                            -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="setup-questions">5. Setting Up Questions</h2>
+<p>
+  The game comes with 20 default questions across Math, Science, Geography,
+  Literature, Art, and History. You can replace or supplement them with your
+  own curriculum-specific questions.
+</p>
+
+<h3>Option A — Import a Text File</h3>
+<ol>
+  <li>On the <strong>Mission Configuration</strong> screen, click <strong>"Download Template"</strong> to get the format.</li>
+  <li>Open the downloaded <code>question_template.txt</code> in any text editor.</li>
+  <li>Add your questions following the format below.</li>
+  <li>Click <strong>"Load My Questions"</strong> and select your file.</li>
+</ol>
+<pre>
+Question: What is the capital of Canada?
+A: Toronto
+B: Ottawa
+C: Vancouver
+D: Montreal
+Correct: B
+Category: Geography
+
+Question: What is 15 × 12?
+A: 170
+B: 175
+C: 180
+D: 185
+Correct: C
+Category: Math
+</pre>
+<div class="tip">
+  Separate each question with a blank line. Lines starting with <code>#</code> are treated as comments and ignored.
+</div>
+
+<h3>Option B — Add Manually</h3>
+<ol>
+  <li>Click <strong>"Add Manually"</strong> on the Mission Configuration screen.</li>
+  <li>Type the question, four answer options, select the correct answer, and (optionally) a category.</li>
+  <li>Click <strong>SAVE</strong>.</li>
+</ol>
+
+<h3>Option C — Use Default Questions</h3>
+<p>Click <strong>"Use Default Questions"</strong> to reset back to the built-in set of 20 questions.</p>
+
+<h3>Viewing &amp; Deleting Questions</h3>
+<p>Click <strong>"View Questions"</strong> to see all loaded questions. Each question has a delete button if you want to remove individual entries.</p>
+
+<div class="important">
+  You need at least <strong>3 questions</strong> to start the game. The game cycles through questions
+  and reshuffles them once all have been used.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 6. DIFFICULTY                                                      -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="difficulty">6. Difficulty Levels</h2>
+<table>
+  <tr>
+    <th>Level</th>
+    <th>Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>🛸 Easy</td>
+    <td><strong>CADET</strong></td>
+    <td>
+      Educational focus — forgiving combat, more health (150 HP), enemies are
+      weaker (60% HP), faster player shooting, 30% power-up drop rate,
+      20% fewer enemies. Great for younger students or first-time players.
+    </td>
+  </tr>
+  <tr>
+    <td>✈️ Medium</td>
+    <td><strong>PILOT</strong></td>
+    <td>
+      Balanced — 120 HP, standard enemy strength, 20% power-up drop rate.
+      Recommended for most classrooms.
+    </td>
+  </tr>
+  <tr>
+    <td>🔥 Hard</td>
+    <td><strong>ACE</strong></td>
+    <td>
+      Real challenge — 100 HP, enemies have 150% HP, bosses fire 3 bullets,
+      12% power-up rate, 20% more enemies. For advanced students who want
+      a true test.
+    </td>
+  </tr>
+</table>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 7. GAMEPLAY                                                        -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="gameplay">7. Gameplay — Enemies, Power-Ups &amp; Scoring</h2>
+
+<h3>Enemy Types</h3>
+<table>
+  <tr><th>Enemy</th><th>Points</th><th>Notes</th></tr>
+  <tr><td>Normal Ship</td><td>10–30</td><td>Standard enemies that move and shoot</td></tr>
+  <tr><td>Elite Ship (purple)</td><td>100</td><td>Tougher enemies — always trigger a quiz when destroyed</td></tr>
+  <tr><td>Mini-Boss</td><td>200+</td><td>Appears at the end of each wave; has high HP and fires multiple bullets</td></tr>
+  <tr><td>Asteroid</td><td>—</td><td>Drifting obstacle; deals 15 damage on collision</td></tr>
+</table>
+
+<h3>Power-Ups</h3>
+<p>Power-ups drop from destroyed enemies and are also rewarded for correct quiz answers:</p>
+<table>
+  <tr><th>Power-Up</th><th>Effect</th><th>Duration</th></tr>
+  <tr><td>⚡ Rapid Fire</td><td>Triple your fire rate</td><td>15 seconds</td></tr>
+  <tr><td>🛡 Shield</td><td>Complete invincibility</td><td>10 seconds</td></tr>
+  <tr><td>💥 Double Damage</td><td>2× damage output (fires rockets)</td><td>15 seconds</td></tr>
+</table>
+
+<h3>Scoring</h3>
+<ul>
+  <li><strong>Combo system:</strong> Consecutive correct answers increase your combo multiplier.</li>
+  <li><strong>Streak bonus:</strong> Long answer streaks grant extra points and extended power-ups.</li>
+  <li><strong>Score multiplier:</strong> Grows with your combo — up to massive multipliers for perfect play.</li>
+  <li><strong>Educational Score:</strong> A separate tracker that measures learning progress (not combat skill).</li>
+</ul>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 8. EDUCATIONAL SYSTEM                                              -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="educational">8. Educational System &amp; Grading</h2>
+<p>
+  Questions appear naturally during gameplay — not as interruptions but as
+  integrated learning moments:
+</p>
+<ul>
+  <li>After every <strong>5 normal enemies</strong> destroyed</li>
+  <li>Whenever a <strong>special/elite enemy</strong> is destroyed</li>
+  <li>At the end of <strong>every wave</strong> (mini-boss quiz)</li>
+</ul>
+
+<h3>Answer Outcomes</h3>
+<table>
+  <tr><th>Result</th><th>Reward / Penalty</th></tr>
+  <tr><td>✅ Correct</td><td>+100 points (× multiplier), health restore, power-up, combo +1, educational score +10–30</td></tr>
+  <tr><td>❌ Wrong</td><td>Small health penalty (never fatal), combo reset, educational score −5. The correct answer is shown so the student learns.</td></tr>
+  <tr><td>⏰ Time expired</td><td>Same as wrong answer</td></tr>
+</table>
+
+<h3>Grades (shown at Game Over)</h3>
+<table>
+  <tr><th>Accuracy</th><th>Grade</th></tr>
+  <tr><td>90%+</td><td>A+</td></tr>
+  <tr><td>80–89%</td><td>A</td></tr>
+  <tr><td>70–79%</td><td>B</td></tr>
+  <tr><td>60–69%</td><td>C</td></tr>
+  <tr><td>Below 60%</td><td>D</td></tr>
+</table>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 9. LEADERBOARD                                                     -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="leaderboard">9. Leaderboard</h2>
+<p>
+  After each game, students can save their score with a name (up to 20 characters).
+  The leaderboard is stored in the browser's local storage — it persists between sessions
+  on the same device.
+</p>
+<ul>
+  <li>Access the leaderboard from the <strong>intro screen</strong> or the <strong>game over screen</strong>.</li>
+  <li>Use the <strong>🗑 Clear</strong> button to reset the leaderboard (e.g., for a new class).</li>
+</ul>
+<div class="tip">
+  Have students save their names after each game to track progress over time. The leaderboard
+  is per-device, so each classroom computer maintains its own rankings.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 10. TOUCHSCREEN & SPLIT-SCREEN SETUP                               -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="touchscreen-setup">10. Touchscreen &amp; Split-Screen Setup (2 Players)</h2>
+<p>
+  This game is designed to work beautifully on <strong>large touchscreen displays</strong>.
+  The recommended competitive setup uses your operating system's <strong>split-screen mode</strong>
+  to run two game instances side by side, allowing <strong>two students to compete simultaneously</strong>.
+</p>
+
+<h3>Step-by-Step: Split-Screen on a Large Touchscreen</h3>
+<ol>
+  <li>
+    <strong>Open two browser windows</strong> — open the game URL in one window,
+    then open a second window with the same URL. (Tip: use Ctrl+N or Cmd+N for a new window.)
+  </li>
+  <li>
+    <strong>Snap windows side by side:</strong>
+    <ul>
+      <li><strong>Windows:</strong> Drag one window to the left edge of the screen until it snaps to fill the left half. Then select the other window for the right half. (Or use <kbd>Win</kbd>+<kbd>←</kbd> and <kbd>Win</kbd>+<kbd>→</kbd>.)</li>
+      <li><strong>macOS:</strong> Hover over the green full-screen button → choose "Tile Window to Left/Right".</li>
+      <li><strong>Chromebook:</strong> Drag the window to the left/right edge, or use <kbd>Alt</kbd>+<kbd>[</kbd> and <kbd>Alt</kbd>+<kbd>]</kbd>.</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Enter the access code</strong> in each window and launch the game.
+  </li>
+  <li>
+    <strong>Configure each game independently</strong> — each student can pick their own
+    difficulty, load their own questions, and compete!
+  </li>
+  <li>
+    <strong>Each student plays on their half of the touchscreen</strong> — touch input
+    is per-window, so each student's finger controls only their side.
+  </li>
+</ol>
+
+<div class="example">
+  A 55" interactive whiteboard running Windows 11 in split-screen mode: Student A plays on the left half,
+  Student B plays on the right half. Both touch their own side of the screen to move their ship and
+  answer questions. At the end, they compare scores on their respective game-over screens.
+</div>
+
+<div class="tip">
+  For the best competitive experience, have both students start their games at the same time
+  with the same difficulty and the same question set. Whoever gets the higher score wins!
+</div>
+
+<h3>Full-Screen Mode (Single Player)</h3>
+<p>
+  For single-player use, click the <strong>⛶ fullscreen button</strong> (bottom-left corner)
+  or press <kbd>F</kbd> to maximize the game. Press <kbd>Esc</kbd> to exit fullscreen.
+</p>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 11. DUAL-MOUSE SETUP                                               -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="dual-mouse">11. Using Two Mice (Dual-Mouse Mode)</h2>
+<p>
+  If you don't have a touchscreen, you can still run the two-player split-screen
+  setup using <strong>two USB mice</strong>. Here's how it works:
+</p>
+
+<h3>How It Works</h3>
+<p>
+  By default, most operating systems merge all connected mice into <strong>one cursor</strong>.
+  To give each mouse its own independent cursor (so each student controls their own game window),
+  you need special software:
+</p>
+
+<h3>Windows — Recommended Tools</h3>
+<table>
+  <tr><th>Tool</th><th>Notes</th></tr>
+  <tr>
+    <td><strong>TeamPlayer</strong></td>
+    <td>Free multi-mouse tool for Windows. Creates a separate cursor for each connected mouse. Each cursor can click and interact with different windows independently.</td>
+  </tr>
+  <tr>
+    <td><strong>Pluralinput</strong></td>
+    <td>Commercial multi-user input software. Supports multiple mice and keyboards. Good for classroom setups.</td>
+  </tr>
+  <tr>
+    <td><strong>Windows MultiPoint Server</strong></td>
+    <td>Microsoft's built-in multi-station solution (available in some education editions).</td>
+  </tr>
+  <tr>
+    <td><strong>MouseMux</strong></td>
+    <td>Lightweight tool that gives each mouse an independent cursor in Windows.</td>
+  </tr>
+</table>
+
+<h3>Setup Steps (with multi-cursor software)</h3>
+<ol>
+  <li><strong>Connect two USB mice</strong> to the computer.</li>
+  <li><strong>Install and start</strong> your chosen multi-cursor tool (e.g., TeamPlayer).</li>
+  <li>You should now see <strong>two independent cursors</strong> on screen.</li>
+  <li><strong>Open two browser windows</strong> and snap them side by side (split-screen).</li>
+  <li>Each student uses their mouse to control their game window — clicking, moving the ship, and answering questions independently.</li>
+</ol>
+
+<div class="example">
+  Two students sit at one computer. Each has their own USB mouse. With TeamPlayer running,
+  Student A's mouse has a blue cursor on the left game window, and Student B's mouse has a
+  red cursor on the right game window. They race through waves and compare scores at the end!
+</div>
+
+<h3>Alternative: One Mouse + One Keyboard</h3>
+<p>
+  If two-mouse software isn't available, one student can use the <strong>mouse</strong>
+  (move + click to shoot) while the other uses the <strong>keyboard</strong>
+  (arrow keys + spacebar) — but this only works in a single game instance, not split-screen.
+</p>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 12. FAQ                                                            -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="faq">12. Frequently Asked Questions</h2>
+
+<h3>Can I use my own curriculum questions?</h3>
+<p>Yes! Import a .txt file with your questions or add them manually. See <a href="#setup-questions">Section 5</a>.</p>
+
+<h3>Does the game require internet?</h3>
+<p>No. After the initial load, the game runs entirely offline. The single-file release version works with no server at all — just open the HTML file.</p>
+
+<h3>Can I use this on iPads or tablets?</h3>
+<p>Yes. The game is responsive and works on any device with a modern browser. Touchscreen controls activate automatically.</p>
+
+<h3>How many questions should I add?</h3>
+<p>Minimum 3 to start. We recommend <strong>15–30 questions</strong> for a good session. The game cycles through and reshuffles once all are used.</p>
+
+<h3>Can students cheat by looking at the source code for answers?</h3>
+<p>The questions are loaded dynamically and can be custom each time. Since you control the question file, you can change it between classes.</p>
+
+<h3>What happens if a student gets a question wrong?</h3>
+<p>They lose a small amount of health (never enough to die from it alone) and the correct answer is displayed. The focus is on learning, not punishment.</p>
+
+<h3>Can I share this with other teachers?</h3>
+<p>No. The license is for the purchasing teacher's classroom only. Other teachers should purchase their own copy through Teachers Pay Teachers.</p>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 13. TROUBLESHOOTING                                                -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="troubleshooting">13. Troubleshooting</h2>
+<table>
+  <tr><th>Problem</th><th>Solution</th></tr>
+  <tr>
+    <td>Game shows "Loading…" and doesn't start</td>
+    <td>Make sure all image and audio files are in the same folder as the game. If using the single-file release, try a different browser.</td>
+  </tr>
+  <tr>
+    <td>No sound</td>
+    <td>Click anywhere on the page first (browsers require user interaction before playing audio). Check the 🔊 sound button is enabled.</td>
+  </tr>
+  <tr>
+    <td>Access code doesn't work</td>
+    <td>The code is not case-sensitive. Make sure there are no extra spaces. Check your purchase receipt for the correct code.</td>
+  </tr>
+  <tr>
+    <td>Questions won't import</td>
+    <td>Verify your .txt file follows the exact format (see Section 5). Each question must have a "Question:", four options (A:–D:), and a "Correct:" line.</td>
+  </tr>
+  <tr>
+    <td>Game runs slowly</td>
+    <td>Close other browser tabs. The game performs best in Chrome or Edge. Make sure hardware acceleration is enabled in browser settings.</td>
+  </tr>
+  <tr>
+    <td>Touch controls not responding in split-screen</td>
+    <td>Make sure each window is focused by tapping on it first. Some OS touch implementations need a first tap to activate a window.</td>
+  </tr>
+  <tr>
+    <td>Leaderboard data lost</td>
+    <td>Leaderboard data is stored in the browser's local storage. Clearing browser data, using incognito mode, or switching browsers will reset it.</td>
+  </tr>
+</table>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- 14. CHANGING THE ACCESS CODE                                       -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<h2 id="changing-password">14. Changing the Access Code</h2>
+<p>
+  You can change the access code at any time by editing a single file:
+</p>
+<ol>
+  <li>Open the file <code>config.js</code> in any text editor (Notepad, VS Code, etc.).</li>
+  <li>Find the line: <code>code: "GALAXY2026"</code></li>
+  <li>Replace <code>GALAXY2026</code> with your new code (keep the quotes).</li>
+  <li>Save the file and redeploy.</li>
+</ol>
+<pre>
+// config.js — Change the access code here
+window.SITE_CONFIG = {
+  code: "YOUR_NEW_CODE_HERE"
+};
+</pre>
+<div class="important">
+  After changing the code, tell your students the new code.
+  Students who previously logged in with the old code will need to enter the new one.
+</div>
+<div class="tip">
+  Change the code periodically (e.g., every semester) to prevent former students
+  from sharing it. Any word or phrase works — keep it simple and memorable for your class.
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- FOOTER                                                             -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="footer">
+  Ultra Pro Space Invaders — Premium Educational Edition<br>
+  © 2026 Khepery. All rights reserved. Licensed for classroom use only.<br><br>
+  <em>To create a PDF of this guide: Open this file in your browser and use File → Print → "Save as PDF".</em>
+</div>
+
+</body>
+</html>
