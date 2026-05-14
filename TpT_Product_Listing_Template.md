@@ -23,7 +23,7 @@ Turn any set of review questions into an exciting Space Invaders arcade game! St
 
 Ultra Pro Space Invaders is a **browser-based arcade game** that combines classic Space Invaders gameplay with educational quiz questions. Students must answer questions correctly to earn power-ups, gain health, and progress through increasingly challenging waves.
 
-**No internet required after download!** The single-file release works on any device with a modern browser — perfect for school networks with limited connectivity.
+**Hosted online — no download, no installation!** After purchase you receive a private link to **purebrainplay.com** plus a personal access code. Open the link in any modern browser and you're playing in seconds. Access codes are refreshed every few months and new codes are emailed to buyers automatically for the lifetime of their purchase — no extra cost.
 
 ### 🎮 Key Features
 
@@ -38,11 +38,11 @@ Ultra Pro Space Invaders is a **browser-based arcade game** that combines classi
 
 ### 📋 What's Included
 
-1. **Game Files** — Ready-to-deploy website files (host on Cloudflare Pages, Netlify, or any web host)
-2. **Single-File Release** — One self-contained HTML file you can share directly or host anywhere
-3. **Teacher Guide (PDF)** — Step-by-step setup instructions, customization guide, and deployment walkthrough
+1. **Private Game Link** — Hosted at purebrainplay.com, ready to play instantly
+2. **Personal Access Code** — Unlocks the game for your classroom; new codes emailed automatically every few months at no extra cost
+3. **Buyer Welcome Guide (PDF)** — Step-by-step access, customization, troubleshooting, and license terms
 4. **Sample Question Bank** — 50 Money & Banking questions ready to use
-5. **Build Tool** — Node.js script to create new single-file releases with your custom questions
+5. **Question File Template** — Plain-text format you can edit in any text editor; load your own questions in seconds from the in-game Settings panel
 
 ### 🎯 Perfect For
 
@@ -56,16 +56,16 @@ Ultra Pro Space Invaders is a **browser-based arcade game** that combines classi
 ### 💻 Technical Requirements
 
 - Any modern web browser (Chrome, Firefox, Safari, Edge)
+- Internet connection to reach purebrainplay.com
 - No software installation needed
-- Works offline with the single-file release
-- Optional: Free Cloudflare Pages account for online hosting
+- Works on desktops, laptops, Chromebooks, tablets, and phones
 
 ### 📝 How to Customize Questions
 
 1. Open the included text file (`50 money banking questions for space invaders.txt`) to see the format
-2. Create your own questions following the same simple format
-3. Load them into the game using the built-in Settings panel, OR
-4. Run the build tool to create a permanent single-file release with your questions baked in
+2. Edit it (or create your own) in any plain-text editor
+3. In the game, click **⚙ Settings → 📂 Load My Questions** and pick your file — done!
+4. Prefer to type questions in-game? Use **Settings → ➕ Add Manually**
 
 ---
 

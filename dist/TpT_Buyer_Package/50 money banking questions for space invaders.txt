@@ -1,0 +1,48 @@
+Question	Option 1	Option 2	Option 3	Option 4	Correct Answer (1-4)
+What is money primarily used for?	Medium of exchange	Store of value	Unit of account	Standard of deferred payment	1
+What are officially issued banknotes and coins called?	Legal Tender	Cash	Bank Deposits	Central Bank Reserves	1
+What does 'cash' include?	Banknotes and coins	Electronic transfers	Credit cards	Checks	1
+What are bank deposits?	Money reserves in commercial banks	Legal tender	Electronic money	Physical cash	1
+What is commercial bank money?	Electronic money for transactions	Cash in hand	Government-issued bonds	Gold reserves	1
+Where are central bank reserves held?	Central banks	Commercial banks	Private accounts	Treasury vaults	1
+What function of money facilitates trade?	Medium of exchange	Store of value	Durability	Divisibility	1
+What measures the market value of goods and services?	Unit of account	Store of value	Medium of exchange	Legal tender	1
+What ensures money retains purchasing power over time?	Store of value	Acceptability	Divisibility	Scarcity	1
+What allows money to be used for future payments?	Standard of deferred payment	Durability	Divisibility	Uniformity	1
+What characteristic ensures money lasts long?	Durability	Acceptability	Uniformity	Scarcity	1
+What makes money widely recognized for payments?	Acceptability	Divisibility	Scarcity	Portability	1
+What ensures money can be divided for transactions?	Divisibility	Durability	Uniformity	Acceptability	1
+What ensures identical currency denominations?	Uniformity	Durability	Divisibility	Scarcity	1
+What maintains the value of money?	Scarcity	Portability	Durability	Acceptability	1
+What material are durable banknotes made from?	Polymer	Metal	Paper	Cloth	1
+What leads to currency collapse?	Hyperinflation	Deflation	Stagnation	Devaluation	1
+What was an ancient form of money?	Cattle	Paper money	Banknotes	Coins	1
+What were cowry shells used for?	First consistent money in trade	Decoration	Jewelry	Writing	1
+What is a universally accepted form of money?	Gold	Silver	Copper	Diamonds	1
+How is money transferred digitally?	Electronic transactions	Banknotes	Coins	Checks	1
+What is the lifespan of a $50 banknote?	9 years	5 years	15 years	2 years	1
+What percentage of UK cash supply is physical?	Less than 3%	Around 10%	50%	75%	1
+Which currency is widely accepted by tourists?	US dollars	Euros	Yen	Pounds	1
+What is the central bank of the US?	Federal Reserve	World Bank	IMF	ECB	1
+What is used to repay loans?	Money	Gold	Land	Services	1
+What facilitates trade as an item?	Medium of exchange	Standard of deferred payment	Store of value	Durability	1
+Who manages a nation's money supply?	Central bank	Commercial banks	Private banks	Investment funds	1
+What ensures money is easy to carry?	Portability	Durability	Uniformity	Scarcity	1
+What does the barter system involve?	Direct exchange of goods	Use of money	Digital transactions	Bank loans	1
+What is the 'double coincidence of wants'?	Both parties want each other's goods	A unique barter system	Modern trade method	Exchange of services	1
+What are items with intrinsic value called?	Commodity money	Fiat money	Electronic money	Legal tender	1
+What were cowry shells historically used for?	Money	Decoration	Jewelry	Tools	1
+What is paper currency issued by central banks?	Banknotes	Coins	Checks	Debit cards	1
+What is metal currency called?	Coins	Banknotes	Checks	Vouchers	1
+What does monetary policy control?	Money supply	Interest rates	Foreign exchange	Inflation	1
+What is legally recognized as payment?	Legal tender	Banknotes	Checks	Gold	1
+Who manages government transactions?	Central bank	Commercial banks	Private banks	IMF	1
+Who serves commercial banks' needs?	Central bank	Retail banks	Private banks	Investment funds	1
+What determines borrowing cost?	Interest rates	Durability	Uniformity	Scarcity	1
+What is the process for settling interbank transactions?	Clearing system	Monetary policy	Legal tender	Commercial banking	1
+What are electronic payments?	Transactions without physical cash	Use of coins	Use of banknotes	Barter system	1
+When were the first coins introduced?	Around 2000 BC	500 AD	1000 BC	1500 BC	1
+What determined the value of ancient coins?	Weight	Appearance	Size	Color	1
+What is public confidence?	Trust in a country's monetary system	Faith in banks	Reliance on technology	Preference for cash	1
+What metals were historically used as money?	Gold and silver	Iron and copper	Platinum and bronze	Nickel and zinc	1
+What are short-term loans used for?	Temporary government financing	Personal loans	Business investments	Real estate purchases	1

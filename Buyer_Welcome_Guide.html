@@ -1,0 +1,499 @@
+<!--
+  Ultra Pro Space Invaders — Buyer Welcome Guide
+  Copyright (c) 2026 Khepery. All rights reserved.
+
+  This is a print-optimized HTML document. To generate the PDF:
+    google-chrome --headless --disable-gpu --no-sandbox \
+      --print-to-pdf=Buyer_Welcome_Guide.pdf Buyer_Welcome_Guide.html
+  Or open in any browser and use File → Print → "Save as PDF".
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Ultra Pro Space Invaders — Buyer Welcome Guide</title>
+<style>
+  @page { size: Letter; margin: 0.7in 0.7in 0.8in 0.7in; }
+
+  :root {
+    --ink:        #0b1530;
+    --ink-soft:   #2a3a66;
+    --accent:     #0066cc;
+    --accent-2:   #00a0e0;
+    --rule:       #d6deec;
+    --muted:      #5b6a8a;
+    --bg-soft:    #f3f7ff;
+    --bg-callout: #eaf3ff;
+    --bg-warn:    #fff7e6;
+    --warn:       #b06b00;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+
+  h1, h2, h3 { color: var(--ink); margin: 0; }
+  h1 {
+    font-size: 22pt;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+  }
+  h2 {
+    font-size: 13.5pt;
+    margin: 18pt 0 6pt;
+    padding-bottom: 3pt;
+    border-bottom: 1.5pt solid var(--accent);
+    color: var(--accent);
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 11.5pt;
+    margin: 12pt 0 4pt;
+    color: var(--ink-soft);
+    page-break-after: avoid;
+  }
+  p { margin: 4pt 0; }
+  ul, ol { margin: 4pt 0 4pt 18pt; padding: 0; }
+  li { margin: 2pt 0; }
+
+  /* Cover header */
+  .cover {
+    background: linear-gradient(135deg, #001e4d 0%, #002a6e 50%, #0a4ea8 100%);
+    color: #fff;
+    padding: 28pt 24pt 22pt;
+    border-radius: 8pt;
+    margin-bottom: 14pt;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::after {
+    content: "";
+    position: absolute;
+    right: -40pt; top: -30pt;
+    width: 180pt; height: 180pt;
+    background: radial-gradient(circle, rgba(0,200,255,0.25), transparent 70%);
+  }
+  .cover h1 { color: #fff; }
+  .cover .tagline {
+    color: #b9d9ff;
+    font-size: 10.5pt;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-top: 4pt;
+  }
+  .cover .edition {
+    margin-top: 14pt;
+    font-size: 10pt;
+    color: #cfe4ff;
+  }
+
+  /* Callout boxes */
+  .callout {
+    border: 1pt solid var(--rule);
+    background: var(--bg-callout);
+    border-left: 4pt solid var(--accent);
+    padding: 10pt 12pt;
+    margin: 10pt 0;
+    border-radius: 4pt;
+  }
+  .callout.warn {
+    background: var(--bg-warn);
+    border-left-color: var(--warn);
+  }
+  .callout .label {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 3pt;
+  }
+  .callout.warn .label { color: var(--warn); }
+
+  /* Access card */
+  .access-card {
+    border: 2pt dashed var(--accent);
+    background: var(--bg-soft);
+    padding: 14pt 16pt;
+    border-radius: 6pt;
+    margin: 12pt 0;
+  }
+  .access-card table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .access-card td {
+    padding: 6pt 4pt;
+    vertical-align: middle;
+  }
+  .access-card .field-label {
+    width: 32%;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+  .access-card .field-value {
+    font-family: "Courier New", monospace;
+    font-size: 13pt;
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  /* Steps */
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    margin: 6pt 0 6pt 0;
+    padding: 0;
+  }
+  .steps > li {
+    counter-increment: step;
+    position: relative;
+    padding: 4pt 0 4pt 28pt;
+    margin: 4pt 0;
+  }
+  .steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 4pt;
+    width: 20pt; height: 20pt;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 10pt;
+    text-align: center;
+    line-height: 20pt;
+  }
+
+  /* Code block */
+  code, .code {
+    font-family: "Courier New", monospace;
+    background: #eef2fa;
+    padding: 1pt 5pt;
+    border-radius: 3pt;
+    font-size: 10pt;
+    color: #002a6e;
+  }
+  pre {
+    background: #0b1530;
+    color: #d8e6ff;
+    padding: 10pt 12pt;
+    border-radius: 5pt;
+    font-family: "Courier New", monospace;
+    font-size: 9.5pt;
+    line-height: 1.45;
+    overflow: hidden;
+    page-break-inside: avoid;
+  }
+
+  /* Two-column features */
+  .features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6pt 18pt;
+    margin: 6pt 0;
+  }
+  .features div { padding-left: 14pt; position: relative; }
+  .features div::before {
+    content: "▸";
+    position: absolute; left: 0; top: 0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 18pt;
+    padding-top: 8pt;
+    border-top: 1pt solid var(--rule);
+    color: var(--muted);
+    font-size: 8.5pt;
+    text-align: center;
+  }
+
+  .page-break { page-break-before: always; }
+  .avoid-break { page-break-inside: avoid; }
+
+  /* Table of contents-ish row used on cover */
+  .meta-row {
+    display: flex;
+    gap: 20pt;
+    flex-wrap: wrap;
+    margin-top: 10pt;
+    font-size: 9.5pt;
+    color: #cfe4ff;
+  }
+  .meta-row span b { color: #fff; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!--  COVER                                                       -->
+<!-- ============================================================ -->
+<div class="cover">
+  <h1>Ultra Pro Space Invaders</h1>
+  <div class="tagline">Premium Educational Edition — Buyer Welcome Guide</div>
+  <div class="edition">
+    Thank you for your purchase on Teachers Pay Teachers! This short guide
+    walks you through accessing the game, customizing it with your own
+    questions, and answering common classroom questions.
+  </div>
+  <div class="meta-row">
+    <span><b>Delivery:</b> Hosted online (no download required)</span>
+    <span><b>Devices:</b> Any modern browser</span>
+    <span><b>Internet:</b> Required to load the page</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  1. QUICK START                                              -->
+<!-- ============================================================ -->
+<h2>1. Quick Start (60 seconds)</h2>
+
+<div class="access-card avoid-break">
+  <table>
+    <tr>
+      <td class="field-label">Game URL</td>
+      <td class="field-value">https://purebrainplay.com</td>
+    </tr>
+    <tr>
+      <td class="field-label">Access Code</td>
+      <td class="field-value">__________________________</td>
+    </tr>
+    <tr>
+      <td class="field-label">Code Valid Through</td>
+      <td class="field-value">________ / ________ / ________</td>
+    </tr>
+  </table>
+  <p style="margin-top:6pt; font-size:9pt; color:var(--muted);">
+    Your current access code is included in the email / PDF you received
+    with your TpT purchase. Write it on the line above for quick reference.
+  </p>
+</div>
+
+<ol class="steps">
+  <li>Open <span class="code">purebrainplay.com</span> in any web browser
+      (Chrome, Firefox, Safari, or Edge).</li>
+  <li>Enter your access code on the launch screen and click
+      <b>[ LAUNCH GAME → ]</b>.</li>
+  <li>On the Mission Configuration screen, choose a difficulty
+      (Cadet / Pilot / Ace) and pick categories.</li>
+  <li>Click <b>▶ BEGIN MISSION</b> — students answer questions to power
+      up their ship and clear waves of invaders.</li>
+</ol>
+
+<div class="callout">
+  <div class="label">Tip</div>
+  Once a student enters the correct access code, their browser remembers
+  it so they only need to click <b>Launch</b> next time on the same
+  device.
+</div>
+
+<!-- ============================================================ -->
+<!--  2. ACCESS CODE & RENEWAL POLICY                             -->
+<!-- ============================================================ -->
+<h2>2. Access Codes &amp; Renewal</h2>
+
+<p>
+  The access code shown above unlocks the game at
+  <span class="code">purebrainplay.com</span>. Codes are <b>rotated every
+  few months</b> to protect the integrity of the resource for paying
+  teachers.
+</p>
+
+<h3>How renewal works</h3>
+<ul>
+  <li>Each TpT buyer is added to a private notification list.</li>
+  <li>When the code changes, you receive the new code by email
+      <i>before</i> the old one expires — no extra purchase needed.</li>
+  <li>Renewed codes are included free for the lifetime of your purchase.</li>
+</ul>
+
+<div class="callout warn avoid-break">
+  <div class="label">Make sure you get the new code</div>
+  Please <b>follow the seller on TpT</b> and check the email address you
+  used at checkout. If you change schools or emails, send a quick message
+  through the TpT "Ask a Question" tab so we can update your contact.
+</div>
+
+<h3>If your code stops working</h3>
+<ol>
+  <li>Check your TpT messages / inbox for the latest code email.</li>
+  <li>Make sure you're typing the code exactly — codes are not
+      case-sensitive but trailing spaces matter.</li>
+  <li>Still stuck? Contact the seller via TpT and we'll get you a fresh
+      code within one business day.</li>
+</ol>
+
+<!-- ============================================================ -->
+<!--  3. CUSTOMIZE WITH YOUR OWN QUESTIONS                        -->
+<!-- ============================================================ -->
+<h2>3. Customize with Your Own Questions</h2>
+
+<p>
+  The game ships with a sample bank (50 Money &amp; Banking questions)
+  but works with <b>any subject</b>. You can load your own question set
+  in under a minute.
+</p>
+
+<ol class="steps">
+  <li>On the title screen, click <b>⚙ Settings</b> →
+      <b>📂 Load My Questions</b>.</li>
+  <li>Choose a plain text file (<span class="code">.txt</span>) formatted
+      like the sample below.</li>
+  <li>Your questions appear immediately — pick categories and start the
+      mission.</li>
+</ol>
+
+<h3>Question file format</h3>
+<pre>Q: What is the capital of France?
+A: London
+B: Paris
+C: Berlin
+D: Madrid
+Correct: B
+Category: Geography
+
+Q: 7 x 8 = ?
+A: 54
+B: 56
+C: 63
+D: 49
+Correct: B
+Category: Multiplication</pre>
+
+<p style="font-size:9.5pt; color:var(--muted);">
+  Separate questions with a blank line. The <span class="code">Category</span>
+  line is optional. A ready-to-edit template can be downloaded from the
+  game itself (<b>Settings → ⬇ Download Template</b>) or use the included
+  sample file <span class="code">50 money banking questions for space
+  invaders.txt</span>.
+</p>
+
+<div class="callout">
+  <div class="label">No file? Add questions in the game</div>
+  Click <b>⚙ Settings → ➕ Add Manually</b> to type questions directly
+  into the game. Great for quick edits or building a deck live with
+  students.
+</div>
+
+<!-- ============================================================ -->
+<!--  4. CLASSROOM USE                                            -->
+<!-- ============================================================ -->
+<h2>4. Classroom Use Ideas</h2>
+
+<div class="features">
+  <div><b>Test prep</b> — review the week before an exam</div>
+  <div><b>Sub plans</b> — students play independently</div>
+  <div><b>Bell ringers</b> — 5–10 minute warm-ups</div>
+  <div><b>Reward time</b> — earned learning fun</div>
+  <div><b>Stations</b> — one of several rotating activities</div>
+  <div><b>Homework</b> — share the URL + code with students</div>
+  <div><b>Whiteboard</b> — project for whole-class play</div>
+  <div><b>Sub-content review</b> — pick one category at a time</div>
+</div>
+
+<h3>Devices &amp; controls</h3>
+<ul>
+  <li><b>Desktop / laptop:</b> Arrow keys to move, Spacebar to shoot,
+      number keys (1–4) to answer questions.</li>
+  <li><b>Tablet / phone:</b> On-screen touch controls appear
+      automatically. Best in landscape orientation.</li>
+  <li><b>Chromebook:</b> Works in Chrome out of the box.</li>
+</ul>
+
+<!-- ============================================================ -->
+<!--  5. TROUBLESHOOTING                                          -->
+<!-- ============================================================ -->
+<h2>5. Troubleshooting</h2>
+
+<h3>The game won't load</h3>
+<ul>
+  <li>Confirm <span class="code">purebrainplay.com</span> is not blocked
+      by your school's web filter — ask IT to allow-list the domain.</li>
+  <li>Try a different browser (Chrome works most reliably).</li>
+  <li>Refresh the page; if it still fails, clear browsing data for the
+      site and re-enter the code.</li>
+</ul>
+
+<h3>Audio doesn't play</h3>
+<ul>
+  <li>Browsers block autoplay until the user clicks. Click anywhere on
+      the title screen — sound will start.</li>
+  <li>Check that your device isn't muted and tab volume isn't 0.</li>
+</ul>
+
+<h3>Custom questions didn't load</h3>
+<ul>
+  <li>Open the file in a plain text editor (not Word) and verify the
+      <span class="code">Q:</span> / <span class="code">A:</span> /
+      <span class="code">Correct:</span> format matches the sample.</li>
+  <li>Save as <span class="code">.txt</span> with UTF-8 encoding.</li>
+</ul>
+
+<!-- ============================================================ -->
+<!--  6. LICENSE                                                  -->
+<!-- ============================================================ -->
+<h2>6. License (Summary)</h2>
+
+<p>
+  This product is <b>licensed, not sold</b>, to the purchasing teacher
+  for use in a single classroom.
+</p>
+
+<h3>You MAY</h3>
+<ul>
+  <li>Use the game with your own students in your own classroom.</li>
+  <li>Project it on interactive whiteboards / displays.</li>
+  <li>Share the URL and access code with <i>your</i> students for
+      homework or review.</li>
+</ul>
+
+<h3>You MAY NOT</h3>
+<ul>
+  <li>Share the access code with other teachers — they must purchase
+      their own license.</li>
+  <li>Post the URL or code on a public website, social media, or any
+      page that isn't a password-protected LMS for your own class.</li>
+  <li>Resell, redistribute, or claim this product as your own.</li>
+</ul>
+
+<p style="font-size:9.5pt; color:var(--muted); margin-top:6pt;">
+  The full legal text is included in the <span class="code">LICENSE</span>
+  file in your purchase package. By using this product you agree to
+  those terms.
+</p>
+
+<!-- ============================================================ -->
+<!--  7. SUPPORT                                                  -->
+<!-- ============================================================ -->
+<h2>7. Support &amp; Updates</h2>
+
+<ul>
+  <li><b>Questions or bug reports:</b> message the seller through the
+      "Ask a Question" tab on the TpT product page.</li>
+  <li><b>New access codes:</b> emailed automatically to your TpT
+      checkout address before each rotation.</li>
+  <li><b>Feature ideas:</b> we love feedback! Reply to the welcome
+      email or leave a review on TpT.</li>
+</ul>
+
+<div class="footer">
+  Ultra Pro Space Invaders — Premium Educational Edition &nbsp;•&nbsp;
+  © 2026 Khepery. All rights reserved. &nbsp;•&nbsp;
+  Hosted at purebrainplay.com
+</div>
+
+</body>
+</html>
